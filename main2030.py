@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 1
+test = 0
 input_data_path  = Path("mes_north_sea/data_2030")
 settings = Settings(test=test)
 settings.demand_factor = 1
@@ -61,4 +61,7 @@ for stage in scenarios.keys():
 
     m = adopt.ModelHub()
     m.read_data(input_data_path)
+
+    m = define_charging_efficiencies(settings, nodes, m)
+
     m.quick_solve()

@@ -296,10 +296,10 @@ def define_network_topology(input_data_path, settings):
         network = pd.read_csv(file_path, sep=';')
 
         network_data = {}
-        network_data['size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
-        network_data['distance_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
-        network_data['max_size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
-        network_data['connection_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
+        network_data['size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0)
+        network_data['distance_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0)
+        network_data['max_size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0)
+        network_data['connection_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0)
         for idx, row in network.iterrows():
             network_data['size_matrix'].at[row['node0'], row['node1']] = row['s_nom']*1000
             network_data['size_matrix'].at[row['node1'], row['node0']] = row['s_nom']*1000
@@ -555,7 +555,7 @@ def define_imports_exports(input_data_path, settings, nodes):
         carbon_cost_template.to_csv(carbon_cost_path, sep=';', index=False)
 
 
-def define_charging_efficiencies(settings, nodes, data):
+def define_charging_efficiencies(settings, nodes, m):
     data_path = settings.data_path
 
     new_tecs = pd.read_csv(data_path + 'installed_capacities/capacities_node.csv',
@@ -584,12 +584,26 @@ def define_charging_efficiencies(settings, nodes, data):
             'Storage_PumpedHydro_Reservoir': round(new_at_node.get('Hydro - Reservoir (Energy)', 0), 0),
             }
 
+
+
         storage_tecs_at_node = {k: v for k,v in capacity.items() if v > 0}
+
         for storage in storage_tecs_at_node:
-            data.technology_data[node][storage + '_existing'].fitted_performance.coefficients['charge_max'] = \
-            -charging[storage]/capacity[storage]
-            data.technology_data[node][storage + '_existing'].fitted_performance.coefficients['discharge_max'] = \
-            discharging[storage]/capacity[storage]
+            if storage == 'Storage_PumpedHydro_Closed':
+                m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent['charge_rate'] = \
+                -charging[storage]/capacity[storage]
 
-    return data
+                print(m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent['charge_rate'])
 
+                m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent['discharge_rate'] = \
+                discharging[storage]/capacity[storage]
+            else:
+                m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent[
+                    'charge_max'] = \
+                    -charging[storage] / capacity[storage]
+
+                m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent[
+                    'discharge_max'] = \
+                    discharging[storage] / capacity[storage]
+
+        return m
