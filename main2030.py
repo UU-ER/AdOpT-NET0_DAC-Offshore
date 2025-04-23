@@ -8,30 +8,57 @@ from mes_north_sea.optimization.utilities import *
 
 test = 1
 input_data_path  = Path("mes_north_sea/data_2030")
+settings = Settings(test=test)
+settings.demand_factor = 1
 
-settings = Settings(test=1)
+write_to_network_data(settings)
+write_to_technology_data(settings)
 
-nodes = read_nodes(settings)
+# scenarios = {'Baseline': 'Baseline',
+#               'Battery_on': 'Battery (onshore only)',
+#               'Battery_off': 'Battery (offshore only)',
+#               'Battery_all': 'Battery (all)',
+#               'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
+#               'ElectricityGrid_all': 'Grid Expansion (all)',
+#               'ElectricityGrid_on': 'Grid Expansion (onshore only)',
+#               'ElectricityGrid_off': 'Grid Expansion (offshore only)',
+#               'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
+#               'Hydrogen_Baseline': 'Hydrogen (all)',
+#               'Hydrogen_H1': 'Hydrogen (no storage)',
+#               'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
+#               'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
+#               'Hydrogen_H4': 'Hydrogen (local use only)',
+#               'All': 'All Pathways'
+#              }
 
-# Create template files (comment these lines if already defined)
-adopt.create_optimization_templates(path)
-adopt.create_montecarlo_template_csv(path)
+scenarios = {'Baseline': 'Baseline',
+}
 
-# Create folder structure (comment these lines if already defined)
-adopt.create_input_data_folder_template(path)
+for stage in scenarios.keys():
 
-# Copy technology and network data into folder (comment these lines if already defined)
-adopt.copy_technology_data(path, "path to tec data")
-adopt.copy_network_data(path, "path to network data")
+    settings.new_technologies_stage = stage
 
-# Read climate data and fill carried data (comment these lines if already defined)
-adopt.load_climate_data_from_api(path)
-adopt.fill_carrier_data(path, value=0)
 
-# Construct and solve the model
-pyhub = adopt.ModelHub()
-pyhub.read_data(path)
-pyhub.quick_solve()
+    adopt.create_optimization_templates(input_data_path)
 
-# Add values of (part of) the parameters and variables to the summary file
-add_values_to_summary(Path("path to summary file"))
+    nodes = read_nodes(settings)
+    define_topology(settings, input_data_path, nodes)
+    define_configuration(input_data_path)
+
+    adopt.create_input_data_folder_template(input_data_path)
+
+    define_node_locations(input_data_path, nodes)
+    define_installed_capacities(input_data_path, settings, nodes)
+    define_new_technologies(input_data_path, settings, nodes)
+    adopt.copy_technology_data(input_data_path, Path(settings.data_path + "technology_data"))
+    define_networks(input_data_path, settings)
+    define_network_topology(input_data_path, settings)
+    adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
+    define_demand(input_data_path, settings, nodes)
+    define_generic_production(input_data_path, settings, nodes)
+    define_hydro_inflow(input_data_path, settings)
+    define_imports_exports(input_data_path, settings, nodes)
+
+    m = adopt.ModelHub()
+    m.read_data(input_data_path)
+    m.quick_solve()

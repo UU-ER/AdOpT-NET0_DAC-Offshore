@@ -1,4 +1,5 @@
 {
+  "network_type": "fluid",
   "Economics": {
     "comment": "CAPEX coefficients are in EUR, EUR/MW or EUR/MW/km, OPEX_variable in EUR/MWh total output, OPEX_fixed in % of CAPEX_annual",
     "CAPEX_model": 1,
@@ -12,7 +13,7 @@
     "lifetime": 50.0,
     "decommission_cost": 0
   },
-  "NetworkPerf": {
+  "Performance": {
     "carrier": "hydrogen",
     "bidirectional": 0,
     "loss": 4e-05,

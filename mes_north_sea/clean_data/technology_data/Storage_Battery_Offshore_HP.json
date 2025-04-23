@@ -18,7 +18,7 @@
     "lifetime": 25.0,
     "decommission_cost": 0
   },
-  "TechnologyPerf": {
+  "Performance": {
     "comment": "contains fitting data on unit of input, technology types and input/output carriers",
     "input_carrier": [
       "electricity"
@@ -33,10 +33,16 @@
       "eta_in": 0.985,
       "eta_out": 0.975,
       "lambda": 4.168664498693797e-05,
-      "theta": 0,
-      "charge_max": 1,
-      "discharge_max": 1
+      "theta": 0
     }
+  },
+  "Flexibility": {
+    "comment": "determines the flexibility of the power capacity compared to the energy capacity",
+    "power_energy_ratio": "fixedratio",
+    "charge_rate": 1,
+    "discharge_rate": 1,
+    "capex_charging_power": 0,
+    "capex_discharging_power": 0
   },
   "Units": {
     "size": "MWh",

@@ -18,7 +18,7 @@
     "lifetime": 100.0,
     "decommission_cost": 0
   },
-  "TechnologyPerf": {
+  "Performance": {
     "comment": "contains fitting data on unit of input, technology types and input/output carriers",
     "input_carrier": [
       "hydrogen",
@@ -35,14 +35,20 @@
       "eta_out": 1.0,
       "lambda": 0.0,
       "theta": 0,
-      "charge_max": 0.3333333333333333,
-      "discharge_max": 0.3333333333333333,
       "energy_consumption": {
         "in": {
           "electricity": 0.008
         }
       }
     }
+  },
+  "Flexibility": {
+    "comment": "determines the flexibility of the power capacity compared to the energy capacity",
+    "power_energy_ratio": "fixedratio",
+    "charge_rate": 0.3333333333333333,
+    "discharge_rate": 0.3333333333333333,
+    "capex_charging_power": 0,
+    "capex_discharging_power": 0
   },
   "Units": {
     "size": "MWh",

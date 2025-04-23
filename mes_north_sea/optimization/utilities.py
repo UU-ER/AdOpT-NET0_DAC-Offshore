@@ -1,11 +1,12 @@
-import src.data_management as dm
+# import src.data_management as dm
 import pandas as pd
 import numpy as np
 from types import SimpleNamespace
 import copy
-from src.model_configuration import ModelConfiguration
+# from src.model_configuration import ModelConfiguration
 import os
 import json
+import adopt_net0 as adopt
 
 
 class Settings():
@@ -18,7 +19,7 @@ class Settings():
         self.simplify_networks = 0
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-01 01:00'
+            self.end_date = '05-02 00:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
@@ -36,6 +37,76 @@ class Settings():
 
         # Demand
         self.demand_factor = 1
+
+
+def write_to_technology_data(settings):
+    data_path = settings.data_path
+    year = 2030
+    tec_data_path = settings.tec_data_path
+
+    financial_data = pd.read_excel(data_path + 'cost_technologies/TechnologyCost.xlsx', sheet_name='ToModel', skiprows=1)
+    financial_data = financial_data[financial_data['Year'] == year]
+
+    for filename in os.listdir(tec_data_path):
+        with open(os.path.join(tec_data_path, filename), 'r') as openfile:
+            # Reading from json file
+            tec_data = json.load(openfile)
+
+        new_financial_data = financial_data[financial_data['Technology'] == filename.replace('.json', '')]
+        tec_data['Economics']['unit_CAPEX'] = float(round(new_financial_data['Investment Cost'].values[0],2))
+        tec_data['Economics']['OPEX_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
+        tec_data['Economics']['OPEX_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
+        tec_data['Economics']['lifetime'] = float(round(new_financial_data['Lifetime'].values[0],0))
+        tec_data['Performance']['emission_factor'] = float(round(new_financial_data['Emission factor'].values[0],3))
+        if 'performance' in tec_data['Performance']:
+            performance_parameters = {'eta_in': 'Charging Efficiency', 'eta_out': 'Discharging Efficiency', 'lambda': 'Lambda'}
+            for para in performance_parameters.keys():
+                if para in tec_data['Performance']['performance']:
+                    tec_data['Performance']['performance'][para] = float(
+                        new_financial_data[performance_parameters[para]].values[0])
+            if 'out' in tec_data['Performance']['performance']:
+                if tec_data['tec_type'] == 'CONV1':
+                    tec_data['Performance']['performance']['out'] = [0, float(
+                            round(new_financial_data['Conv. Efficiency'].values[0], 3))]
+                else:
+                    for car in tec_data['Performance']['performance']['out']:
+                        tec_data['Performance']['performance']['out'][car] = [0, float(
+                            round(new_financial_data['Conv. Efficiency'].values[0], 3))]
+
+
+
+
+        with open(os.path.join(tec_data_path, filename), 'w') as outfile:
+            json.dump(tec_data, outfile, indent=2)
+
+
+def write_to_network_data(settings):
+    data_path = settings.data_path
+    year = settings.year
+    netw_data_path = settings.netw_data_path
+
+    financial_data = pd.read_excel(data_path + 'cost_networks/NetworkCost.xlsx', sheet_name='ToModel', skiprows=1)
+    financial_data = financial_data[financial_data['Year'] == year]
+
+    for filename in os.listdir(netw_data_path):
+        if filename.replace('.json', '') in financial_data['Network'].to_list():
+            with open(os.path.join(netw_data_path, filename), 'r') as openfile:
+                # Reading from json file
+                netw_data = json.load(openfile)
+
+            new_financial_data = financial_data[financial_data['Network'] == filename.replace('.json', '')]
+            netw_data['Economics']['gamma1'] = float(round(new_financial_data['gamma1'].values[0],2))
+            netw_data['Economics']['gamma2'] = float(round(new_financial_data['gamma2'].values[0],2))
+            netw_data['Economics']['gamma3'] = float(round(new_financial_data['gamma3'].values[0],2))
+            netw_data['Economics']['gamma4'] = float(round(new_financial_data['gamma4'].values[0],2))
+            netw_data['Economics']['OPEX_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
+            netw_data['Economics']['OPEX_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
+            netw_data['Economics']['lifetime'] = float(round(new_financial_data['Lifetime'].values[0],0))
+            netw_data['Performance']['loss'] = float(round(new_financial_data['loss'].values[0],8))
+            netw_data['Performance']['rated_capacity'] = float(round(new_financial_data['rated power'].values[0],0))
+
+            with open(os.path.join(netw_data_path, filename), 'w') as outfile:
+                json.dump(netw_data, outfile, indent=2)
 
 
 def read_nodes(settings):
@@ -64,77 +135,181 @@ def read_nodes(settings):
     return nodes
 
 
-def define_topology(settings, nodes):
-    """
-    Defines topology
-    """
-
-    start_date = settings.start_date
-    end_date = settings.end_date
-    year = 2030
-
-    # Define Topology
-    topology = dm.SystemTopology()
-    topology.define_time_horizon(year=year, start_date=start_date, end_date=end_date, resolution=1)
-
-    # Carriers
-    topology.define_carriers(['electricity', 'gas', 'hydrogen'])
-
+def define_topology(settings, input_data_path, nodes):
+    with open(input_data_path / "Topology.json", "r") as json_file:
+        topology = json.load(json_file)
     # Nodes
-    topology.define_nodes(nodes.all)
+    topology["nodes"] = list(nodes.all.keys())
+    # Carriers:
+    topology["carriers"] = ['electricity', 'gas', 'hydrogen']
+    topology["start_date"] = str(settings.year) + "-" + settings.start_date
+    topology["end_date"] = str(settings.year) + "-" + settings.end_date
+    # Investment periods:
+    topology["investment_periods"] = ["period1"]
+    # Save json template
+    with open(input_data_path / "Topology.json", "w") as json_file:
+        json.dump(topology, json_file, indent=4)
 
-    return topology
 
 
-def define_installed_capacities(settings, nodes, topology):
+def define_configuration(input_data_path):
+    # Configuration
+    with open(input_data_path / "ConfigModel.json", "r") as json_file:
+        configuration = json.load(json_file)
+
+    configuration["optimization"]["typicaldays"]["N"]["value"] = 0
+    configuration["optimization"]["typicaldays"]["method"]["value"] = 1
+
+    configuration["solveroptions"]["solver"]["value"] = 'gurobi'
+    configuration["solveroptions"]["mipgap"]["value"] = 0.02
+    configuration["solveroptions"]["lpwarmstart"]["value"] = 0
+    configuration["solveroptions"]["numericfocus"]["value"] = 3
+    configuration["solveroptions"]["timelim"]["value"] = 7*24
+    configuration["solveroptions"]["method"]["value"] = -1
+    configuration["solveroptions"]["crossover"] = {}
+    configuration["solveroptions"]["crossover"]["value"] = -1
+    configuration["solveroptions"]["nodemethod"] = {}
+    configuration["solveroptions"]["nodemethod"]["value"] = -1
+    configuration["solveroptions"]["intfeastol"]["value"] = 1e-3
+    configuration["solveroptions"]["feastol"]["value"] = 1e-3
+
+    configuration["scaling"]["scaling_on"]["value"] = 0
+    configuration["scaling"]["scaling_factors"]["energy_vars"]["value"] = 1e-2
+    configuration["scaling"]["scaling_factors"]["cost_vars"]["value"] = 1e-3
+    configuration["scaling"]["scaling_factors"]["objective"]["value"] = 1e-3
+
+    with open(input_data_path / "ConfigModel.json", "w") as json_file:
+        json.dump(configuration, json_file, indent=4)
+
+
+def define_node_locations(input_data_path, nodes):
+    node_location = pd.read_csv(input_data_path / "NodeLocations.csv", sep=';', index_col=0, header=0)
+    for _, node in node_location.iterrows():
+        node.loc["lon"] = nodes.all[node.name]["lon"]
+        node.loc["lat"] = nodes.all[node.name]["lat"]
+        node.loc["alt"] = 10
+    node_location = node_location.reset_index()
+    node_location.to_csv(input_data_path / "NodeLocations.csv", sep=';', index=False)
+
+
+def define_installed_capacities(input_data_path, settings, nodes):
     data_path = settings.data_path
-
     new_tecs = pd.read_csv(data_path + 'installed_capacities/capacities_node.csv',
-                             index_col=0)
-
+                           index_col=0)
     for node in nodes.onshore_nodes:
-        new_at_node = new_tecs[new_tecs['Node'] == node][['Technology', 'Capacity our work']].set_index('Technology').to_dict()['Capacity our work']
-        tecs_at_node = {'PowerPlant_Gas': round(new_at_node.get('Gas', 0),0),
-                        'PowerPlant_Nuclear': round(new_at_node.get('Nuclear', 0),0),
-                        'PowerPlant_Oil': round(new_at_node.get('Oil', 0),0),
-                        'PowerPlant_Coal': round(new_at_node.get('Coal & Lignite', 0),0),
-                        'Storage_PumpedHydro_Closed': round(new_at_node.get('Hydro - Pump Storage Closed Loop (Energy)', 0),0),
-                        'Storage_PumpedHydro_Open': round(new_at_node.get('Hydro - Pump Storage Open Loop (Energy)', 0),0),
-                        'Storage_PumpedHydro_Reservoir': round(new_at_node.get('Hydro - Reservoir (Energy)', 0),0),
+        with open(input_data_path / "period1" / "node_data" / node / "Technologies.json", "r") as json_file:
+            technologies = json.load(json_file)
+
+        new_at_node = \
+            new_tecs[new_tecs['Node'] == node][['Technology', 'Capacity our work']].set_index('Technology').to_dict()[
+                'Capacity our work']
+        tecs_at_node = {'PowerPlant_Gas': round(new_at_node.get('Gas', 0), 0),
+                        'PowerPlant_Nuclear': round(new_at_node.get('Nuclear', 0), 0),
+                        'PowerPlant_Oil': round(new_at_node.get('Oil', 0), 0),
+                        'PowerPlant_Coal': round(new_at_node.get('Coal & Lignite', 0), 0),
+                        'Storage_PumpedHydro_Closed': round(
+                            new_at_node.get('Hydro - Pump Storage Closed Loop (Energy)', 0),
+                            0),
+                        'Storage_PumpedHydro_Open': round(new_at_node.get('Hydro - Pump Storage Open Loop (Energy)', 0),
+                                                          0),
+                        'Storage_PumpedHydro_Reservoir': round(new_at_node.get('Hydro - Reservoir (Energy)', 0), 0),
                         }
 
-        tecs_at_node = {k: v for k,v in tecs_at_node.items() if v > 0}
+        technologies["existing"] = {k: v for k, v in tecs_at_node.items() if v > 0}
 
-        topology.define_existing_technologies(node, tecs_at_node)
+        with open(input_data_path / "period1" / "node_data" / node / "Technologies.json", "w") as json_file:
+            json.dump(technologies, json_file, indent=4)
 
-    return topology
 
 
-def define_networks(settings, topology):
+def define_new_technologies(input_data_path, settings, nodes):
+
+    data_path = settings.data_path
+
+    if settings.year == 2030:
+        new_tecs = pd.read_excel(data_path + 'new_technologies/NewTechnologies.xlsx', index_col=0,
+                                 sheet_name='NewTechnologies')
+
+    elif settings.year == 2040:
+        new_tecs = pd.read_excel(data_path + 'new_technologies/NewTechnologies_2040.xlsx', index_col=0,
+                                 sheet_name='NewTechnologies')
+
+    stage = settings.new_technologies_stage
+
+    if not stage == None:
+        for node in nodes.all.keys():
+            if not isinstance(new_tecs[stage][node], float):
+                with open(input_data_path / "period1" / "node_data" / node / "Technologies.json", "r") as json_file:
+                    technologies = json.load(json_file)
+
+                technologies["new"] = new_tecs[stage][node].split(', ')
+
+                with open(input_data_path / "period1" / "node_data" / node / "Technologies.json", "w") as json_file:
+                    json.dump(technologies, json_file, indent=4)
+
+def define_networks(input_data_path, settings):
     """
     Defines the networks
     """
+
+    stage = settings.new_technologies_stage
+    data_path = settings.data_path + 'networks/'
+
+    # H2 networks
+    if ('Hydrogen' in stage) or (stage == 'All') or (stage == 'All_RE_offshore_only'):
+        if stage != 'Hydrogen_H4':
+            new_h2_networks = ["hydrogenPipelineOffshore", "hydrogenPipelineOnshore_new", "hydrogenPipelineOnshore_re"]
+        else:
+            new_h2_networks = []
+    else:
+        new_h2_networks = []
+
+    # El networks
+    new_el_networks = []
+    if settings.year == 2040:
+        if settings.simplify_networks:
+            new_el_networks = ["electricityDC"]
+        else:
+            new_el_networks = ["electricityDC_int"]
+
+    if ('ElectricityGrid' in stage) or (stage == 'All') or (stage == 'All_wind_offshore_only'):
+        if settings.simplify_networks:
+            new_el_networks = ["electricityAC", "electricityDC"]
+        else:
+            new_el_networks = ["electricityAC", "electricityDC_int"]
+
+    with open(input_data_path / "period1" / "Networks.json", "r") as json_file:
+        networks = json.load(json_file)
+    networks["new"] = new_h2_networks + new_el_networks
+    networks["existing"] = ["electricityAC", "electricityDC"]
+
+    with open(input_data_path / "period1" / "Networks.json", "w") as json_file:
+        json.dump(networks, json_file, indent=4)
+
+
+def define_network_topology(input_data_path, settings):
+
     data_path = settings.data_path + 'networks/'
     stage = settings.new_technologies_stage
 
     def get_network_data(file_path):
         network = pd.read_csv(file_path, sep=';')
+
         network_data = {}
-        network_data['size_matrix'] = dm.create_empty_network_matrix(topology.nodes)
-        network_data['distance_matrix'] = dm.create_empty_network_matrix(topology.nodes)
-        network_data['max_size_matrix'] = dm.create_empty_network_matrix(topology.nodes)
-        network_data['connection_matrix'] = dm.create_empty_network_matrix(topology.nodes)
+        network_data['size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
+        network_data['distance_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
+        network_data['max_size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
+        network_data['connection_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0, dtype=float)
         for idx, row in network.iterrows():
-            if (row['node0'] in topology.nodes) & (row['node1'] in topology.nodes):
-                network_data['size_matrix'].at[row['node0'], row['node1']] = row['s_nom']*1000
-                network_data['size_matrix'].at[row['node1'], row['node0']] = row['s_nom']*1000
-                network_data['distance_matrix'].at[row['node0'], row['node1']] = row['length']
-                network_data['distance_matrix'].at[row['node1'], row['node0']] = row['length']
-                network_data['max_size_matrix'].at[row['node1'], row['node0']] = row['s_nom_max']*1000 - row['s_nom']*1000
-                network_data['max_size_matrix'].at[row['node0'], row['node1']] = row['s_nom_max']*1000 - row['s_nom']*1000
-                if row['s_nom_max'] > 0:
-                    network_data['connection_matrix'].at[row['node1'], row['node0']] = 1
-                    network_data['connection_matrix'].at[row['node0'], row['node1']] = 1
+            network_data['size_matrix'].at[row['node0'], row['node1']] = row['s_nom']*1000
+            network_data['size_matrix'].at[row['node1'], row['node0']] = row['s_nom']*1000
+            network_data['distance_matrix'].at[row['node0'], row['node1']] = row['length']
+            network_data['distance_matrix'].at[row['node1'], row['node0']] = row['length']
+            network_data['max_size_matrix'].at[row['node1'], row['node0']] = row['s_nom_max']*1000 - row['s_nom']*1000
+            network_data['max_size_matrix'].at[row['node0'], row['node1']] = row['s_nom_max']*1000 - row['s_nom']*1000
+            if row['s_nom_max'] > 0:
+                network_data['connection_matrix'].at[row['node1'], row['node0']] = 1
+                network_data['connection_matrix'].at[row['node0'], row['node1']] = 1
 
         return network_data
 
@@ -163,133 +338,159 @@ def define_networks(settings, topology):
         elif settings.year == 2040:
             file_name_dc = 'pyhub_el_dc_all_2040.csv'
 
-
+    # AC GRIDS
+    # Existing AC grid
     ac_data = get_network_data(data_path + file_name_ac)
+    os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityAC", exist_ok=True)
+    ac_data['connection_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "existing" / "electricityAC" / "connection.csv",
+        sep=";")
+    ac_data['distance_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "existing" / "electricityAC" / "distance.csv",
+        sep=";")
+    ac_data['size_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "existing" / "electricityAC" / "size.csv",
+        sep=";")
+    # New AC grid
+    os.makedirs(input_data_path / "period1" / "network_topology" / "new" / "electricityAC", exist_ok=True)
+    ac_data['connection_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / "electricityAC" / "connection.csv",
+        sep=";")
+    ac_data['distance_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / "electricityAC" / "distance.csv",
+        sep=";")
+    ac_data['size_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / "electricityAC" / "size_max_arcs.csv",
+        sep=";")
+
+    # DC GRIDS
+    # Existing DC grid
     dc_data = get_network_data(data_path + file_name_dc)
+    os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityDC", exist_ok=True)
+    dc_data['connection_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "existing" / "electricityDC" / "connection.csv",
+        sep=";")
+    dc_data['distance_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "existing" / "electricityDC" / "distance.csv",
+        sep=";")
+    dc_data['size_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "existing" / "electricityDC" / "size.csv",
+        sep=";")
 
-
-    topology.define_existing_network('electricityAC', size=ac_data['size_matrix'], distance=ac_data['distance_matrix'])
-    topology.define_existing_network('electricityDC', size=dc_data['size_matrix'], distance=dc_data['distance_matrix'])
-
-    if settings.simplify_networks:
-        netw_name = 'electricityDC'
-    else:
-        netw_name = 'electricityDC_int'
-
+    # New DC grid
     if ('ElectricityGrid' in stage) or (stage == 'All') or (stage == 'All_wind_offshore_only'):
-        # Networks - New Electricity AC
-        topology.define_new_network('electricityAC', connections=ac_data['connection_matrix'],
-                                    distance=ac_data['distance_matrix'],
-                                    size_max_arcs=ac_data['max_size_matrix'])
-
-
-
-        # Networks - New Electricity DC
-        if settings.simplify_networks:
-            size_dc = round(dc_data['max_size_matrix'],0)
-        else:
-            size_dc = round(dc_data['max_size_matrix'] / 2000, 0)
-        topology.define_new_network(netw_name, connections=dc_data['connection_matrix'],
-                                    distance=dc_data['distance_matrix'],
-                                    size_max_arcs=size_dc)
+        pass
     else:
         if settings.year == 2040:
             dc_data = get_network_data(data_path + 'pyhub_el_dc_re_only_2040.csv')
-            if settings.simplify_networks:
-                size_dc = round(dc_data['max_size_matrix'], 0)
-            else:
-                size_dc = round(dc_data['max_size_matrix'] / 2000, 0)
-            # Networks - New Electricity DC
-            topology.define_new_network(netw_name, connections=dc_data['connection_matrix'],
-                                        distance=dc_data['distance_matrix'],
-                                        size_max_arcs=round(size_dc, 0))
 
+    if settings.simplify_networks:
+        dc_netw_name = 'electricityDC'
+        size_dc = round(dc_data['max_size_matrix'], 0)
+    else:
+        dc_netw_name = 'electricityDC_int'
+        size_dc = round(dc_data['max_size_matrix'] / 2000, 0)
 
+    os.makedirs(input_data_path / "period1" / "network_topology" / "new" / dc_netw_name, exist_ok=True)
+    dc_data['connection_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / dc_netw_name / "connection.csv",
+        sep=";")
+    dc_data['distance_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / dc_netw_name / "distance.csv",
+        sep=";")
+    dc_data['size_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / dc_netw_name / "size_max_arcs.csv",
+        sep=";")
 
-    # Hydrogen networks
-    if ('Hydrogen' in stage) or (stage == 'All') or (stage == 'All_RE_offshore_only'):
-        if stage != 'Hydrogen_H4':
-            if settings.year == 2030:
-                file_name = 'pyhub_h2_offshore.csv'
-            elif settings.year == 2040:
-                file_name = 'pyhub_h2_offshore_2040.csv'
+    # H2 NETWORKS
+    # offshore
+    if settings.year == 2030:
+        file_name = 'pyhub_h2_offshore.csv'
+    elif settings.year == 2040:
+        file_name = 'pyhub_h2_offshore_2040.csv'
 
-            data = get_network_data(data_path + file_name)
-            topology.define_new_network('hydrogenPipelineOffshore', connections=data['connection_matrix'],
-                                        distance=data['distance_matrix'],
-                                        size_max_arcs=data['max_size_matrix'])
+    data = get_network_data(data_path + file_name)
+    netw_name = "hydrogenPipelineOffshore"
+    os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
+    data['connection_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "connection.csv",
+        sep=";")
+    data['distance_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
+        sep=";")
+    data['size_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
+        sep=";")
 
-            file_name = 'pyhub_h2_onshore_new.csv'
-            data = get_network_data(data_path + file_name)
-            topology.define_new_network('hydrogenPipelineOnshore_new', connections=data['connection_matrix'],
-                                        distance=data['distance_matrix'],
-                                        size_max_arcs=data['max_size_matrix'])
+    # onshore new
+    file_name = 'pyhub_h2_onshore_new.csv'
+    data = get_network_data(data_path + file_name)
+    netw_name = "hydrogenPipelineOnshore_new"
+    os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
+    data['connection_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "connection.csv",
+        sep=";")
+    data['distance_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
+        sep=";")
+    data['size_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
+        sep=";")
 
-            file_name = 'pyhub_h2_onshore_re.csv'
-            data = get_network_data(data_path + file_name)
-            topology.define_new_network('hydrogenPipelineOnshore_re', connections=data['connection_matrix'],
-                                        distance=data['distance_matrix'],
-                                        size_max_arcs=data['max_size_matrix'])
+    # onshore repurposed
+    file_name = 'pyhub_h2_onshore_re.csv'
+    data = get_network_data(data_path + file_name)
+    netw_name = "hydrogenPipelineOnshore_re"
+    os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
+    data['connection_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "connection.csv",
+        sep=";")
+    data['distance_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
+        sep=";")
+    data['size_matrix'].to_csv(
+        input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
+        sep=";")
 
-    return topology
+def define_demand(input_data_path, settings, nodes):
 
+    climate_year = settings.climate_year
+    model_year = settings.year
 
-def define_data_handle(topology, nodes):
-    data = dm.DataHandle(topology)
+    demand_el = pd.read_csv(settings.data_path + 'demand/' + 'TotalDemand_NT_' + str(model_year) + '_' + str(climate_year) + '.csv', index_col=0)
+    for node in nodes.onshore_nodes:
+        demand = pd.DataFrame()
+        demand["Demand"] = demand_el[node]
+        adopt.fill_carrier_data(input_data_path, value_or_data=demand, columns=['Demand'], carriers=['electricity'], nodes = [node])
+
+def define_generic_production(input_data_path, settings, nodes):
+
+    generic_production = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re.csv', index_col=0, header=[0, 1])
     for node in nodes.all.keys():
-        data.read_climate_data_from_file(node, r'.\data\climate_data_onshore.txt')
+        profile = pd.DataFrame()
+        profile["Generic production"] = generic_production.loc[:, (node, 'total')].to_numpy().round(1)
+        adopt.fill_carrier_data(input_data_path, value_or_data=profile, columns=['Generic production'], carriers=['electricity'], nodes = [node])
 
-    return data
+def define_hydro_inflow(input_data_path, settings):
 
-
-def define_generic_production(settings, nodes, data):
-
-    data_path = settings.data_path
-    profiles = pd.read_csv(data_path + 'production_profiles_re/production_profiles_re.csv', index_col=0, header=[0, 1])
-
-    for node in nodes.all.keys():
-        try:
-            profile = profiles.loc[:, (node, 'total')].to_numpy().round(1)
-            data.read_production_profile(node, 'electricity', profile, 1)
-        except KeyError:
-            pass
-
-    return data
-
-
-def define_hydro_inflow(settings, nodes, data):
-
-    data_path = settings.data_path
-
-    # Hydro Inflow
-    inflows = pd.read_csv(data_path + 'hydro_inflows\hydro_inflows.csv', index_col=0, header=[0, 1])
+    inflows = pd.read_csv(settings.data_path + 'hydro_inflows\hydro_inflows.csv', index_col=0, header=[0, 1])
 
     for col in inflows.columns:
         node = col[0]
         tec = col[1]
+        climate_data = pd.read_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";", index_col=0)
+
+        climate_data[tec] = inflows[col].tolist()[:len(climate_data)]
+
         if tec == 'Hydro - Reservoir (Energy)':
-            data.read_hydro_natural_inflow(node, 'Storage_PumpedHydro_Reservoir',
-                                           inflows[col].tolist())
+            climate_data["Storage_PumpedHydro_Reservoir_existing_inflow"] = inflows[col].tolist()[:len(climate_data)]
         elif tec == 'Hydro - Pump Storage Open Loop (Energy)':
-            data.read_hydro_natural_inflow(node, 'Storage_PumpedHydro_Open', inflows[col].tolist())
+            climate_data["Storage_PumpedHydro_Open_existing_inflow"] = inflows[col].tolist()[:len(climate_data)]
 
-    return data
-
-
-def define_demand(settings, nodes, data):
-
-    climate_year = settings.climate_year
-    model_year = settings.year
-    data_path = settings.data_path + 'demand/'
-
-    demand_el = pd.read_csv(data_path + 'TotalDemand_NT_' + str(model_year) + '_' + str(climate_year) + '.csv', index_col=0)
-    for node in nodes.onshore_nodes:
-        data.read_demand_data(node, 'electricity', demand_el[node].to_numpy() * settings.demand_factor)
-
-    return data
+        climate_data.to_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";")
 
 
-def define_imports_exports(settings, nodes, data):
+def define_imports_exports(input_data_path, settings, nodes):
 
     if settings.test == 1:
         if settings.year == 2030:
@@ -321,33 +522,37 @@ def define_imports_exports(settings, nodes, data):
 
     for node in nodes.all.keys():
         for car in import_carrier_price:
-            data.read_import_price_data(node, car, np.ones(len(data.topology.timesteps)) * import_carrier_price[car])
-        for car in export_carrier_price:
-            data.read_export_price_data(node, car, np.ones(len(data.topology.timesteps)) * export_carrier_price[car])
+            adopt.fill_carrier_data(input_data_path, value_or_data=import_carrier_price[car], columns=['Import price'],
+                                    carriers=[car], nodes=[node])
+            adopt.fill_carrier_data(input_data_path, value_or_data=import_export['Import_'+car][node], columns=['Import limit'],
+                                    carriers=[car], nodes=[node])
 
-    for node in nodes.all.keys():
-        for car in import_carrier_price:
-            data.read_import_limit_data(node, car,
-                                        np.ones(len(data.topology.timesteps)) * import_export['Import_'+car][node])
         for car in export_carrier_price:
-            data.read_export_limit_data(node, car,
-                                        np.ones(len(data.topology.timesteps)) * import_export['Export_' + car][node])
+            adopt.fill_carrier_data(input_data_path, value_or_data=export_carrier_price[car], columns=['Export price'],
+                                    carriers=[car], nodes=[node])
+            adopt.fill_carrier_data(input_data_path, value_or_data=import_export['Export_'+car][node], columns=['Export limit'],
+                                    carriers=[car], nodes=[node])
 
-    # Emission Factor
+
+
+    # Emission Factors
     import_emissions = {'electricity': 0.8}
-    for node in nodes.onshore_nodes:
-        for car in import_emissions:
-            data.read_import_emissionfactor_data(node, car, np.ones(len(data.topology.timesteps)) * import_emissions[car])
+    for car in import_emissions:
+        adopt.fill_carrier_data(input_data_path, value_or_data=import_emissions[car],
+                                columns=['Import emission factor'], carriers=[car])
 
     export_emissions = {'hydrogen': -0.108}
-    for node in nodes.onshore_nodes:
-        for car in export_emissions:
-            data.read_export_emissionfactor_data(node, car, np.ones(len(data.topology.timesteps)) * export_emissions[car])
+    for car in export_emissions:
+        adopt.fill_carrier_data(input_data_path, value_or_data=export_emissions[car],
+                                columns=['Export emission factor'], carriers=[car], nodes = nodes.onshore_nodes)
 
     # Emission Price
-    data.read_carbon_price_data(carbontax * np.ones(len(data.topology.timesteps)), 'tax')
-
-    return data
+    for node in nodes.all.keys():
+        carbon_cost_path = input_data_path / "period1" / "node_data" / node / "CarbonCost.csv"
+        carbon_cost_template = pd.read_csv(carbon_cost_path, sep=';', index_col=0, header=0)
+        carbon_cost_template['price'] = carbontax
+        carbon_cost_template = carbon_cost_template.reset_index()
+        carbon_cost_template.to_csv(carbon_cost_path, sep=';', index=False)
 
 
 def define_charging_efficiencies(settings, nodes, data):
@@ -388,125 +593,3 @@ def define_charging_efficiencies(settings, nodes, data):
 
     return data
 
-
-def define_new_technologies(settings, nodes, topology):
-
-    data_path = settings.data_path
-
-    if settings.year == 2030:
-        new_tecs = pd.read_excel(data_path + 'new_technologies/NewTechnologies.xlsx', index_col=0,
-                                 sheet_name='NewTechnologies')
-
-    elif settings.year == 2040:
-        new_tecs = pd.read_excel(data_path + 'new_technologies/NewTechnologies_2040.xlsx', index_col=0,
-                                 sheet_name='NewTechnologies')
-
-    stage = settings.new_technologies_stage
-
-    if not stage == None:
-        for node in nodes.all.keys():
-            if not isinstance(new_tecs[stage][node], float):
-                new_technologies = new_tecs[stage][node].split(', ')
-                topology.define_new_technologies(node, new_technologies)
-
-    return topology
-
-
-def define_configuration():
-    # Configuration
-    configuration = ModelConfiguration()
-    configuration.solveroptions.solver = 'gurobi'
-    configuration.solveroptions.mipgap = 0.02
-    configuration.solveroptions.lpwarmstart = 0
-    configuration.solveroptions.numericfocus = 3
-    configuration.optimization.save_log_files = 1
-    configuration.optimization.monte_carlo.on = 0
-    configuration.optimization.monte_carlo.N = 5
-    configuration.optimization.typicaldays.N = 0
-    configuration.solveroptions.timelim = 7*24
-    configuration.solveroptions.method = -1
-    configuration.solveroptions.crossover = -1
-    configuration.solveroptions.nodemethod = -1
-
-    configuration.solveroptions.intfeastol = 1e-3
-    configuration.solveroptions.feastol = 1e-3
-    # configuration.solveroptions.numericfocus = -1
-    # configuration.optimization.objective = 'pareto'
-    # configuration.optimization.pareto_points = 6
-
-    configuration.scaling = 0
-    configuration.scaling_factors = SimpleNamespace()
-    configuration.scaling_factors.energy_vars = 1e-2
-    configuration.scaling_factors.cost_vars = 1e-3
-    configuration.scaling_factors.objective = 1e-3
-
-    return configuration
-
-def write_to_technology_data(settings):
-    data_path = settings.data_path
-    year = 2030
-    tec_data_path = settings.tec_data_path
-
-    financial_data = pd.read_excel(data_path + 'cost_technologies/TechnologyCost.xlsx', sheet_name='ToModel', skiprows=1)
-    financial_data = financial_data[financial_data['Year'] == year]
-
-    for filename in os.listdir(tec_data_path):
-        with open(os.path.join(tec_data_path, filename), 'r') as openfile:
-            # Reading from json file
-            tec_data = json.load(openfile)
-
-        new_financial_data = financial_data[financial_data['Technology'] == filename.replace('.json', '')]
-        tec_data['Economics']['unit_CAPEX'] = float(round(new_financial_data['Investment Cost'].values[0],2))
-        tec_data['Economics']['OPEX_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
-        tec_data['Economics']['OPEX_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
-        tec_data['Economics']['lifetime'] = float(round(new_financial_data['Lifetime'].values[0],0))
-        tec_data['TechnologyPerf']['emission_factor'] = float(round(new_financial_data['Emission factor'].values[0],3))
-        if 'performance' in tec_data['TechnologyPerf']:
-            performance_parameters = {'eta_in': 'Charging Efficiency', 'eta_out': 'Discharging Efficiency', 'lambda': 'Lambda'}
-            for para in performance_parameters.keys():
-                if para in tec_data['TechnologyPerf']['performance']:
-                    tec_data['TechnologyPerf']['performance'][para] = float(
-                        new_financial_data[performance_parameters[para]].values[0])
-            if 'out' in tec_data['TechnologyPerf']['performance']:
-                if tec_data['tec_type'] == 'CONV1':
-                    tec_data['TechnologyPerf']['performance']['out'] = [0, float(
-                            round(new_financial_data['Conv. Efficiency'].values[0], 3))]
-                else:
-                    for car in tec_data['TechnologyPerf']['performance']['out']:
-                        tec_data['TechnologyPerf']['performance']['out'][car] = [0, float(
-                            round(new_financial_data['Conv. Efficiency'].values[0], 3))]
-
-
-
-
-        with open(os.path.join(tec_data_path, filename), 'w') as outfile:
-            json.dump(tec_data, outfile, indent=2)
-
-
-def write_to_network_data(settings):
-    data_path = settings.data_path
-    year = settings.year
-    netw_data_path = settings.netw_data_path
-
-    financial_data = pd.read_excel(data_path + 'cost_networks/NetworkCost.xlsx', sheet_name='ToModel', skiprows=1)
-    financial_data = financial_data[financial_data['Year'] == year]
-
-    for filename in os.listdir(netw_data_path):
-        if filename.replace('.json', '') in financial_data['Network'].to_list():
-            with open(os.path.join(netw_data_path, filename), 'r') as openfile:
-                # Reading from json file
-                netw_data = json.load(openfile)
-
-            new_financial_data = financial_data[financial_data['Network'] == filename.replace('.json', '')]
-            netw_data['Economics']['gamma1'] = float(round(new_financial_data['gamma1'].values[0],2))
-            netw_data['Economics']['gamma2'] = float(round(new_financial_data['gamma2'].values[0],2))
-            netw_data['Economics']['gamma3'] = float(round(new_financial_data['gamma3'].values[0],2))
-            netw_data['Economics']['gamma4'] = float(round(new_financial_data['gamma4'].values[0],2))
-            netw_data['Economics']['OPEX_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
-            netw_data['Economics']['OPEX_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
-            netw_data['Economics']['lifetime'] = float(round(new_financial_data['Lifetime'].values[0],0))
-            netw_data['NetworkPerf']['loss'] = float(round(new_financial_data['loss'].values[0],8))
-            netw_data['NetworkPerf']['rated_capacity'] = float(round(new_financial_data['rated power'].values[0],0))
-
-            with open(os.path.join(netw_data_path, filename), 'w') as outfile:
-                json.dump(netw_data, outfile, indent=2)
