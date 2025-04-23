@@ -158,7 +158,7 @@ def define_configuration(input_data_path):
         configuration = json.load(json_file)
 
     configuration["optimization"]["typicaldays"]["N"]["value"] = 0
-    configuration["optimization"]["typicaldays"]["method"]["value"] = 1
+    configuration["optimization"]["typicaldays"]["method"]["value"] = 2
 
     configuration["solveroptions"]["solver"]["value"] = 'gurobi'
     configuration["solveroptions"]["mipgap"]["value"] = 0.02
@@ -172,6 +172,9 @@ def define_configuration(input_data_path):
     configuration["solveroptions"]["nodemethod"]["value"] = -1
     configuration["solveroptions"]["intfeastol"]["value"] = 1e-3
     configuration["solveroptions"]["feastol"]["value"] = 1e-3
+
+    configuration["reporting"]["save_summary_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/2030_250423"
+    configuration["reporting"]["save_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/2030_250423"
 
     configuration["scaling"]["scaling_on"]["value"] = 0
     configuration["scaling"]["scaling_factors"]["energy_vars"]["value"] = 1e-2
