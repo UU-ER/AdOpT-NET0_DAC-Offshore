@@ -7,10 +7,10 @@ import numpy as np
 from mes_north_sea.optimization.utilities import *
 
 test = 1
-input_data_path  = Path("mes_north_sea/data_2030")
 settings = Settings(test=test)
 settings.demand_factor = 1
 
+input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
@@ -43,7 +43,7 @@ for stage in scenarios.keys():
 
     nodes = read_nodes(settings)
     define_topology(settings, input_data_path, nodes)
-    define_configuration(input_data_path)
+    define_configuration(input_data_path, settings)
 
     adopt.create_input_data_folder_template(input_data_path)
 

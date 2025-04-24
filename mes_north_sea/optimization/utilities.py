@@ -19,7 +19,7 @@ class Settings():
         self.simplify_networks = 0
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-02 00:00'
+            self.end_date = '05-01 01:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
@@ -152,7 +152,7 @@ def define_topology(settings, input_data_path, nodes):
 
 
 
-def define_configuration(input_data_path):
+def define_configuration(input_data_path, settings):
     # Configuration
     with open(input_data_path / "ConfigModel.json", "r") as json_file:
         configuration = json.load(json_file)
@@ -173,8 +173,8 @@ def define_configuration(input_data_path):
     configuration["solveroptions"]["intfeastol"]["value"] = 1e-3
     configuration["solveroptions"]["feastol"]["value"] = 1e-3
 
-    configuration["reporting"]["save_summary_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/2030_250423"
-    configuration["reporting"]["save_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/2030_250423"
+    configuration["reporting"]["save_summary_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/" + str(settings.year) + "_250423"
+    configuration["reporting"]["save_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/" + str(settings.year) + "_250423"
 
     configuration["scaling"]["scaling_on"]["value"] = 0
     configuration["scaling"]["scaling_factors"]["energy_vars"]["value"] = 1e-2
