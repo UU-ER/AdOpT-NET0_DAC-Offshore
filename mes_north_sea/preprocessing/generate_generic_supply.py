@@ -12,6 +12,8 @@ def divide_dataframe(df, n):
 
 c = Configuration()
 
+c.climate_year = 2008
+
 # Build DF
 nuts = c.nodekeys_nuts['NUTS_ID'].unique()
 sources = ['PV', 'Wind onshore', 'Run of River', 'Wind offshore', 'Biomass']
@@ -24,29 +26,29 @@ cap_nuts = pd.read_csv(c.clean_data_path + 'clean_data/installed_capacities/capa
 
 ReCalc = CalculateReGeneration()
 for idx, nuts_region in cap_nuts.iterrows():
-    location = SimpleNamespace()
+    location = {}
     print(nuts_region['NUTS_ID'])
     if nuts_region['NUTS_ID'] == 'DK01':
-        location.lat = 55.8
-        location.lon = 12.43
+        location["lat"] = 55.8
+        location["lon"] = 12.43
     elif nuts_region['NUTS_ID'] == 'DK05':
-        location.lat = 56.96
-        location.lon = 9.817
+        location["lat"] = 56.96
+        location["lon"] = 9.817
     else:
-        location.lat = nuts_region['lat']
-        location.lon = nuts_region['lon']
-    location.altitude = 10
+        location["lat"] = nuts_region['lat']
+        location["lon"] = nuts_region['lon']
+    location["alt"] = 10
 
     climate_data = pd.read_csv(c.load_path_climate_data + nuts_region['NUTS_ID'] + '_' + str(c.climate_year) + '.csv', index_col=0)
     climate_data.index = pd.date_range(start=str(c.climate_year)+'-01-01 00:00', end=str(c.climate_year)+'-12-31 23:00', freq='1h')
 
     ReCalc.fit_technology_performance(climate_data, 'PV', location)
     production_profiles_nuts[nuts_region['NUTS_ID'], 'PV'] = \
-        ReCalc.fitted_performance.coefficients['capfactor'] * nuts_region['Capacity_PV_2030']
+        ReCalc.processed_coeff.time_dependent_full["capfactor"] * nuts_region['Capacity_PV_2030']
 
     ReCalc.fit_technology_performance(climate_data, 'Wind', location)
     production_profiles_nuts[nuts_region['NUTS_ID'], 'Wind onshore'] = \
-        ReCalc.fitted_performance.coefficients['capfactor'] * nuts_region['Capacity_Wind_on_2030']
+        ReCalc.processed_coeff.time_dependent_full["capfactor"] * nuts_region['Capacity_Wind_on_2030']
 
 
 production_profiles_nodes = production_profiles_nuts.T.reset_index().merge(c.nodekeys_nuts[['NUTS_ID', 'Node']],
@@ -57,13 +59,12 @@ production_profiles_nodes = production_profiles_nodes.groupby(['Node', 'Profile'
 
 # Norway
 scenario = 'National Trends'
-climate_year = 'CY 1995'
 year = 2030
 parameter = 'Capacity (MW)'
 tyndp_caps = pd.read_excel(c.load_path_tyndp_cap, sheet_name='Capacity & Dispatch')
 tyndp_caps = tyndp_caps[tyndp_caps['Scenario'] == scenario]
 tyndp_caps = tyndp_caps[tyndp_caps['Year'] == year]
-tyndp_caps = tyndp_caps[tyndp_caps['Climate Year'] == climate_year]
+tyndp_caps = tyndp_caps[tyndp_caps['Climate Year'] == 'CY 1995']
 tyndp_caps = tyndp_caps[tyndp_caps['Parameter'] == parameter]
 tyndp_caps['Node'] = tyndp_caps['Node'].replace('DKKF', 'DK00')
 tyndp_caps['Node'] = tyndp_caps['Node'].replace('UKNI', 'UK00')
@@ -74,10 +75,10 @@ tyndp_caps = tyndp_caps[tyndp_caps['Country'] == 'NO']
 solar_cap_no = tyndp_caps.loc[tyndp_caps['Technology'] == 'Solar', ('Capacity '
                                                                     'TYNDP')].sum()
 
-location = SimpleNamespace()
-location.lat = 59.95
-location.lon = 10.73
-location.altitude = 10
+location = {}
+location["lat"] = 59.95
+location["lon"] = 10.73
+location["alt"] = 10
 climate_data = pd.read_csv(
     c.load_path_climate_data + "NO1" + '_' + str(
         c.climate_year) + '.csv', index_col=0)
@@ -86,7 +87,7 @@ climate_data.index = pd.date_range(start=str(c.climate_year) + '-01-01 00:00',
 
 ReCalc.fit_technology_performance(climate_data, 'PV', location)
 pv_gen = \
-    ReCalc.fitted_performance.coefficients['capfactor'] * solar_cap_no
+    ReCalc.processed_coeff.time_dependent_full["capfactor"] * solar_cap_no
 
 wind_gen = np.zeros(8760)
 for bidding_zone in tyndp_caps['Node'].unique():
@@ -148,6 +149,6 @@ totals.columns = pd.MultiIndex.from_product([totals.columns, ['total']], names=[
 
 production_profiles_nodes = pd.concat([production_profiles_nodes, totals], axis=1)
 
-production_profiles_nodes.to_csv(c.clean_data_path + 'clean_data/production_profiles_re/production_profiles_re.csv')
+production_profiles_nodes.to_csv(c.clean_data_path + 'clean_data/production_profiles_re/production_profiles_re' + str(c.climate_year) + '.csv')
 
 

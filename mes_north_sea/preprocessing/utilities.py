@@ -1,7 +1,8 @@
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
-from src.components.technologies.genericTechnologies.res import Res
-from src.components.technologies.utilities import FittedPerformance
+from adopt_net0.components.technologies.genericTechnologies.res import Res
 
 class Configuration:
     def __init__(self):
@@ -86,15 +87,19 @@ def to_latex(df, caption, path, rounding=0, columns=None):
 
 class CalculateReGeneration(Res):
     def __init__(self):
-        self.fitted_performance = FittedPerformance()
         self.name = 'WindTurbine_Onshore_1500'
+        self.processed_coeff = SimpleNamespace()
+        self.processed_coeff.time_dependent_full={}
+        self.processed_coeff.time_independent={}
+
+        self.input_parameters = SimpleNamespace()
 
     def fit_technology_performance(self, climate_data, technology, location):
         if technology == 'PV':
-            self._perform_fitting_PV(climate_data, location)
+            self._perform_fitting_pv(climate_data, location)
         elif technology == 'Wind':
             hubheight = 110
-            self._perform_fitting_WT(climate_data, hubheight)
+            self._perform_fitting_wt(climate_data, hubheight)
 
 
 

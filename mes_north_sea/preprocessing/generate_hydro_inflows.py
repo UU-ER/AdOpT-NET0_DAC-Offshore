@@ -39,6 +39,6 @@ for hydro_tec in hydro_tecs.keys():
 
 hydro_inflows_nodes.columns = pd.MultiIndex.from_tuples(hydro_inflows_nodes.columns)
 
-hydro_inflows_nodes.to_csv(c.clean_data_path + 'clean_data/hydro_inflows/hydro_inflows.csv')
+hydro_inflows_nodes.to_csv(c.clean_data_path + 'clean_data/hydro_inflows/hydro_inflows' + str(c.climate_year) + '.csv')
 
-to_latex(hydro_inflows_nodes.sum()/1000000, 'Hydro Inflows in TWh (aggregated per Country and per technology)', c.clean_data_path + 'reporting/hydro_inflows/hydro_inflows.tex', rounding=2, columns=None)
+# to_latex(hydro_inflows_nodes.sum()/1000000, 'Hydro Inflows in TWh (aggregated per Country and per technology)', c.clean_data_path + 'reporting/hydro_inflows/hydro_inflows.tex', rounding=2, columns=None)
