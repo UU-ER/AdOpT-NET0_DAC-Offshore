@@ -19,7 +19,7 @@ class Settings():
         self.simplify_networks = 0
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-01 01:00'
+            self.end_date = '05-02 01:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
@@ -467,16 +467,18 @@ def define_demand(input_data_path, settings, nodes):
         adopt.fill_carrier_data(input_data_path, value_or_data=demand, columns=['Demand'], carriers=['electricity'], nodes = [node])
 
 def define_generic_production(input_data_path, settings, nodes):
+    climate_year = settings.climate_year
 
-    generic_production = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re.csv', index_col=0, header=[0, 1])
+    generic_production = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re' + str(climate_year) + '.csv', index_col=0, header=[0, 1])
     for node in nodes.all.keys():
         profile = pd.DataFrame()
         profile["Generic production"] = generic_production.loc[:, (node, 'total')].to_numpy().round(1)
         adopt.fill_carrier_data(input_data_path, value_or_data=profile, columns=['Generic production'], carriers=['electricity'], nodes = [node])
 
 def define_hydro_inflow(input_data_path, settings):
+    climate_year = settings.climate_year
 
-    inflows = pd.read_csv(settings.data_path + 'hydro_inflows\hydro_inflows.csv', index_col=0, header=[0, 1])
+    inflows = pd.read_csv(settings.data_path + 'hydro_inflows\hydro_inflows' + str(climate_year) + '.csv', index_col=0, header=[0, 1])
 
     for col in inflows.columns:
         node = col[0]

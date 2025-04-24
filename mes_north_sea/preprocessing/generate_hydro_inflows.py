@@ -11,6 +11,8 @@ def divide_dataframe(df, n):
 
 c = Configuration()
 
+c.climate_year = 1995
+
 hydro_inflows_nodes = pd.DataFrame()
 
 cap_nodes = pd.read_csv(c.clean_data_path + 'clean_data/installed_capacities/capacities_node.csv')

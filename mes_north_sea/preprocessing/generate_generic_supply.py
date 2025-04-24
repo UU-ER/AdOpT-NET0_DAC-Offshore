@@ -55,7 +55,7 @@ production_profiles_nodes = production_profiles_nuts.T.reset_index().merge(c.nod
                                  left_on=production_profiles_nuts.T.reset_index()['Nuts'],
                                  right_on=['NUTS_ID'])
 production_profiles_nodes = production_profiles_nodes.drop(columns=['NUTS_ID', 'Nuts'])
-production_profiles_nodes = production_profiles_nodes.groupby(['Node', 'Profile']).sum().T
+production_profiles_nodes = production_profiles_nodes.groupby(['Node', 'Profile']).sum().T[0:8760]
 
 # Norway
 scenario = 'National Trends'
@@ -100,8 +100,8 @@ for bidding_zone in tyndp_caps['Node'].unique():
         prod = cap_factor[c.climate_year] * float(cap)
     wind_gen = wind_gen + np.array(prod.fillna(0)[0:8760])
 
-production_profiles_nodes[('NO1', 'PV')] = pv_gen
-production_profiles_nodes[('NO1', 'Wind onshore')] = wind_gen
+production_profiles_nodes[('NO1', 'PV')] = pv_gen[0:8760]
+production_profiles_nodes[('NO1', 'Wind onshore')] = wind_gen[0:8760]
 
 # Run of River
 cap_nodes = pd.read_csv(c.clean_data_path + 'clean_data/installed_capacities/capacities_node.csv')
@@ -140,8 +140,9 @@ for node in cap_offshore['NODE_2'].unique():
     cap_at_node = cap_offshore[cap_offshore['NODE_2'] == node]
     total_generation = np.zeros([8760,1])
     for idx, park in cap_at_node.iterrows():
-        total_generation = total_generation + \
-                           park['POWER_MW'] * pd.read_csv(load_path_profile + park['NAME'].replace('/', '-') + '_' + str(c.climate_year) + '.csv', header=None).to_numpy()
+        park_generation = park['POWER_MW'] * pd.read_csv(load_path_profile + park['NAME'].replace('/', '-') + '_' + str(c.climate_year) + '.csv', header=None).to_numpy()
+        total_generation = total_generation + park_generation[0:8760]
+
     production_profiles_nodes.loc[:, (node,'Wind offshore')] = total_generation.flatten()
 
 totals = production_profiles_nodes.T.groupby('Node').sum().T
