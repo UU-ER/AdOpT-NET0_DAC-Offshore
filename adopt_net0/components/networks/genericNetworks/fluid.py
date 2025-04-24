@@ -141,14 +141,6 @@ class Fluid(Network):
             initialize=init_cons_receive2,
         )
 
-        # Consumption at each node
-        b_netw.var_consumption = pyo.Var(
-            self.set_t,
-            b_netw.set_consumed_carriers,
-            self.set_nodes,
-            domain=pyo.NonNegativeReals,
-        )
-
         return b_netw
 
     def _calculate_energy_consumption(self):
