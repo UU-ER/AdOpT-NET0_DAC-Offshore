@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 1
+test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 
@@ -15,25 +15,25 @@ input_data_path  = Path("mes_north_sea/data_" + str(settings.year) + "_clustered
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
-scenarios = {'Baseline': 'Baseline',
-              'Battery_on': 'Battery (onshore only)',
-              'Battery_off': 'Battery (offshore only)',
-              'Battery_all': 'Battery (all)',
-              'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
-              'ElectricityGrid_all': 'Grid Expansion (all)',
-              'ElectricityGrid_on': 'Grid Expansion (onshore only)',
-              'ElectricityGrid_off': 'Grid Expansion (offshore only)',
-              'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
-              'Hydrogen_Baseline': 'Hydrogen (all)',
-              'Hydrogen_H1': 'Hydrogen (no storage)',
-              'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
-              'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
-              'Hydrogen_H4': 'Hydrogen (local use only)',
-              'All': 'All Pathways'
-             }
+# scenarios = {'Baseline': 'Baseline',
+#               'Battery_on': 'Battery (onshore only)',
+#               'Battery_off': 'Battery (offshore only)',
+#               'Battery_all': 'Battery (all)',
+#               'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
+#               'ElectricityGrid_all': 'Grid Expansion (all)',
+#               'ElectricityGrid_on': 'Grid Expansion (onshore only)',
+#               'ElectricityGrid_off': 'Grid Expansion (offshore only)',
+#               'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
+#               'Hydrogen_Baseline': 'Hydrogen (all)',
+#               'Hydrogen_H1': 'Hydrogen (no storage)',
+#               'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
+#               'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
+#               'Hydrogen_H4': 'Hydrogen (local use only)',
+#               'All': 'All Pathways'
+#              }
 
-# scenarios = {'Hydrogen_Baseline': 'Hydrogen (all)',
-# }
+scenarios = {'Baseline': 'Baseline',
+}
 
 for stage in scenarios.keys():
     for cy in [2009]:
@@ -49,7 +49,7 @@ for stage in scenarios.keys():
 
         with open(input_data_path / "ConfigModel.json", "r") as json_file:
             configuration = json.load(json_file)
-        configuration["optimization"]["typicaldays"]["N"]["value"] = 1
+        configuration["optimization"]["typicaldays"]["N"]["value"] = 20
         with open(input_data_path / "ConfigModel.json", "w") as json_file:
             json.dump(configuration, json_file, indent=4)
 
