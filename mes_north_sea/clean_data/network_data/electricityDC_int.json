@@ -17,6 +17,7 @@
     "carrier": "electricity",
     "rated_capacity": 1000.0,
     "bidirectional_network": 1,
+    "bidirectional_network_precise": 0,
     "loss": 4e-05,
     "min_transport": 0,
     "loss2emissions": 0,
