@@ -56,9 +56,14 @@ for stage in scenarios.keys():
         define_networks(input_data_path, settings)
         define_network_topology(input_data_path, settings)
         adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
+
+        settings.climate_year = 2008
         define_demand(input_data_path, settings, nodes)
+
+        settings.climate_year = 2009
         define_generic_production(input_data_path, settings, nodes)
         define_hydro_inflow(input_data_path, settings)
+
         define_imports_exports(input_data_path, settings, nodes)
 
         m = adopt.ModelHub()
