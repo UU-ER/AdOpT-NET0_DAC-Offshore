@@ -53,9 +53,9 @@ def write_to_technology_data(settings):
             tec_data = json.load(openfile)
 
         new_financial_data = financial_data[financial_data['Technology'] == filename.replace('.json', '')]
-        tec_data['Economics']['unit_CAPEX'] = float(round(new_financial_data['Investment Cost'].values[0],2))
-        tec_data['Economics']['OPEX_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
-        tec_data['Economics']['OPEX_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
+        tec_data['Economics']['unit_capex'] = float(round(new_financial_data['Investment Cost'].values[0],2))
+        tec_data['Economics']['opex_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
+        tec_data['Economics']['opex_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
         tec_data['Economics']['lifetime'] = float(round(new_financial_data['Lifetime'].values[0],0))
         tec_data['Performance']['emission_factor'] = float(round(new_financial_data['Emission factor'].values[0],3))
         if 'performance' in tec_data['Performance']:
@@ -99,8 +99,8 @@ def write_to_network_data(settings):
             netw_data['Economics']['gamma2'] = float(round(new_financial_data['gamma2'].values[0],2))
             netw_data['Economics']['gamma3'] = float(round(new_financial_data['gamma3'].values[0],2))
             netw_data['Economics']['gamma4'] = float(round(new_financial_data['gamma4'].values[0],2))
-            netw_data['Economics']['OPEX_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
-            netw_data['Economics']['OPEX_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
+            netw_data['Economics']['opex_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
+            netw_data['Economics']['opex_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))
             netw_data['Economics']['lifetime'] = float(round(new_financial_data['Lifetime'].values[0],0))
             netw_data['Performance']['loss'] = float(round(new_financial_data['loss'].values[0],8))
             netw_data['Performance']['rated_capacity'] = float(round(new_financial_data['rated power'].values[0],0))
@@ -159,6 +159,9 @@ def define_configuration(input_data_path, settings):
 
     configuration["optimization"]["typicaldays"]["N"]["value"] = 0
     configuration["optimization"]["typicaldays"]["method"]["value"] = 2
+    configuration["optimization"]["monte_carlo"]["N"]["value"] = 0
+    configuration["optimization"]["monte_carlo"]["sd"]["value"] = 0.5
+    configuration["optimization"]["monte_carlo"]["on_what"]["value"] = ["Technologies", "Networks", "Import", "Export"]
 
     configuration["solveroptions"]["solver"]["value"] = 'gurobi'
     configuration["solveroptions"]["mipgap"]["value"] = 0.02
