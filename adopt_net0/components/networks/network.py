@@ -906,7 +906,6 @@ class Network(ModelComponent):
                 b_netw.para_opex_fixed
                 * (
                     sum(b_netw.arc_block[arc].var_capex_aux for arc in arc_set)
-                    / annualization_factor
                 )
                 == b_netw.var_opex_fixed
             )
