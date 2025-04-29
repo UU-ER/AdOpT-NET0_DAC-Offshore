@@ -511,7 +511,8 @@ def define_imports_exports(input_data_path, settings, nodes):
 
     else:
         if settings.year == 2030:
-            data_path = settings.data_path + 'import_export/ImportExport_realistic.xlsx'
+            # data_path = settings.data_path + 'import_export/ImportExport_realistic.xlsx'
+            data_path = settings.data_path + 'import_export/ImportExport_unlimited.xlsx'
             carbontax = 80
 
         elif settings.year == 2040:
@@ -534,6 +535,7 @@ def define_imports_exports(input_data_path, settings, nodes):
                                     carriers=[car], nodes=[node])
             adopt.fill_carrier_data(input_data_path, value_or_data=import_export['Import_'+car][node], columns=['Import limit'],
                                     carriers=[car], nodes=[node])
+            print(f"{node} {car} {import_export['Import_'+car][node]}")
 
         for car in export_carrier_price:
             adopt.fill_carrier_data(input_data_path, value_or_data=export_carrier_price[car], columns=['Export price'],
