@@ -1065,7 +1065,9 @@ class ModelHub:
                         for tec in (
                             model.periods[period].node_blocks[node].tech_blocks_active
                         ):
-                            if not self.data.technology_data[period][node][tec].existing:
+                            if not self.data.technology_data[period][node][
+                                tec
+                            ].existing:
                                 self._monte_carlo_technologies(period, node, tec)
 
             if "Networks" in monte_carlo_on:
@@ -1077,11 +1079,10 @@ class ModelHub:
             if "Import" in monte_carlo_on:
                 self._monte_carlo_import_parameters()
                 import_constraint_reconstruction = True
-                export_constraint_reconstruction = True
 
-            # if "Export" in monte_carlo_on:
-            #     self._monte_carlo_export_parameters()
-            #     export_constraint_reconstruction = True
+            if "Export" in monte_carlo_on:
+                self._monte_carlo_export_parameters()
+                export_constraint_reconstruction = True
 
         elif monte_carlo_type == "uniform_dis_from_file":
             MC_parameters = self.data.monte_carlo_specs
@@ -1125,7 +1126,7 @@ class ModelHub:
                                                     period, node, tec, new_row
                                                 )
                                             else:
-                                                log_msg = f"Parameter unit_capex is not defined for {tec} in MonteCarlo.csv"
+                                                log_msg = f"Parameter unit_CAPEX is not defined for {tec} in MonteCarlo.csv"
                                                 log.warning(log_msg)
 
                                     else:
@@ -1167,13 +1168,12 @@ class ModelHub:
 
                 elif row["type"] == "Import":
                     import_constraint_reconstruction = True
-                    export_constraint_reconstruction = True
                     car = row["name"]
                     self._monte_carlo_import_parameters(car, row)
-                # elif row["type"] == "Export":
-                #     export_constraint_reconstruction = True
-                #     car = row["name"]
-                #     self._monte_carlo_export_parameters(car, row)
+                elif row["type"] == "Export":
+                    export_constraint_reconstruction = True
+                    car = row["name"]
+                    self._monte_carlo_export_parameters(car, row)
 
         if import_constraint_reconstruction:
             self._monte_carlo_import_constraints()
@@ -1378,16 +1378,6 @@ class ModelHub:
         config = self.data.model_config
         model = self.model[aggregation_model]
 
-        if MC_ranges is None:
-            sd = config["optimization"]["monte_carlo"]["sd"][
-                "value"
-            ]
-            random_factor = np.random.normal(1, sd)
-        else:
-            random_factor = random.uniform(
-                MC_ranges["min"], MC_ranges["max"]
-            )
-
         for period in model.periods:
             b_period = model.periods[period]
             set_t = get_set_t(config, b_period)
@@ -1402,20 +1392,22 @@ class ModelHub:
                         import_prices = self.data.time_series[aggregation_data][
                             period, node, "CarrierData", car, "Import price"
                         ]
-                        export_prices = self.data.time_series[aggregation_data][
-                            period, node, "CarrierData", car, "Export price"
-                        ]
 
                         for t in set_t:
+                            if MC_ranges is None:
+                                sd = config["optimization"]["monte_carlo"]["sd"][
+                                    "value"
+                                ]
+                                random_factor = np.random.normal(1, sd)
+                            else:
+                                random_factor = random.uniform(
+                                    MC_ranges["min"], MC_ranges["max"]
+                                )
+
                             # Update parameter
                             model.periods[period].node_blocks[node].para_import_price[
                                 t, car
                             ] = (import_prices.iloc[t - 1] * random_factor)
-
-                            model.periods[period].node_blocks[node].para_export_price[
-                                t, car
-                            ] = (export_prices.iloc[t - 1] * random_factor)
-
 
     def _monte_carlo_import_constraints(self):
         """
@@ -1432,6 +1424,47 @@ class ModelHub:
             b_period_cost.const_cost_import = construct_import_costs(
                 b_period, self.data, period
             )
+
+    def _monte_carlo_export_parameters(self, on_car=None, MC_ranges=None):
+        """
+        Changes the import prices
+        """
+        aggregation_model = self.info_solving_algorithms["aggregation_model"]
+        aggregation_data = self.info_solving_algorithms["aggregation_data"]
+
+        config = self.data.model_config
+        model = self.model[aggregation_model]
+
+        for period in model.periods:
+            b_period = model.periods[period]
+            set_t = get_set_t(config, b_period)
+
+            for node in b_period.node_blocks:
+                if on_car is None:
+                    # change for all carriers at node
+                    on_car = model.periods[period].node_blocks[node].set_carriers
+
+                for car in model.periods[period].node_blocks[node].set_carriers:
+                    if car in on_car:
+                        export_prices = self.data.time_series[aggregation_data][
+                            period, node, "CarrierData", car, "Export price"
+                        ]
+
+                        for t in set_t:
+                            if MC_ranges is None:
+                                sd = config["optimization"]["monte_carlo"]["sd"][
+                                    "value"
+                                ]
+                                random_factor = np.random.normal(1, sd)
+                            else:
+                                random_factor = random.uniform(
+                                    MC_ranges["min"], MC_ranges["max"]
+                                )
+
+                            # Update parameter
+                            model.periods[period].node_blocks[node].para_export_price[
+                                t, car
+                            ] = (export_prices.iloc[t - 1] * random_factor)
 
     def _monte_carlo_export_constraints(self):
         """
@@ -1496,9 +1529,7 @@ class ModelHub:
             def size_constraint_block_tecs_init(block, period, node):
                 def size_constraints_tecs_init(const, tec):
                     if (
-                        self.data.technology_data[period][node][
-                            tec
-                        ].technology_model
+                        self.data.technology_data[period][node][tec].technology_model
                         == "STOR"
                         and bounds_on == "no_storage"
                     ):

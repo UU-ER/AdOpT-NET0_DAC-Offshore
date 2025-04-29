@@ -5,7 +5,7 @@ from ..utilities import (
     perform_disjunct_relaxation,
     determine_variable_scaling,
     determine_constraint_scaling,
-    get_attribute_from_dict
+    get_attribute_from_dict,
 )
 
 import pandas as pd
@@ -213,12 +213,12 @@ class Network(ModelComponent):
             # Use initial size
             time_independent["size_max_arcs"] = time_independent["size_initial"]
 
-        time_independent["rated_capacity"] = get_attribute_from_dict(self.performance_data, "rated_capacity", 1)
+        time_independent["rated_capacity"] = get_attribute_from_dict(
+            self.performance_data, "rated_capacity", 1
+        )
 
         # Other
-        time_independent["min_transport"] = self.performance_data[
-            "min_transport"
-        ]
+        time_independent["min_transport"] = self.performance_data["min_transport"]
         time_independent["loss"] = self.performance_data["loss"]
 
         # Write to self
@@ -502,9 +502,7 @@ class Network(ModelComponent):
         :return: pyomo network block
         """
         # Define set of transported carrier
-        b_netw.set_netw_carrier = pyo.Set(
-            initialize=[self.transported_carrier]
-        )
+        b_netw.set_netw_carrier = pyo.Set(initialize=[self.transported_carrier])
 
         return b_netw
 
@@ -613,9 +611,9 @@ class Network(ModelComponent):
         def calculate_max_capex():
             max_capex = (
                 b_netw.para_capex_gamma1
-                + b_netw.para_capex_gamma2 * b_arc.para_size_max * rated_capacity
+                + b_netw.para_capex_gamma2 * b_arc.para_size_max
                 + b_netw.para_capex_gamma3 * b_arc.distance
-                + b_netw.para_capex_gamma4 * b_arc.para_size_max * b_arc.distance * rated_capacity
+                + b_netw.para_capex_gamma4 * b_arc.para_size_max * b_arc.distance
             )
             return (0, max_capex)
 
@@ -648,9 +646,9 @@ class Network(ModelComponent):
             return (
                 b_arc.var_capex_aux
                 == b_netw.para_capex_gamma1
-                + b_netw.para_capex_gamma2 * b_arc.var_size * rated_capacity
+                + b_netw.para_capex_gamma2 * b_arc.var_size
                 + b_netw.para_capex_gamma3 * b_arc.distance
-                + b_netw.para_capex_gamma4 * b_arc.var_size * b_arc.distance* rated_capacity
+                + b_netw.para_capex_gamma4 * b_arc.var_size * b_arc.distance
             )
 
         # CAPEX aux:
@@ -914,6 +912,7 @@ class Network(ModelComponent):
                 b_netw.para_opex_fixed
                 * (
                     sum(b_netw.arc_block[arc].var_capex_aux for arc in arc_set)
+                    / annualization_factor
                 )
                 == b_netw.var_opex_fixed
             )
