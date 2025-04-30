@@ -512,8 +512,7 @@ def define_imports_exports(input_data_path, settings, nodes):
 
     else:
         if settings.year == 2030:
-            # data_path = settings.data_path + 'import_export/ImportExport_realistic.xlsx'
-            data_path = settings.data_path + 'import_export/ImportExport_unlimited.xlsx'
+            data_path = settings.data_path + 'import_export/ImportExport_realistic.xlsx'
             carbontax = 80
 
         elif settings.year == 2040:
