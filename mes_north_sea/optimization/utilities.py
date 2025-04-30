@@ -293,12 +293,12 @@ def define_networks(input_data_path, settings):
         json.dump(networks, json_file, indent=4)
 
 
-def define_network_topology(input_data_path, settings):
+def define_network_topology(input_data_path, settings, nodes):
 
     data_path = settings.data_path + 'networks/'
     stage = settings.new_technologies_stage
 
-    def get_network_data(file_path):
+    def get_network_data(file_path, nodes):
         network = pd.read_csv(file_path, sep=';')
 
         network_data = {}
@@ -307,15 +307,16 @@ def define_network_topology(input_data_path, settings):
         network_data['max_size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0)
         network_data['connection_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0)
         for idx, row in network.iterrows():
-            network_data['size_matrix'].at[row['node0'], row['node1']] = row['s_nom']*1000
-            network_data['size_matrix'].at[row['node1'], row['node0']] = row['s_nom']*1000
-            network_data['distance_matrix'].at[row['node0'], row['node1']] = row['length']
-            network_data['distance_matrix'].at[row['node1'], row['node0']] = row['length']
-            network_data['max_size_matrix'].at[row['node1'], row['node0']] = row['s_nom_max']*1000 - row['s_nom']*1000
-            network_data['max_size_matrix'].at[row['node0'], row['node1']] = row['s_nom_max']*1000 - row['s_nom']*1000
-            if row['s_nom_max'] > 0:
-                network_data['connection_matrix'].at[row['node1'], row['node0']] = 1
-                network_data['connection_matrix'].at[row['node0'], row['node1']] = 1
+            if (row.node0 in nodes.all.keys()) & (row.node1 in nodes.all.keys()):
+                network_data['size_matrix'].at[row['node0'], row['node1']] = row['s_nom']*1000
+                network_data['size_matrix'].at[row['node1'], row['node0']] = row['s_nom']*1000
+                network_data['distance_matrix'].at[row['node0'], row['node1']] = row['length']
+                network_data['distance_matrix'].at[row['node1'], row['node0']] = row['length']
+                network_data['max_size_matrix'].at[row['node1'], row['node0']] = row['s_nom_max']*1000 - row['s_nom']*1000
+                network_data['max_size_matrix'].at[row['node0'], row['node1']] = row['s_nom_max']*1000 - row['s_nom']*1000
+                if row['s_nom_max'] > 0:
+                    network_data['connection_matrix'].at[row['node1'], row['node0']] = 1
+                    network_data['connection_matrix'].at[row['node0'], row['node1']] = 1
 
         return network_data
 
@@ -346,7 +347,7 @@ def define_network_topology(input_data_path, settings):
 
     # AC GRIDS
     # Existing AC grid
-    ac_data = get_network_data(data_path + file_name_ac)
+    ac_data = get_network_data(data_path + file_name_ac, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityAC", exist_ok=True)
     ac_data['connection_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "existing" / "electricityAC" / "connection.csv",
@@ -371,7 +372,7 @@ def define_network_topology(input_data_path, settings):
 
     # DC GRIDS
     # Existing DC grid
-    dc_data = get_network_data(data_path + file_name_dc)
+    dc_data = get_network_data(data_path + file_name_dc, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityDC", exist_ok=True)
     dc_data['connection_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "existing" / "electricityDC" / "connection.csv",
@@ -388,7 +389,7 @@ def define_network_topology(input_data_path, settings):
         pass
     else:
         if settings.year == 2040:
-            dc_data = get_network_data(data_path + 'pyhub_el_dc_re_only_2040.csv')
+            dc_data = get_network_data(data_path + 'pyhub_el_dc_re_only_2040.csv', nodes)
 
     if settings.simplify_networks:
         dc_netw_name = 'electricityDC'
@@ -415,7 +416,7 @@ def define_network_topology(input_data_path, settings):
     elif settings.year == 2040:
         file_name = 'pyhub_h2_offshore_2040.csv'
 
-    data = get_network_data(data_path + file_name)
+    data = get_network_data(data_path + file_name, nodes)
     netw_name = "hydrogenPipelineOffshore"
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
     data['connection_matrix'].to_csv(
@@ -430,7 +431,7 @@ def define_network_topology(input_data_path, settings):
 
     # onshore new
     file_name = 'pyhub_h2_onshore_new.csv'
-    data = get_network_data(data_path + file_name)
+    data = get_network_data(data_path + file_name, nodes)
     netw_name = "hydrogenPipelineOnshore_new"
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
     data['connection_matrix'].to_csv(
@@ -445,7 +446,7 @@ def define_network_topology(input_data_path, settings):
 
     # onshore repurposed
     file_name = 'pyhub_h2_onshore_re.csv'
-    data = get_network_data(data_path + file_name)
+    data = get_network_data(data_path + file_name, nodes)
     netw_name = "hydrogenPipelineOnshore_re"
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
     data['connection_matrix'].to_csv(

@@ -108,7 +108,7 @@ def create_input_data_folder_template(base_path: Path | str):
     networks = {"existing": [], "new": []}
     technologies = {"existing": {}, "new": []}
     energy_balance_options = {
-        carrier: {"curtailment_possible": 0} for carrier in topology["carriers"]
+        carrier: {"curtailment_possible": 1} for carrier in topology["carriers"]
     }
 
     # Template csvs

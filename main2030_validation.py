@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 1
+test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 
@@ -54,7 +54,7 @@ for stage in scenarios.keys():
         define_new_technologies(input_data_path, settings, nodes)
         adopt.copy_technology_data(input_data_path, Path(settings.data_path + "technology_data"))
         define_networks(input_data_path, settings)
-        define_network_topology(input_data_path, settings)
+        define_network_topology(input_data_path, settings, nodes)
         adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
 
         settings.climate_year = 2008
