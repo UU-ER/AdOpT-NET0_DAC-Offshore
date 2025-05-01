@@ -1,3 +1,5 @@
+import warnings
+
 import pyomo.gdp as gdp
 import pyomo.environ as pyo
 import numpy as np
@@ -878,23 +880,10 @@ class Technology(ModelComponent):
         )
         b_tec.var_opex_variable = pyo.Var(self.set_t_global)
 
-        if (
-                (self.technology_model == "RES")
-                or (self.technology_model == "CONV4")
-                or (self.technology_model == "DAC_Adsorption")
-        ):
-            opex_variable_based_on = b_tec.var_output
-            opex_car = b_tec.set_output_carriers.at(1)
-        else:
-            opex_variable_based_on = b_tec.var_input
-            opex_car = self.main_input_carrier
-
+        warnings.warn("OPEX NOT CORRECT IF NOT USED FOR MES NS STUDY")
         def init_opex_variable(const, t):
-            """opexvar_{t} = Input_{t, maincarrier} * opex_{var}"""
-            return (
-                opex_variable_based_on[t, opex_car] * b_tec.para_opex_variable
-                == b_tec.var_opex_variable[t]
-            )
+            return sum(b_tec.var_output[t, car] for car in b_tec.set_output_carriers) * b_tec.para_opex_variable == \
+                   b_tec.var_opex_variable[t]
 
         b_tec.const_opex_variable = pyo.Constraint(
             self.set_t_global, rule=init_opex_variable
