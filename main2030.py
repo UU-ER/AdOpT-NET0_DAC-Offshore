@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 1
+test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 
@@ -14,7 +14,7 @@ settings.demand_factor = 1
 input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
 write_to_technology_data(settings)
-#
+
 # scenarios = {'Baseline': 'Baseline',
 #               'Battery_on': 'Battery (onshore only)',
 #               'Battery_off': 'Battery (offshore only)',
@@ -33,10 +33,12 @@ write_to_technology_data(settings)
 #              }
 
 scenarios = {'Baseline': 'Baseline',
-}
+              'All': 'All Pathways'
+             }
+
 
 for stage in scenarios.keys():
-    for cy in [2009]:
+    for cy in [2008, 2009]:
         settings.climate_year = cy
 
         settings.new_technologies_stage = stage
@@ -54,11 +56,14 @@ for stage in scenarios.keys():
         define_new_technologies(input_data_path, settings, nodes)
         adopt.copy_technology_data(input_data_path, Path(settings.data_path + "technology_data"))
         define_networks(input_data_path, settings)
-        define_network_topology(input_data_path, settings)
+        define_network_topology(input_data_path, settings, nodes)
         adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
+
         define_demand(input_data_path, settings, nodes)
+
         define_generic_production(input_data_path, settings, nodes)
         define_hydro_inflow(input_data_path, settings)
+
         define_imports_exports(input_data_path, settings, nodes)
 
         m = adopt.ModelHub()
