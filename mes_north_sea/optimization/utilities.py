@@ -19,7 +19,7 @@ class Settings():
         self.simplify_networks = 0
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-02 01:00'
+            self.end_date = '05-02 00:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
@@ -535,8 +535,6 @@ def define_imports_exports(input_data_path, settings, nodes):
                                     carriers=[car], nodes=[node])
             adopt.fill_carrier_data(input_data_path, value_or_data=import_export['Import_'+car][node], columns=['Import limit'],
                                     carriers=[car], nodes=[node])
-            print(f"{node} {car} {import_export['Import_'+car][node]}")
-
         for car in export_carrier_price:
             adopt.fill_carrier_data(input_data_path, value_or_data=export_carrier_price[car], columns=['Export price'],
                                     carriers=[car], nodes=[node])
@@ -603,8 +601,6 @@ def define_charging_efficiencies(settings, nodes, m):
                 m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent['charge_rate'] = \
                 -charging[storage]/capacity[storage]
 
-                print(m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent['charge_rate'])
-
                 m.data.technology_data["period1"][node][storage + '_existing'].processed_coeff.time_independent['discharge_rate'] = \
                 discharging[storage]/capacity[storage]
             else:
@@ -616,4 +612,4 @@ def define_charging_efficiencies(settings, nodes, m):
                     'discharge_max'] = \
                     discharging[storage] / capacity[storage]
 
-        return m
+    return m

@@ -901,9 +901,7 @@ class Network(ModelComponent):
         economics = self.economics
         discount_rate = set_discount_rate(config, economics)
         fraction_of_year_modelled = data["topology"]["fraction_of_year_modelled"]
-        annualization_factor = annualize(
-            discount_rate, economics["lifetime"], fraction_of_year_modelled
-        )
+
 
         if self.bidirectional_network:
             arc_set = b_netw.set_arcs_unique
@@ -915,7 +913,6 @@ class Network(ModelComponent):
                 b_netw.para_opex_fixed
                 * (
                     sum(b_netw.arc_block[arc].var_capex_aux for arc in arc_set)
-                    / annualization_factor
                 )
                 == b_netw.var_opex_fixed
             )
@@ -1078,7 +1075,7 @@ class Network(ModelComponent):
                 "opex_fixed",
                 data=[
                     model_block.para_opex_fixed.value
-                    * (arc.var_capex_aux.value / annualization_factor)
+                    * (arc.var_capex_aux.value)
                 ],
             )
             arc_group.create_dataset(
