@@ -6,14 +6,20 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 0
+test = 1
 settings = Settings(test=test)
 settings.demand_factor = 1
+settings.year = 2030
 
+settings.start_date = '05-01 00:00'
+settings.end_date = '05-02 23:00'
+settings.only_belgium = 1
 
-input_data_path  = Path("mes_north_sea/data_" + str(settings.year) + "_clustered")
+input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
 write_to_technology_data(settings)
+
+
 
 # scenarios = {'Baseline': 'Baseline',
 #               'Battery_on': 'Battery (onshore only)',
@@ -33,10 +39,11 @@ write_to_technology_data(settings)
 #              }
 
 scenarios = {'Baseline': 'Baseline',
-}
+             }
+
 
 for stage in scenarios.keys():
-    for cy in [2009]:
+    for cy in [2008]:
         settings.climate_year = cy
 
         settings.new_technologies_stage = stage
@@ -49,8 +56,7 @@ for stage in scenarios.keys():
 
         with open(input_data_path / "ConfigModel.json", "r") as json_file:
             configuration = json.load(json_file)
-        configuration["optimization"]["typicaldays"]["N"]["value"] = 20
-        configuration["optimization"]["typicaldays"]["method"]["value"] = 1
+        configuration["optimization"]["typicaldays"]["N"]["value"] = 0
         with open(input_data_path / "ConfigModel.json", "w") as json_file:
             json.dump(configuration, json_file, indent=4)
 
@@ -61,21 +67,23 @@ for stage in scenarios.keys():
         define_new_technologies(input_data_path, settings, nodes)
         adopt.copy_technology_data(input_data_path, Path(settings.data_path + "technology_data"))
         define_networks(input_data_path, settings)
-        define_network_topology(input_data_path, settings)
+        define_network_topology(input_data_path, settings, nodes)
         adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
+
         define_demand(input_data_path, settings, nodes)
+
         define_generic_production(input_data_path, settings, nodes)
         define_hydro_inflow(input_data_path, settings)
+
         define_imports_exports(input_data_path, settings, nodes)
 
         m = adopt.ModelHub()
         m.read_data(input_data_path)
         m.data.model_config["reporting"]["save_summary_path"][
-            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/clustered_summary"
+            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/test_clustering"
         m.data.model_config["reporting"]["save_path"][
-            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/" + str(
-            settings.year) + "_cy" + str(settings.climate_year) + "_clustered"
-        m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs'
+            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/test_clustering"
+        m.data.model_config["reporting"]["case_name"]["value"] = "clustering_off"
 
         m = define_charging_efficiencies(settings, nodes, m)
 

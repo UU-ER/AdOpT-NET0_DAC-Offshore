@@ -17,6 +17,7 @@ class Settings():
         self.scenario = 'NT'
         self.climate_year = 2008
         self.simplify_networks = 0
+        self.only_belgium = 0
         if test:
             self.start_date = '05-01 00:00'
             self.end_date = '05-01 01:00'
@@ -121,6 +122,10 @@ def read_nodes(settings):
         node_data = data_path + '/nodes/nodes.xlsx'
     elif settings.year == 2040:
         node_data = data_path + '/nodes/nodes_2040.xlsx'
+
+    if settings.only_belgium:
+        node_data = data_path + '/nodes/nodes_test.xlsx'
+
 
     node_list = pd.read_excel(node_data, sheet_name='Nodes_used')
     nodes.onshore_nodes = node_list[node_list['Type'] == 'onshore']['Node'].values.tolist()

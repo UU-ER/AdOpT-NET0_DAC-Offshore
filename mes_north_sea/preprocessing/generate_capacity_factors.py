@@ -24,4 +24,5 @@ for climate_year in [1995, 2008, 2009]:
 
     calculate_cap_factors(caps[caps['Technology'] == 'Solar'], re_profiles, './mes_north_sea/clean_data/capacity_factors/pv' + str(climate_year) + '.csv', 'PV')
     calculate_cap_factors(caps[caps['Technology'] == 'Wind Onshore'], re_profiles, './mes_north_sea/clean_data/capacity_factors/wind_onshore' + str(climate_year) + '.csv', 'Wind onshore')
-    # calculate_cap_factors(caps[caps['Technology'] == 'Wind Offshore'], re_profiles, './mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(climate_year) + '.csv', 'Wind offshore')
+
+    # NOTE: OFFSHORE WIND CAPACITY FACTORS ARE GENERATED FROM ERA5 DATA AND WIND FARM DATA DIRECTLY
