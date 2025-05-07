@@ -6,12 +6,12 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 1
+test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2040
 
-input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
+input_data_path = Path("mes_north_sea/data_2040")
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
@@ -59,7 +59,7 @@ for stage in scenarios.keys():
         adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
 
         define_demand(input_data_path, settings, nodes)
-        a
+
         settings.climate_year = 2009
         define_generic_production(input_data_path, settings, nodes)
         define_hydro_inflow(input_data_path, settings)

@@ -16,30 +16,30 @@ input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
-# scenarios = {'Baseline': 'Baseline',
-#               'Battery_on': 'Battery (onshore only)',
-#               'Battery_off': 'Battery (offshore only)',
-#               'Battery_all': 'Battery (all)',
-#               'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
-#               'ElectricityGrid_all': 'Grid Expansion (all)',
-#               'ElectricityGrid_on': 'Grid Expansion (onshore only)',
-#               'ElectricityGrid_off': 'Grid Expansion (offshore only)',
-#               'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
-#               'Hydrogen_Baseline': 'Hydrogen (all)',
-#               'Hydrogen_H1': 'Hydrogen (no storage)',
-#               'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
-#               'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
-#               'Hydrogen_H4': 'Hydrogen (local use only)',
-#               'All': 'All Pathways'
-#              }
-
 scenarios = {'Baseline': 'Baseline',
+              'Battery_on': 'Battery (onshore only)',
+              'Battery_off': 'Battery (offshore only)',
+              'Battery_all': 'Battery (all)',
+              'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
+              'ElectricityGrid_all': 'Grid Expansion (all)',
+              'ElectricityGrid_on': 'Grid Expansion (onshore only)',
+              'ElectricityGrid_off': 'Grid Expansion (offshore only)',
+              'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
+              'Hydrogen_Baseline': 'Hydrogen (all)',
+              'Hydrogen_H1': 'Hydrogen (no storage)',
+              'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
+              'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
+              'Hydrogen_H4': 'Hydrogen (local use only)',
               'All': 'All Pathways'
              }
 
+# scenarios = {'Baseline': 'Baseline',
+#               'All': 'All Pathways'
+#              }
+
 
 for stage in scenarios.keys():
-    for cy in [2008, 2009]:
+    for cy in [2008, 1995, 2009]:
         settings.climate_year = cy
 
         settings.new_technologies_stage = stage

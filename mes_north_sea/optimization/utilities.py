@@ -147,8 +147,12 @@ def define_topology(settings, input_data_path, nodes):
     topology["nodes"] = list(nodes.all.keys())
     # Carriers:
     topology["carriers"] = ['electricity', 'gas', 'hydrogen']
-    topology["start_date"] = str(settings.year) + "-" + settings.start_date
-    topology["end_date"] = str(settings.year) + "-" + settings.end_date
+    if settings.year == 2040:
+        topology["start_date"] = str(2041) + "-" + settings.start_date
+        topology["end_date"] = str(2041) + "-" + settings.end_date
+    else:
+        topology["start_date"] = str(settings.year) + "-" + settings.start_date
+        topology["end_date"] = str(settings.year) + "-" + settings.end_date
     # Investment periods:
     topology["investment_periods"] = ["period1"]
     # Save json template
