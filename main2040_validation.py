@@ -9,31 +9,32 @@ from mes_north_sea.optimization.utilities import *
 test = 1
 settings = Settings(test=test)
 settings.demand_factor = 1
-
+settings.year = 2040
 
 input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
 write_to_technology_data(settings)
-#
-# scenarios = {'Baseline': 'Baseline',
-#               'Battery_on': 'Battery (onshore only)',
-#               'Battery_off': 'Battery (offshore only)',
-#               'Battery_all': 'Battery (all)',
-#               'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
-#               'ElectricityGrid_all': 'Grid Expansion (all)',
-#               'ElectricityGrid_on': 'Grid Expansion (onshore only)',
-#               'ElectricityGrid_off': 'Grid Expansion (offshore only)',
-#               'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
-#               'Hydrogen_Baseline': 'Hydrogen (all)',
-#               'Hydrogen_H1': 'Hydrogen (no storage)',
-#               'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
-#               'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
-#               'Hydrogen_H4': 'Hydrogen (local use only)',
-#               'All': 'All Pathways'
+
+# scenarios = {
+#     'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
+#     'Hydrogen_H1': 'Hydrogen (no storage)',
+#     'Hydrogen_H4': 'Hydrogen (local use only)',
+#     'Hydrogen_Baseline': 'Hydrogen (all)',
+#     'All': 'All Pathways',
+#     'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
+#     'ElectricityGrid_all': 'Grid Expansion (all)',
+#     'ElectricityGrid_on': 'Grid Expansion (onshore only)',
+#     'ElectricityGrid_off': 'Grid Expansion (offshore only)',
+#     'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
+#     'RE_only': 'RE only',
+#     'Battery_on': 'Battery (onshore only)',
+#     'Battery_off': 'Battery (offshore only)',
+#     'Battery_all': 'Battery (all)',
 #              }
 
-scenarios = {'Baseline': 'Baseline',
-}
+scenarios = {'RE_only': 'RE only'
+             }
+
 
 for stage in scenarios.keys():
     for cy in [2008]:
@@ -57,12 +58,16 @@ for stage in scenarios.keys():
         define_network_topology(input_data_path, settings, nodes)
         adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
 
-        settings.climate_year = 2008
         define_demand(input_data_path, settings, nodes)
-
+        a
         settings.climate_year = 2009
         define_generic_production(input_data_path, settings, nodes)
         define_hydro_inflow(input_data_path, settings)
+
+        settings.climate_year = 2008
+
+        define_capacity_factors(input_data_path, settings)
+        define_max_renewable_capacities(input_data_path, settings)
 
         define_imports_exports(input_data_path, settings, nodes)
 
