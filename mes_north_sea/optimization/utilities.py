@@ -19,7 +19,7 @@ class Settings():
         self.simplify_networks = 0
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-02 00:00'
+            self.end_date = '05-01 01:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
@@ -476,8 +476,12 @@ def define_generic_production(input_data_path, settings, nodes):
     generic_production = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re' + str(climate_year) + '.csv', index_col=0, header=[0, 1])
     for node in nodes.all.keys():
         profile = pd.DataFrame()
-        profile["Generic production"] = generic_production.loc[:, (node, 'total')].to_numpy().round(1)
-        adopt.fill_carrier_data(input_data_path, value_or_data=profile, columns=['Generic production'], carriers=['electricity'], nodes = [node])
+        if (node, 'total') in generic_production.columns:
+            profile["Generic production"] = generic_production.loc[:, (node, 'total')].to_numpy().round(1)
+            adopt.fill_carrier_data(input_data_path, value_or_data=profile, columns=['Generic production'],
+                                    carriers=['electricity'], nodes=[node])
+        else:
+            print(node)
 
 def define_hydro_inflow(input_data_path, settings):
     climate_year = settings.climate_year
@@ -497,6 +501,57 @@ def define_hydro_inflow(input_data_path, settings):
             climate_data["Storage_PumpedHydro_Open_existing_inflow"] = inflows[col].tolist()[:len(climate_data)]
 
         climate_data.to_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";")
+
+def define_capacity_factors(input_data_path, settings):
+    climate_year = settings.climate_year
+
+    cfs = {}
+    cfs["offshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(climate_year) + '.csv', index_col=0)
+    cfs["onshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_onshore' + str(climate_year) + '.csv', index_col=0)
+    cfs["pv"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/pv' + str(climate_year) + '.csv', index_col=0)
+
+    for profile in cfs.keys():
+        for node in cfs[profile].columns:
+            climate_data = pd.read_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";", index_col=0)
+            climate_data[profile] = cfs[profile][node].to_numpy()[:len(climate_data)]
+            climate_data.to_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";")
+
+def define_max_renewable_capacities(input_data_path, settings):
+    max_caps = pd.read_csv('./mes_north_sea/clean_data/max_re_cap/max_re_nodes.csv', index_col=0)
+
+    for node, caps in max_caps.iterrows():
+
+        tec_data_path = input_data_path / "period1" / "node_data" / node / "technology_data"
+
+        if (tec_data_path / "Onshore_Wind.json").exists():
+            with open(os.path.join(tec_data_path, "Onshore_Wind.json"), 'r') as openfile:
+                # Reading from json file
+                tec_data = json.load(openfile)
+
+            tec_data["size_max"] = min(caps['RemainingPotential_Wind_on'], 100000)
+
+            with open(os.path.join(tec_data_path, "Onshore_Wind.json"), 'w') as outfile:
+                json.dump(tec_data, outfile, indent=2)
+
+        if (tec_data_path / "Offshore_Wind.json").exists():
+            with open(os.path.join(tec_data_path, "Offshore_Wind.json"), 'r') as openfile:
+                # Reading from json file
+                tec_data = json.load(openfile)
+
+            tec_data["size_max"] = min(caps['RemainingPotential_Wind_off'], 250000 / 2)
+
+            with open(os.path.join(tec_data_path, "Offshore_Wind.json"), 'w') as outfile:
+                json.dump(tec_data, outfile, indent=2)
+
+        if (tec_data_path / "PV.json").exists():
+            with open(os.path.join(tec_data_path, "PV.json"), 'r') as openfile:
+                # Reading from json file
+                tec_data = json.load(openfile)
+
+            tec_data["size_max"] = min(caps['RemainingPotential_PV'], 400000)
+
+            with open(os.path.join(tec_data_path, "PV.json"), 'w') as outfile:
+                json.dump(tec_data, outfile, indent=2)
 
 
 def define_imports_exports(input_data_path, settings, nodes):

@@ -18,10 +18,10 @@ def calculate_cap_factors(caps_type, re_profiles, save_path, tec):
     print(cap_factors.max())
     print(cap_factors.mean())
 
+for climate_year in [1995, 2008, 2009]:
+    re_profiles = pd.read_csv('./mes_north_sea/clean_data/production_profiles_re/production_profiles_re' + str(climate_year) + '.csv', header=[0,1])
+    caps = pd.read_csv('./mes_north_sea/clean_data/installed_capacities/capacities_node.csv', index_col=[0])
 
-re_profiles = pd.read_csv('./mes_north_sea/clean_data/production_profiles_re/production_profiles_re.csv', header=[0,1])
-caps = pd.read_csv('./mes_north_sea/clean_data/installed_capacities/capacities_node.csv', index_col=[0])
-
-calculate_cap_factors(caps[caps['Technology'] == 'Solar'], re_profiles, './mes_north_sea/clean_data/capacity_factors/pv.csv', 'PV')
-calculate_cap_factors(caps[caps['Technology'] == 'Wind Onshore'], re_profiles, './mes_north_sea/clean_data/capacity_factors/wind_onshore.csv', 'Wind onshore')
-# calculate_cap_factors(caps[caps['Technology'] == 'Wind Offshore'], re_profiles, './mes_north_sea/clean_data/capacity_factors/wind_offshore.csv', 'Wind offshore')
+    calculate_cap_factors(caps[caps['Technology'] == 'Solar'], re_profiles, './mes_north_sea/clean_data/capacity_factors/pv' + str(climate_year) + '.csv', 'PV')
+    calculate_cap_factors(caps[caps['Technology'] == 'Wind Onshore'], re_profiles, './mes_north_sea/clean_data/capacity_factors/wind_onshore' + str(climate_year) + '.csv', 'Wind onshore')
+    # calculate_cap_factors(caps[caps['Technology'] == 'Wind Offshore'], re_profiles, './mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(climate_year) + '.csv', 'Wind offshore')

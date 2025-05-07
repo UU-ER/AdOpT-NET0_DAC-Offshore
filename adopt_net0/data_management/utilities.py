@@ -6,6 +6,7 @@ import json
 
 from ..components.networks import *
 from ..components.technologies import *
+from ..components.technologies.genericTechnologies.res_cap import Res_Cap
 
 import logging
 
@@ -87,6 +88,8 @@ def technology_factory(tec_data: dict):
         return HydroOpen(tec_data)
     elif tec_data["tec_type"] == "CCPP":
         return CCPP(tec_data)
+    elif tec_data["tec_type"] == "RES_CAP":
+        return Res_Cap(tec_data)
 
 
 def create_technology_class(tec_name: str, load_path: Path):

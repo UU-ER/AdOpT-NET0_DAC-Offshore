@@ -920,7 +920,7 @@ class Technology(ModelComponent):
             self.set_t_global, within=pyo.NonNegativeReals
         )
 
-        if technology_model == "RES":
+        if technology_model in ["RES", "RES_CAP"]:
             # Set emissions to zero
             def init_tec_emissions_pos(const, t):
                 return b_tec.var_tec_emissions_pos[t] == 0
