@@ -16,7 +16,7 @@ class Settings():
         self.year = 2030
         self.scenario = 'NT'
         self.climate_year = 2008
-        self.simplify_networks = 0
+        self.simplify_networks = 1
         self.only_belgium = 0
         if test:
             self.start_date = '05-01 00:00'
