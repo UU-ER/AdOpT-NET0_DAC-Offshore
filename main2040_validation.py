@@ -64,8 +64,6 @@ for stage in scenarios.keys():
         define_generic_production(input_data_path, settings, nodes)
         define_hydro_inflow(input_data_path, settings)
 
-        settings.climate_year = 2008
-
         define_capacity_factors(input_data_path, settings)
         define_max_renewable_capacities(input_data_path, settings)
 
