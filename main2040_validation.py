@@ -6,11 +6,13 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 0
+test = 1
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2040
 settings.co2_tax = 100
+settings.start_date = '01-01 00:00'
+settings.end_date = '12-31 23:00'
 
 input_data_path = Path("mes_north_sea/data_2040")
 write_to_network_data(settings)
