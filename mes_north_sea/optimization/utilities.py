@@ -28,6 +28,8 @@ class Settings():
         self.save_path = ''
         self.tec_data_path = self.data_path + 'technology_data'
         self.netw_data_path = self.data_path + 'network_data'
+        self.variable_h2_demand = 0
+        self.co2_tax = None
 
         self.node_aggregation_type = {
             'onshore': [],
@@ -572,7 +574,7 @@ def define_imports_exports(input_data_path, settings, nodes):
 
         elif settings.year == 2040:
             data_path = settings.data_path + 'import_export/ImportExport_unlimited_2040.xlsx'
-            carbontax = 100
+            carbontax = settings.co2
 
     else:
         if settings.year == 2030:
@@ -581,7 +583,7 @@ def define_imports_exports(input_data_path, settings, nodes):
 
         elif settings.year == 2040:
             data_path = settings.data_path + 'import_export/ImportExport_realistic_2040.xlsx'
-            carbontax = 100
+            carbontax = settings.co2
 
     import_export = pd.read_excel(data_path, index_col=0)
 
@@ -592,6 +594,9 @@ def define_imports_exports(input_data_path, settings, nodes):
                             }
     export_carrier_price = {'hydrogen': import_carrier_price['gas'] + carbontax * 0.108,
                             }
+
+    if settings.variable_h2_demand:
+        hydrogen_demand = pd.read_csv(settings.data_path + 'demand/' + 'HydrogenDemand_NT_' + str(settings.climate_year) + '.csv', index_col=0)
 
     for node in nodes.all.keys():
         for car in import_carrier_price:
@@ -604,6 +609,11 @@ def define_imports_exports(input_data_path, settings, nodes):
                                     carriers=[car], nodes=[node])
             adopt.fill_carrier_data(input_data_path, value_or_data=import_export['Export_'+car][node], columns=['Export limit'],
                                     carriers=[car], nodes=[node])
+
+        if settings.variable_h2_demand and settings.year==2040:
+            adopt.fill_carrier_data(input_data_path, value_or_data=hydrogen_demand[node], columns=['Export limit'],
+                                    carriers=["hydrogen"], nodes=[node])
+
 
 
 

@@ -10,6 +10,7 @@ test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2040
+settings.co2_tax = 100
 
 input_data_path = Path("mes_north_sea/data_2040")
 write_to_network_data(settings)

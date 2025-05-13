@@ -5,9 +5,9 @@ import pandas as pd
 
 
 path_results = {}
-path_results["new"] = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250424\2040_cy2008\20250508142317_RE_only_costs-1\optimization_results.h5"
+path_results["new"] = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250424\2040_validation\20250513163710_RE_only_costs_validation-1\optimization_results.h5"
 path_results["old"] = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\2040_demand_v6_simplifiedgrids\20240829084757_RE_only_costs\optimization_results.h5"
-path_export = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\diff_new_old.xlsx"
+path_export = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250513diff_new_old.xlsx"
 
 # Energybalance
 energybalance = {}
