@@ -18,7 +18,7 @@ class Settings():
         self.climate_year = 2008
         self.simplify_networks = 1
         self.only_belgium = 0
-        self.validation == 0
+        self.validation = 0
         if test:
             self.start_date = '05-01 00:00'
             self.end_date = '05-01 01:00'
