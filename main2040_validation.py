@@ -13,6 +13,7 @@ settings.year = 2040
 settings.co2_tax = 100
 settings.start_date = '01-01 00:00'
 settings.end_date = '12-31 23:00'
+settings.validation = 1
 
 input_data_path = Path("mes_north_sea/data_2040")
 write_to_network_data(settings)

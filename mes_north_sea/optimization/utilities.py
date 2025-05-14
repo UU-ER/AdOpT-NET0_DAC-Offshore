@@ -18,6 +18,7 @@ class Settings():
         self.climate_year = 2008
         self.simplify_networks = 1
         self.only_belgium = 0
+        self.validation == 0
         if test:
             self.start_date = '05-01 00:00'
             self.end_date = '05-01 01:00'
@@ -485,10 +486,15 @@ def define_generic_production(input_data_path, settings, nodes):
     climate_year = settings.climate_year
 
     generic_production = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re' + str(climate_year) + '.csv', index_col=0, header=[0, 1])
+    generic_production_no2009 = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re.csv', index_col=0, header=[0, 1])
     for node in nodes.all.keys():
         profile = pd.DataFrame()
         if (node, 'total') in generic_production.columns:
-            profile["Generic production"] = generic_production.loc[:, (node, 'total')].to_numpy().round(1)
+            if settings.validation == 1 and node == "NO1" and climate_year == 2009:
+                profile["Generic production"] = generic_production_no2009.loc[:, (node, 'total')].to_numpy().round(1)
+            else:
+                profile["Generic production"] = generic_production.loc[:, (node, 'total')].to_numpy().round(1)
+
             adopt.fill_carrier_data(input_data_path, value_or_data=profile, columns=['Generic production'],
                                     carriers=['electricity'], nodes=[node])
         else:
