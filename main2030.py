@@ -70,7 +70,7 @@ for stage in scenarios.keys():
         m = adopt.ModelHub()
         m.read_data(input_data_path)
         m.data.model_config["reporting"]["save_summary_path"][
-            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/"
+            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/2030/"
         m.data.model_config["reporting"]["save_path"][
             "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/" + str(
             settings.year) + "_cy" + str(settings.climate_year)
