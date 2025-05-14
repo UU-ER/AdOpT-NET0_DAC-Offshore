@@ -5,9 +5,9 @@ import pandas as pd
 
 
 path_results = {}
-path_results["new"] = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250424\2040_cy2009\20250513182927_RE_only_costs-1\optimization_results.h5"
-path_results["old"] = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\tests\20250513182933_TESTRE_only_costs\optimization_results.h5"
-path_export = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250513diff_new_old_NO.xlsx"
+path_results["new"] = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250424\2040_cy2009\20250514162440_RE_only_costs-1\optimization_results.h5"
+path_results["old"] = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\tests\20250514162437_TESTRE_only_costs\optimization_results.h5"
+path_export = r"\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250514diff_new_old_DK.xlsx"
 
 # Energybalance
 energybalance = {}
@@ -58,15 +58,15 @@ technology_design["diff"] = pd.Series(technology_design["diff"])
 
 
 # Network design
-# network_design = {}
-# network_design["new"] = read_new.read_networks(path_results["new"])[0]
-# network_design["new"] = network_design["new"].drop(columns=["Period", "FromNode", "ToNode", 'para_capex_gamma1', 'para_capex_gamma2', 'para_capex_gamma3',
-#        'para_capex_gamma4',])
-# network_design["new"] = network_design["new"].set_index(["Network", "Arc_ID"])
-# network_design["old"] = read_old.read_networks(path_results["old"])
-# network_design["old"] = network_design["old"].drop(columns=["FromNode", "ToNode", 'total_emissions'])
-# network_design["old"] = network_design["old"].set_index(["Network", "Arc_ID"])
-# network_design["diff"] = network_design["new"] - network_design["old"]
+network_design = {}
+network_design["new"] = read_new.read_networks(path_results["new"])[0]
+network_design["new"] = network_design["new"].drop(columns=["Period", "FromNode", "ToNode", 'para_capex_gamma1', 'para_capex_gamma2', 'para_capex_gamma3',
+       'para_capex_gamma4',])
+network_design["new"] = network_design["new"].set_index(["Network", "Arc_ID"])
+network_design["old"] = read_old.read_networks(path_results["old"])
+network_design["old"] = network_design["old"].drop(columns=["FromNode", "ToNode", 'total_emissions'])
+network_design["old"] = network_design["old"].set_index(["Network", "Arc_ID"])
+network_design["diff"] = network_design["new"] - network_design["old"]
 
 
 
@@ -77,6 +77,6 @@ with pd.ExcelWriter(path_export, engine="xlsxwriter") as writer:
     technology_design["diff"].reset_index().to_excel(writer, sheet_name="technology_design_diff")
     technology_design["old"].reset_index().to_excel(writer, sheet_name="technology_design_old")
     technology_design["new"].reset_index().to_excel(writer, sheet_name="technology_design_new")
-    # network_design["diff"].reset_index().to_excel(writer, sheet_name="network_design_diff")
-    # network_design["old"].reset_index().to_excel(writer, sheet_name="network_design_old")
-    # network_design["new"].reset_index().to_excel(writer, sheet_name="network_design_new")
+    network_design["diff"].reset_index().to_excel(writer, sheet_name="network_design_diff")
+    network_design["old"].reset_index().to_excel(writer, sheet_name="network_design_old")
+    network_design["new"].reset_index().to_excel(writer, sheet_name="network_design_new")

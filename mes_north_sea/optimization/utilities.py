@@ -19,6 +19,7 @@ class Settings():
         self.simplify_networks = 1
         self.only_belgium = 0
         self.validation = 0
+        self.test_nodes = 0
         if test:
             self.start_date = '05-01 00:00'
             self.end_date = '05-01 01:00'
@@ -126,8 +127,8 @@ def read_nodes(settings):
     elif settings.year == 2040:
         node_data = data_path + '/nodes/nodes_2040.xlsx'
 
-    if settings.only_belgium:
-        node_data = data_path + '/nodes/nodes_test.xlsx'
+    if settings.test_nodes:
+        node_data = r"C:\Users\6574114\PycharmProjects\PyHubProductive\mes_north_sea\clean_data\nodes\nodes_test.xlsx"
 
 
     node_list = pd.read_excel(node_data, sheet_name='Nodes_used')
@@ -523,7 +524,10 @@ def define_capacity_factors(input_data_path, settings):
     climate_year = settings.climate_year
 
     cfs = {}
-    cfs["offshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(climate_year) + '.csv', index_col=0)
+    if settings.validation:
+        cfs["offshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(2008) + '.csv', index_col=0)
+    else:
+        cfs["offshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(climate_year) + '.csv', index_col=0)
     cfs["onshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_onshore' + str(climate_year) + '.csv', index_col=0)
     cfs["pv"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/pv' + str(climate_year) + '.csv', index_col=0)
 
