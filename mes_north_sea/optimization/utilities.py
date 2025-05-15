@@ -621,7 +621,9 @@ def define_imports_exports(input_data_path, settings, nodes):
                                     carriers=[car], nodes=[node])
 
         if settings.variable_h2_demand and settings.year==2040:
-            adopt.fill_carrier_data(input_data_path, value_or_data=hydrogen_demand[node], columns=['Export limit'],
+            demand = pd.DataFrame()
+            demand["Export limit"] = hydrogen_demand[node]
+            adopt.fill_carrier_data(input_data_path, value_or_data=demand, columns=['Export limit'],
                                     carriers=["hydrogen"], nodes=[node])
 
 
