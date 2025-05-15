@@ -20,6 +20,8 @@ class Settings():
         self.only_belgium = 0
         self.validation = 0
         self.test_nodes = 0
+        self.model_h2 = 1
+
         if test:
             self.start_date = '05-01 00:00'
             self.end_date = '05-01 01:00'
@@ -56,6 +58,9 @@ def write_to_technology_data(settings):
         with open(os.path.join(tec_data_path, filename), 'r') as openfile:
             # Reading from json file
             tec_data = json.load(openfile)
+
+        tec = filename.replace('.json', '')
+        tec = tec.replace('_noh2', '')
 
         new_financial_data = financial_data[financial_data['Technology'] == filename.replace('.json', '')]
         tec_data['Economics']['unit_capex'] = float(round(new_financial_data['Investment Cost'].values[0],2))
@@ -150,7 +155,11 @@ def define_topology(settings, input_data_path, nodes):
     # Nodes
     topology["nodes"] = list(nodes.all.keys())
     # Carriers:
-    topology["carriers"] = ['electricity', 'gas', 'hydrogen']
+    if settings.model_h2:
+        topology["carriers"] = ['electricity', 'gas', 'hydrogen']
+    else:
+        topology["carriers"] = ['electricity', 'gas']
+
     if settings.year == 2040:
         topology["start_date"] = str(2041) + "-" + settings.start_date
         topology["end_date"] = str(2041) + "-" + settings.end_date
@@ -222,7 +231,13 @@ def define_installed_capacities(input_data_path, settings, nodes):
         new_at_node = \
             new_tecs[new_tecs['Node'] == node][['Technology', 'Capacity our work']].set_index('Technology').to_dict()[
                 'Capacity our work']
-        tecs_at_node = {'PowerPlant_Gas': round(new_at_node.get('Gas', 0), 0),
+
+        if settings.model_h2:
+            gas_plant = 'PowerPlant_Gas'
+        else:
+            gas_plant = 'PowerPlant_Gas_noh2'
+
+        tecs_at_node = {gas_plant: round(new_at_node.get('Gas', 0), 0),
                         'PowerPlant_Nuclear': round(new_at_node.get('Nuclear', 0), 0),
                         'PowerPlant_Oil': round(new_at_node.get('Oil', 0), 0),
                         'PowerPlant_Coal': round(new_at_node.get('Coal & Lignite', 0), 0),

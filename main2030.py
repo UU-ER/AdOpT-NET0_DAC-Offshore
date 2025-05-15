@@ -5,7 +5,7 @@ test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2030
-
+settings.variable_h2_demand = 1
 
 input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
@@ -34,6 +34,19 @@ scenarios = {'Baseline': 'Baseline',
 
 
 for stage in scenarios.keys():
+
+
+    if stage in ['Baseline', 'Battery_on',
+              'Battery_off',
+              'Battery_all',
+              'Battery_all_HP',
+              'ElectricityGrid_all',
+              'ElectricityGrid_on',
+              'ElectricityGrid_off',
+              'ElectricityGrid_noBorder' ]:
+        settings.model_h2 = 0
+
+
     for cy in [2008, 1995, 2009]:
         settings.climate_year = cy
 
@@ -64,12 +77,19 @@ for stage in scenarios.keys():
 
         m = adopt.ModelHub()
         m.read_data(input_data_path)
-        m.data.model_config["reporting"]["save_summary_path"][
-            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/2030/"
-        m.data.model_config["reporting"]["save_path"][
-            "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/" + str(
-            settings.year) + "_cy" + str(settings.climate_year)
-        m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs'
+
+        if settings.test:
+            m.data.model_config["reporting"]["save_summary_path"][
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030_test/"
+            m.data.model_config["reporting"]["save_path"][
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030_test/"
+        else:
+            m.data.model_config["reporting"]["save_summary_path"][
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/"
+            m.data.model_config["reporting"]["save_path"][
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/"
+        m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs' + "_cy" + str(settings.climate_year)
+
 
         m = define_charging_efficiencies(settings, nodes, m)
 
