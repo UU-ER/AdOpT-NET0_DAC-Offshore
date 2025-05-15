@@ -5,7 +5,7 @@ test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2030
-settings.variable_h2_demand = 1
+settings.variable_h2_demand = 0
 
 input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)

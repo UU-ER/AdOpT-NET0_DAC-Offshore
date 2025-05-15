@@ -6,20 +6,20 @@ import pandas as pd
 import numpy as np
 from mes_north_sea.optimization.utilities import *
 
-test = 0
+test = 1
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2040
-settings.variable_h2_demand = 1
-cys = [2008]
-co2_tax = [50, 150]
+settings.variable_h2_demand = 0
+cys = [1995, 2008, 2009]
+co2_tax = [100]
 
 # avg cap factor
-total_production = pd.Series()
-for cy in [1995, 2008, 2009]:
-    time_series = pd.read_csv("./mes_north_sea/clean_data/production_profiles_re/production_profiles_re" + str(cy) + ".csv", index_col=0, header=[0, 1])
-    time_series.loc[:, (slice(None), 'total')].sum().sum()
-    total_production[str(cy)] = time_series.loc[:, (slice(None), 'total')].sum().sum()/1000000
+# total_production = pd.Series()
+# for cy in [1995, 2008, 2009]:
+#     time_series = pd.read_csv("./mes_north_sea/clean_data/production_profiles_re/production_profiles_re" + str(cy) + ".csv", index_col=0, header=[0, 1])
+#     time_series.loc[:, (slice(None), 'total')].sum().sum()
+#     total_production[str(cy)] = time_series.loc[:, (slice(None), 'total')].sum().sum()/1000000
 
 input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
@@ -83,12 +83,20 @@ for stage in scenarios.keys():
 
             m = adopt.ModelHub()
             m.read_data(input_data_path)
-            m.data.model_config["reporting"]["save_summary_path"][
-                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/"
-            m.data.model_config["reporting"]["save_path"][
-                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250424/" + str(
-                settings.year) + "_cy" + str(settings.climate_year)
-            m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs'
+
+            if settings.test:
+                m.data.model_config["reporting"]["save_summary_path"][
+                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040_test/"
+                m.data.model_config["reporting"]["save_path"][
+                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040_test/"
+            else:
+                m.data.model_config["reporting"]["save_summary_path"][
+                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040/00_cy" + str(
+                    settings.climate_year)
+                m.data.model_config["reporting"]["save_path"][
+                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040/"
+            m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs' + "_cy" + str(
+                settings.climate_year) + '_co2_tax' + str(tax)
 
             m = define_charging_efficiencies(settings, nodes, m)
 
