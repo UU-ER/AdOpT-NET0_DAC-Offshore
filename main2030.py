@@ -1,7 +1,7 @@
 from pathlib import Path
 from mes_north_sea.optimization.utilities import *
 
-test = 1
+test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2030
@@ -45,7 +45,8 @@ for stage in scenarios.keys():
               'ElectricityGrid_off',
               'ElectricityGrid_noBorder' ]:
         settings.model_h2 = 0
-
+    else:
+        settings.model_h2 = 1
 
     for cy in [2008]:
         settings.climate_year = cy
@@ -85,9 +86,9 @@ for stage in scenarios.keys():
                 "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030_test/"
         else:
             m.data.model_config["reporting"]["save_summary_path"][
-                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/"
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/00_cy" + str(settings.climate_year)
             m.data.model_config["reporting"]["save_path"][
-                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/"
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/"
         m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs' + "_cy" + str(settings.climate_year)
 
 
