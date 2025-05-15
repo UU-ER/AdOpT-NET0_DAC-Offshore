@@ -25,29 +25,41 @@ input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
-# scenarios = {
-#     'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
-#     'Hydrogen_H1': 'Hydrogen (no storage)',
-#     'Hydrogen_H4': 'Hydrogen (local use only)',
-#     'Hydrogen_Baseline': 'Hydrogen (all)',
-#     'All': 'All Pathways',
-#     'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
-#     'ElectricityGrid_all': 'Grid Expansion (all)',
-#     'ElectricityGrid_on': 'Grid Expansion (onshore only)',
-#     'ElectricityGrid_off': 'Grid Expansion (offshore only)',
-#     'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
-#     'RE_only': 'RE only',
-#     'Battery_on': 'Battery (onshore only)',
-#     'Battery_off': 'Battery (offshore only)',
-#     'Battery_all': 'Battery (all)',
-#              }
-
-scenarios = {'RE_only': 'RE only',
-            'All': 'All Pathways',
+scenarios = {
+    'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
+    'Hydrogen_H1': 'Hydrogen (no storage)',
+    'Hydrogen_H4': 'Hydrogen (local use only)',
+    'Hydrogen_Baseline': 'Hydrogen (all)',
+    'All': 'All Pathways',
+    'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
+    'ElectricityGrid_all': 'Grid Expansion (all)',
+    'ElectricityGrid_on': 'Grid Expansion (onshore only)',
+    'ElectricityGrid_off': 'Grid Expansion (offshore only)',
+    'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
+    'RE_only': 'RE only',
+    'Battery_on': 'Battery (onshore only)',
+    'Battery_off': 'Battery (offshore only)',
+    'Battery_all': 'Battery (all)',
              }
 
 
+
+
 for stage in scenarios.keys():
+
+    if stage in [
+    'ElectricityGrid_all',
+    'ElectricityGrid_on',
+    'ElectricityGrid_off',
+    'ElectricityGrid_noBorder',
+    'RE_only',
+    'Battery_on',
+    'Battery_off',
+    'Battery_all']:
+        settings.model_h2 = 0
+    else:
+        settings.model_h2 = 1
+
     for cy in cys:
         for tax in co2_tax:
             settings.co2_tax = tax
