@@ -62,7 +62,7 @@ def write_to_technology_data(settings):
         tec = filename.replace('.json', '')
         tec = tec.replace('_noh2', '')
 
-        new_financial_data = financial_data[financial_data['Technology'] == filename.replace('.json', '')]
+        new_financial_data = financial_data[financial_data['Technology'] == tec]
         tec_data['Economics']['unit_capex'] = float(round(new_financial_data['Investment Cost'].values[0],2))
         tec_data['Economics']['opex_variable'] = float(round(new_financial_data['OPEX Variable'].values[0],3))
         tec_data['Economics']['opex_fixed'] = float(round(new_financial_data['OPEX Fixed'].values[0],3))

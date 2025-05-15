@@ -1,7 +1,7 @@
 from pathlib import Path
 from mes_north_sea.optimization.utilities import *
 
-test = 0
+test = 1
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2030
@@ -47,7 +47,7 @@ for stage in scenarios.keys():
         settings.model_h2 = 0
 
 
-    for cy in [2008, 1995, 2009]:
+    for cy in [2008]:
         settings.climate_year = cy
 
         settings.new_technologies_stage = stage
