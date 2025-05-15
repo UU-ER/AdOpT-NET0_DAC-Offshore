@@ -93,6 +93,7 @@ class CalculateReGeneration(Res):
         self.processed_coeff.time_independent={}
 
         self.input_parameters = SimpleNamespace()
+        self.performance_data = {}
 
     def fit_technology_performance(self, climate_data, technology, location):
         if technology == 'PV':

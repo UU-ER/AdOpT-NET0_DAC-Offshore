@@ -12,7 +12,7 @@ def divide_dataframe(df, n):
 
 c = Configuration()
 
-c.climate_year = 2008
+c.climate_year = 1995
 
 # Build DF
 nuts = c.nodekeys_nuts['NUTS_ID'].unique()
@@ -39,16 +39,24 @@ for idx, nuts_region in cap_nuts.iterrows():
         location["lon"] = nuts_region['lon']
     location["alt"] = 10
 
-    climate_data = pd.read_csv(c.load_path_climate_data + nuts_region['NUTS_ID'] + '_' + str(c.climate_year) + '.csv', index_col=0)
-    climate_data.index = pd.date_range(start=str(c.climate_year)+'-01-01 00:00', end=str(c.climate_year)+'-12-31 23:00', freq='1h')
+    for cy in [1995, 2008, 2009]:
+        c.climate_year = cy
 
-    ReCalc.fit_technology_performance(climate_data, 'PV', location)
-    production_profiles_nuts[nuts_region['NUTS_ID'], 'PV'] = \
-        ReCalc.processed_coeff.time_dependent_full["capfactor"] * nuts_region['Capacity_PV_2030']
+        print(cy)
 
-    ReCalc.fit_technology_performance(climate_data, 'Wind', location)
-    production_profiles_nuts[nuts_region['NUTS_ID'], 'Wind onshore'] = \
-        ReCalc.processed_coeff.time_dependent_full["capfactor"] * nuts_region['Capacity_Wind_on_2030']
+        climate_data = pd.read_csv(c.load_path_climate_data + nuts_region['NUTS_ID'] + '_' + str(c.climate_year) + '.csv', index_col=0)
+        climate_data.index = pd.date_range(start=str(c.climate_year)+'-01-01 00:00', end=str(c.climate_year)+'-12-31 23:00', freq='1h')
+        # calculate missing values
+        climate_data["ws100"][climate_data["ws100"].isna()] = climate_data["ws10"] * (100 / 10) ** (1/6)
+
+        ReCalc.fit_technology_performance(climate_data, 'PV', location)
+        production_profiles_nuts[nuts_region['NUTS_ID'], 'PV'] = \
+            ReCalc.processed_coeff.time_dependent_full["capfactor"] * nuts_region['Capacity_PV_2030']
+
+        #
+        ReCalc.fit_technology_performance(climate_data, 'Wind', location)
+        production_profiles_nuts[nuts_region['NUTS_ID'], 'Wind onshore'] = \
+            ReCalc.processed_coeff.time_dependent_full["capfactor"] * nuts_region['Capacity_Wind_on_2030']
 
 
 production_profiles_nodes = production_profiles_nuts.T.reset_index().merge(c.nodekeys_nuts[['NUTS_ID', 'Node']],
@@ -132,7 +140,7 @@ for idx, row in cap_bio.iterrows():
     production_profiles_nodes.loc[:, (row['Node'],'Biomass')] = row['Capacity our work'] * 0.53
 
 # Wind offshore
-load_path_profile = 'C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_raw_data/offshore_wind_farm_profiles/'
+load_path_profile = 'C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_raw_data/offshore_wind_farm_profiles_v2/'
 cap_offshore = pd.read_csv(c.load_path_offshore_farms)
 onshore_nodes = c.nodekeys_nuts['Node'].unique()
 
