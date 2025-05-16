@@ -287,7 +287,6 @@ def define_networks(input_data_path, settings):
     """
 
     stage = settings.new_technologies_stage
-    data_path = settings.data_path + 'networks/'
 
     # H2 networks
     if ('Hydrogen' in stage) or (stage == 'All') or (stage == 'All_RE_offshore_only'):
@@ -348,33 +347,9 @@ def define_network_topology(input_data_path, settings, nodes):
 
         return network_data
 
-    if stage == 'ElectricityGrid_on':
-        file_name_ac = 'pyhub_el_ac_on.csv'
-        if settings.year == 2030:
-            file_name_dc = 'pyhub_el_dc_on.csv'
-        elif settings.year == 2040:
-            file_name_dc = 'pyhub_el_dc_on_2040.csv'
-    elif stage == 'ElectricityGrid_off':
-        file_name_ac = 'pyhub_el_ac_off.csv'
-        if settings.year == 2030:
-            file_name_dc = 'pyhub_el_dc_off.csv'
-        elif settings.year == 2040:
-            file_name_dc = 'pyhub_el_dc_off_2040.csv'
-    elif stage == 'ElectricityGrid_noBorder':
-        file_name_ac = 'pyhub_el_ac_noBorder.csv'
-        if settings.year == 2030:
-            file_name_dc = 'pyhub_el_dc_noBorder.csv'
-        elif settings.year == 2040:
-            file_name_dc = 'pyhub_el_dc_noBorder_2040.csv'
-    else:
-        file_name_ac = 'pyhub_el_ac_all.csv'
-        if settings.year == 2030:
-            file_name_dc = 'pyhub_el_dc_all.csv'
-        elif settings.year == 2040:
-            file_name_dc = 'pyhub_el_dc_all_2040.csv'
-
     # AC GRIDS
     # Existing AC grid
+    file_name_ac = 'pyhub_el_ac_all.csv'
     ac_data = get_network_data(data_path + file_name_ac, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityAC", exist_ok=True)
     ac_data['connection_matrix'].to_csv(
@@ -386,7 +361,20 @@ def define_network_topology(input_data_path, settings, nodes):
     ac_data['size_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "existing" / "electricityAC" / "size.csv",
         sep=";")
+
+
+
+    if stage == 'ElectricityGrid_on':
+        file_name_ac = 'pyhub_el_ac_on.csv'
+    elif stage == 'ElectricityGrid_off':
+        file_name_ac = 'pyhub_el_ac_off.csv'
+    elif stage == 'ElectricityGrid_noBorder':
+        file_name_ac = 'pyhub_el_ac_noBorder.csv'
+    else:
+        file_name_ac = 'pyhub_el_ac_all.csv'
+
     # New AC grid
+    ac_data = get_network_data(data_path + file_name_ac, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / "electricityAC", exist_ok=True)
     ac_data['connection_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "new" / "electricityAC" / "connection.csv",
@@ -400,6 +388,10 @@ def define_network_topology(input_data_path, settings, nodes):
 
     # DC GRIDS
     # Existing DC grid
+    if settings.year == 2030:
+        file_name_dc = 'pyhub_el_dc_all.csv'
+    elif settings.year == 2040:
+        file_name_dc = 'pyhub_el_dc_all_2040.csv'
     dc_data = get_network_data(data_path + file_name_dc, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityDC", exist_ok=True)
     dc_data['connection_matrix'].to_csv(
@@ -413,6 +405,29 @@ def define_network_topology(input_data_path, settings, nodes):
         sep=";")
 
     # New DC grid
+    if stage == 'ElectricityGrid_on':
+        if settings.year == 2030:
+            file_name_dc = 'pyhub_el_dc_on.csv'
+        elif settings.year == 2040:
+            file_name_dc = 'pyhub_el_dc_on_2040.csv'
+    elif stage == 'ElectricityGrid_off':
+        if settings.year == 2030:
+            file_name_dc = 'pyhub_el_dc_off.csv'
+        elif settings.year == 2040:
+            file_name_dc = 'pyhub_el_dc_off_2040.csv'
+    elif stage == 'ElectricityGrid_noBorder':
+        if settings.year == 2030:
+            file_name_dc = 'pyhub_el_dc_noBorder.csv'
+        elif settings.year == 2040:
+            file_name_dc = 'pyhub_el_dc_noBorder_2040.csv'
+    else:
+        if settings.year == 2030:
+            file_name_dc = 'pyhub_el_dc_all.csv'
+        elif settings.year == 2040:
+            file_name_dc = 'pyhub_el_dc_all_2040.csv'
+
+    dc_data = get_network_data(data_path + file_name_dc, nodes)
+
     if ('ElectricityGrid' in stage) or (stage == 'All') or (stage == 'All_wind_offshore_only'):
         pass
     else:

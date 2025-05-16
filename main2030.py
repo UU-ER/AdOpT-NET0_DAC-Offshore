@@ -43,7 +43,7 @@ for stage in scenarios.keys():
               'ElectricityGrid_all',
               'ElectricityGrid_on',
               'ElectricityGrid_off',
-              'ElectricityGrid_noBorder' ]:
+              'ElectricityGrid_noBorder']:
         settings.model_h2 = 0
     else:
         settings.model_h2 = 1
