@@ -54,7 +54,7 @@ for stage in scenarios.keys():
         else:
             settings.model_h2 = 1
 
-        for cy in [2008]:
+        for cy in [1995, 2008, 2009]:
             settings.climate_year = cy
 
             baseline_emissions = pd.read_excel("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/cost/00_cy" + str(settings.climate_year) + "/Summary.xlsx")
