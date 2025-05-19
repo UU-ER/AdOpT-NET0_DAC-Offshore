@@ -86,9 +86,9 @@ for stage in scenarios.keys():
                 "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030_test/"
         else:
             m.data.model_config["reporting"]["save_summary_path"][
-                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/00_cy" + str(settings.climate_year)
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/cost/00_cy" + str(settings.climate_year)
             m.data.model_config["reporting"]["save_path"][
-                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/"
+                "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/cost/"
         m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs' + "_cy" + str(settings.climate_year)
 
 
