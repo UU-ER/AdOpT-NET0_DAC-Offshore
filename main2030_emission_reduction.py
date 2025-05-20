@@ -1,7 +1,7 @@
 from pathlib import Path
 from mes_north_sea.optimization.utilities import *
 
-test = 1
+test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2030
@@ -89,7 +89,7 @@ for stage in scenarios.keys():
             m.read_data(input_data_path)
 
             m = define_charging_efficiencies(settings, nodes, m)
-
+            m.data.model_config["solveroptions"]["threads"]["value"] = 15
             if settings.test:
                 m.data.model_config["reporting"]["save_summary_path"][
                     "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030_test/"
@@ -121,7 +121,7 @@ for stage in scenarios.keys():
                     else:
                         m.data.model_config["reporting"]["case_name"]["value"] = stage + '_minCost_at_' + str(reduction)
 
-                    m._optimize_emissions_net()
+                    m._optimize_costs_emissionslimit()
 
 
 
