@@ -1,3 +1,5 @@
+import h5py
+
 scenarios = {
               'RE_only': ['Baseline', 'Baseline'],
               'Battery_on': ['Storage', 'onshore only'],
@@ -22,3 +24,23 @@ def map_timestamp(timestamp, idx):
         if key in timestamp:
             return value[idx]
     return "Baseline"  # or some default value if no match is found
+
+
+def extract_datasets_from_h5_group(group, prefix=()):
+    """
+    Gets all datasets from a group of an h5 file and writes it to a multi-index dataframe
+
+    :param group: group of h5 file
+    :return: dataframe containing all datasets in group
+    """
+    data = {}
+    for key, value in group.items():
+        if isinstance(value, h5py.Group):
+            data.update(extract_datasets_from_h5_group(value, prefix + (key,)))
+        elif isinstance(value, h5py.Dataset):
+            if value.shape == ():
+                data[prefix + (key,)] = [value[()]]
+            else:
+                data[prefix + (key,)] = value[:]
+
+    return data
