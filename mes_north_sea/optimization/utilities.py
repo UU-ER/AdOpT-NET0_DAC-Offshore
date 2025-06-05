@@ -468,9 +468,9 @@ def define_network_topology(input_data_path, settings, nodes):
     data['distance_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
         sep=";")
-    data['size_matrix'].to_csv(
-        input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
-        sep=";")
+    # data['size_matrix'].to_csv(
+    #     input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
+    #     sep=";")
 
     # onshore new
     file_name = 'pyhub_h2_onshore_new.csv'
@@ -483,9 +483,9 @@ def define_network_topology(input_data_path, settings, nodes):
     data['distance_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
         sep=";")
-    data['size_matrix'].to_csv(
-        input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
-        sep=";")
+    # data['size_matrix'].to_csv(
+    #     input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
+    #     sep=";")
 
     # onshore repurposed
     file_name = 'pyhub_h2_onshore_re.csv'
@@ -498,9 +498,9 @@ def define_network_topology(input_data_path, settings, nodes):
     data['distance_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
         sep=";")
-    data['size_matrix'].to_csv(
-        input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
-        sep=";")
+    # data['size_matrix'].to_csv(
+    #     input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
+    #     sep=";")
 
 def define_demand(input_data_path, settings, nodes):
 

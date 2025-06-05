@@ -16,29 +16,27 @@ h2_emissions = 29478397.12
 emission_targets = [0.99, 0.98, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
 emission_targets.reverse()
 
-scenarios = {'Baseline': 'Baseline',
-              'Battery_on': 'Battery (onshore only)',
-              'Battery_off': 'Battery (offshore only)',
-              'Battery_all': 'Battery (all)',
-              'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
-              'ElectricityGrid_all': 'Grid Expansion (all)',
-              'ElectricityGrid_on': 'Grid Expansion (onshore only)',
-              'ElectricityGrid_off': 'Grid Expansion (offshore only)',
-              'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
+scenarios = {
+    # 'Baseline': 'Baseline',
+    #           'Battery_on': 'Battery (onshore only)',
+    #           'Battery_off': 'Battery (offshore only)',
+    #           'Battery_all': 'Battery (all)',
+    #           'Battery_all_HP': 'Battery (all, high power-energy-ratio)',
+    #           'ElectricityGrid_all': 'Grid Expansion (all)',
+    #           'ElectricityGrid_on': 'Grid Expansion (onshore only)',
+    #           'ElectricityGrid_off': 'Grid Expansion (offshore only)',
+    #           'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
               'Hydrogen_Baseline': 'Hydrogen (all)',
               'Hydrogen_H1': 'Hydrogen (no storage)',
               'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
               'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
-              'Hydrogen_H4': 'Hydrogen (local use only)',
+              # 'Hydrogen_H4': 'Hydrogen (local use only)',
               'All': 'All Pathways'
              }
 
 # scenarios = {'Baseline': 'Baseline',
 #               'All': 'All Pathways'
 #              }
-
-
-
 
 for stage in scenarios.keys():
     if stage != 'Baseline':

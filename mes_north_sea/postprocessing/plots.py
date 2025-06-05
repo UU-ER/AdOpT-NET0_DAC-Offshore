@@ -17,18 +17,22 @@ from mes_north_sea.postprocessing.plot_utilities import *
 # make_table_s8()
 
 # # Figure 3, 5, 8 (cost reduction)
-make_figure3(plot_other_cys=False)
-make_figure5(plot_other_cys=False)
-make_figure8(plot_other_cys=False)
-make_figure3(plot_other_cys=True)
-make_figure5(plot_other_cys=True)
-make_figure8(plot_other_cys=True)
+# make_figure3(plot_other_cys=False)
+# make_figure5(plot_other_cys=False)
+# make_figure8(plot_other_cys=False)
+# make_figure3(plot_other_cys=True)
+# make_figure5(plot_other_cys=True)
+# make_figure8(plot_other_cys=True)
 
 
 # Figure 2, 4, 7 (emission reduction)
-make_figure2(plot_other_cys=False)
+# make_figure2(plot_other_cys=False)
 # make_figure4(plot_other_cys=False)
 # make_figure7(plot_other_cys=False)
 # make_figure2(plot_other_cys=True)
 # make_figure4(plot_other_cys=True)
 # make_figure7(plot_other_cys=True)
+
+# Figure 6, 9 abatement costs for different emission targets
+make_figure6(plot_other_cys=False)
+make_figure9(plot_other_cys=False)

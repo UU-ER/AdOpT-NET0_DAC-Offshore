@@ -3,13 +3,12 @@ from pathlib import Path
 import h5py
 import pandas as pd
 from matplotlib import pyplot as plt
-from xarray.util.generate_ops import inplace
 
 from mes_north_sea.postprocessing.utilities import extract_datasets_from_h5_group
 from mes_north_sea.preprocessing.utilities import to_latex
 
 
-def get_data(cy, results):
+def get_data(cy, results, filter_by='cost_total'):
     results_base_cy = results[results["global", "global", "cy"] == cy]
     results_base_cy = results_base_cy.set_index([("global", "global", "Case"), ("global", "global", "Subcase")])
     idx = pd.IndexSlice
@@ -17,16 +16,22 @@ def get_data(cy, results):
     plot_data.columns = plot_data.columns.droplevel([0, 1])
     plot_data.index = plot_data.index.map(lambda x: f"{x[0]} | {x[1]}")
 
-    baseline = pd.DataFrame(plot_data.loc["Baseline | Baseline"]).T
-    synergies = pd.DataFrame(plot_data.loc["All | All"]).T
+    if "Baseline | Baseline" in plot_data:
+        baseline = pd.DataFrame(plot_data.loc["Baseline | Baseline"]).T
+    else:
+        baseline = pd.DataFrame()
+    if "All | All" in plot_data:
+        synergies = pd.DataFrame(plot_data.loc["All | All"]).T
+    else:
+        synergies = pd.DataFrame()
     others = plot_data.loc[
         (plot_data.index != "Baseline | Baseline") & (plot_data.index != "All | All")
         ]
 
-    return pd.concat([synergies, others.sort_values(by='cost_total', ascending=True), baseline])
+    return pd.concat([synergies, others.sort_values(by=filter_by, ascending=True), baseline])
 
 
-def plot_horizontal_bar_plot(ax, df_base, df_others, cols, scaling_factor=1):
+def plot_horizontal_bar_plot(ax, df_base, df_others, cols, scaling_factor=1, write_text=True):
     df_plot = df_base[cols].copy()
     df_plot = df_plot * scaling_factor
 
@@ -39,18 +44,19 @@ def plot_horizontal_bar_plot(ax, df_base, df_others, cols, scaling_factor=1):
     )
     text_pos = 2
 
-    base_value = df_plot.loc["Baseline | Baseline"].sum()
-    reduction = (df_plot.sum(axis=1) - base_value) / base_value * 100
+    if write_text:
+        base_value = df_plot.loc["Baseline | Baseline"].sum()
+        reduction = (df_plot.sum(axis=1) - base_value) / base_value * 100
 
-    for idx, (y_pos, perc) in enumerate(zip(df_plot.index, reduction)):
-        ax.text(text_pos, idx, f"{perc:+.1f}%", va='center')
-    text_pos = text_pos + 10
+        for idx, (y_pos, perc) in enumerate(zip(df_plot.index, reduction)):
+            ax.text(text_pos, idx, f"{perc:+.1f}%", va='center')
+        text_pos = text_pos + 10
 
     if df_others:
         # plot other climate years
         y_positions = range(len(df_plot))
         cy_markers = {1995: 'o', 2008: 'x', 2009: 's'}
-        for cy in [x for x in cys if x != base_cy]:
+        for cy in df_others.keys():
             df_plot = df_others[cy][cols] * scaling_factor
 
             ax.scatter(
@@ -61,13 +67,14 @@ def plot_horizontal_bar_plot(ax, df_base, df_others, cols, scaling_factor=1):
                 label='Climate Year Cost',
                 marker=cy_markers[cy]
             )
+            if write_text:
 
-            base_value = df_plot.loc["Baseline | Baseline"].sum()
-            reduction = (df_plot.sum(axis=1) - base_value) / base_value * 100
+                base_value = df_plot.loc["Baseline | Baseline"].sum()
+                reduction = (df_plot.sum(axis=1) - base_value) / base_value * 100
 
-            for idx, (y_pos, perc) in enumerate(zip(df_plot.index, reduction)):
-                ax.text(text_pos, idx, f"{perc:+.1f}%", va='center')
-            text_pos = text_pos + 10
+                for idx, (y_pos, perc) in enumerate(zip(df_plot.index, reduction)):
+                    ax.text(text_pos, idx, f"{perc:+.1f}%", va='center')
+                text_pos = text_pos + 10
 
     return ax
 
@@ -539,16 +546,19 @@ def make_emission_reduction_figure(case, figure_name, plot_other_cys=False):
         "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/Summary_processed.xlsx",
         header=[0, 1, 2], index_col=0)
     results_filtered = results_all[
-        (results_all["global", "global", "Case"].isin([case, "Baseline", "All"])) &
+        (results_all["global", "global", "Case"].isin([case, "All"])) &
         (results_all["global", "global", "objective"] == "min emissions")
     ]
+    results_baseline = results_all[results_all["global", "global", "Case"] == "Baseline"]
+
+    results_filtered = pd.concat([results_filtered, results_baseline])
 
     cys = [1995, 2008, 2009]
 
     for base_cy in cys:
         fig, (ax1) = plt.subplots(1, 1, figsize=(10, 4))
 
-        plot_data_base_cy = get_data(base_cy, results_filtered)
+        plot_data_base_cy = get_data(base_cy, results_filtered, filter_by="emissions_total")
         plot_data_other_cys = {}
         if plot_other_cys:
             for cy in [x for x in cys if x != base_cy]:
@@ -558,7 +568,49 @@ def make_emission_reduction_figure(case, figure_name, plot_other_cys=False):
         ax1.axvline(x=plot_data_base_cy.loc[:, "emissions_total"].max() * 10**-6, color='red', linestyle='--')
         ax1.set_xlim(0, 120)
         ax1.legend().set_visible(False)
-        ax1.set_yticklabels([])
+
+        plt.tight_layout()
+
+        if plot_other_cys:
+            plt.savefig(save_path / f'cost_reduction_{base_cy}_with_other_cys.svg')
+        else:
+            plt.savefig(save_path / f'cost_reduction_{base_cy}.svg')
+
+        plt.close()
+
+def make_cost_at_emission_target_figure(case, figure_name, plot_other_cys=False):
+    save_path = Path("C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_Figures/2025-06-01/") / figure_name
+
+    results_all = pd.read_excel(
+        "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/Summary_processed.xlsx",
+        header=[0, 1, 2], index_col=0)
+    results_filtered = results_all[
+        (results_all["global", "global", "Case"].isin([case])) &
+        (results_all["global", "global", "objective"] == "min cost at emission limit")
+    ]
+
+    cys = [1995, 2008, 2009]
+
+    for base_cy in cys:
+        fig, (ax1) = plt.subplots(1, 1, figsize=(10, 6))
+
+        plot_data_base_cy = get_data(base_cy, results_filtered, filter_by="emissions_total")
+        plot_data_base_cy["emission_reduction_percentage"] = round(plot_data_base_cy["emission_reduction"] / (plot_data_base_cy["emissions_total"] + plot_data_base_cy["emission_reduction"]),2)
+        plot_data_base_cy.index = [f"{str(round(i*100,0))}% | {idx}" for idx, i in plot_data_base_cy["emission_reduction_percentage"].items()]
+
+
+        plot_data_other_cys = {}
+        if plot_other_cys:
+            for cy in [x for x in cys if x != base_cy]:
+                plot_data_other_cys[cy] = get_data(cy, results_filtered)
+                plot_data_other_cys[cy]["emission_reduction_percentage"] = round(plot_data_other_cys[cy]["emission_reduction"] / (
+                            plot_data_other_cys[cy]["emissions_total"] + plot_data_other_cys[cy]["emission_reduction"]), 2)
+                plot_data_other_cys[cy].index = [f"{str(round(i*100,0))}% | {idx}" for idx, i in plot_data_other_cys[cy]["emission_reduction_percentage"].items()]
+
+        ax1 = plot_horizontal_bar_plot(ax1, plot_data_base_cy, plot_data_other_cys, ['abatement_cost'], scaling_factor=-1, write_text=False)
+        # ax1.axvline(x=plot_data_base_cy.loc[:, "emissions_total"].max() * 10**-6, color='red', linestyle='--')
+        # ax1.set_xlim(0, 120)
+        ax1.legend().set_visible(False)
 
         plt.tight_layout()
 
@@ -580,14 +632,18 @@ def make_figure8(plot_other_cys):
     make_cost_reduction_figure("Hydrogen", "Figure8_cost_hydrogen", plot_other_cys)
 
 def make_figure2(plot_other_cys):
-    make_emission_reduction_figure("Grid Expansion", "Figure3_emission_grid", plot_other_cys)
+    make_emission_reduction_figure("Grid Expansion", "Figure2_emission_grid", plot_other_cys)
 
 def make_figure4(plot_other_cys):
-    make_emission_reduction_figure("Storage", "Figure5_emission_storage", plot_other_cys)
+    make_emission_reduction_figure("Storage", "Figure4_emission_storage", plot_other_cys)
 
 def make_figure7(plot_other_cys):
-    make_emission_reduction_figure("Hydrogen", "Figure8_emission_hydrogen", plot_other_cys)
+    make_emission_reduction_figure("Hydrogen", "Figure7_emission_hydrogen", plot_other_cys)
 
+def make_figure6(plot_other_cys):
+    make_cost_at_emission_target_figure("Storage", "Figure6_cost_at_emission_storage", plot_other_cys)
 
+def make_figure9(plot_other_cys):
+    make_cost_at_emission_target_figure("Hydrogen", "Figure9_cost_at_emission_hydrogen", plot_other_cys)
 
 
