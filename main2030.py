@@ -7,7 +7,10 @@ settings.demand_factor = 1
 settings.year = 2030
 settings.variable_h2_demand = 0
 
-input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
+cys = [1995,2008,2009]
+
+data_path = "mes_north_sea/data_" + str(settings.year)
+
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
@@ -49,7 +52,9 @@ for stage in scenarios.keys():
     else:
         settings.model_h2 = 1
 
-    for cy in [2008]:
+    for cy in cys:
+        input_data_path = Path(data_path + "_" + str(cy))
+
         settings.climate_year = cy
 
         settings.new_technologies_stage = stage

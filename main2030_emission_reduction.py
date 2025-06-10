@@ -6,8 +6,10 @@ settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2030
 settings.variable_h2_demand = 0
+cys = [1995,2008,2009]
 
-input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
+data_path  = "mes_north_sea/data_" + str(settings.year)
+
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
@@ -52,8 +54,9 @@ for stage in scenarios.keys():
         else:
             settings.model_h2 = 1
 
-        for cy in [1995, 2008, 2009]:
+        for cy in cys:
             settings.climate_year = cy
+            input_data_path = Path(data_path + "_" + str(cy))
 
             baseline_emissions = pd.read_excel("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/cost/00_cy" + str(settings.climate_year) + "/Summary.xlsx")
             baseline_emissions = baseline_emissions[baseline_emissions["case"] == "Baseline_costs_cy" + str(cy)]["emissions_net"][0] + h2_emissions

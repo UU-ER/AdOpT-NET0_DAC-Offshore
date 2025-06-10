@@ -21,7 +21,7 @@ co2_tax = [100]
 #     time_series.loc[:, (slice(None), 'total')].sum().sum()
 #     total_production[str(cy)] = time_series.loc[:, (slice(None), 'total')].sum().sum()/1000000
 
-input_data_path  = Path("mes_north_sea/data_" + str(settings.year))
+data_path = "mes_north_sea/data_" + str(settings.year)
 write_to_network_data(settings)
 write_to_technology_data(settings)
 
@@ -61,6 +61,8 @@ for stage in scenarios.keys():
         settings.model_h2 = 1
 
     for cy in cys:
+        input_data_path = Path(data_path + "_" + str(cy))
+
         for tax in co2_tax:
             settings.co2_tax = tax
 

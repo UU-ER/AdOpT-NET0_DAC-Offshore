@@ -16,6 +16,7 @@
   "Performance": {
     "carrier": "hydrogen",
     "bidirectional_network": 0,
+    "bidirectional_network_precise": 0,
     "rated_capacity": 1.0,
     "loss": 4e-05,
     "min_transport": 0,
