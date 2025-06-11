@@ -555,13 +555,16 @@ def define_hydro_inflow(input_data_path, settings):
 def define_capacity_factors(input_data_path, settings):
     climate_year = settings.climate_year
 
+    data_path = settings.data_path /'capacity_factors'
+
+
     cfs = {}
     if settings.validation:
-        cfs["offshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(2008) + '.csv', index_col=0)
+        cfs["offshore_wind"] = pd.read_csv(data_path / f"wind_offshore'{str(2008)}.csv", index_col=0)
     else:
-        cfs["offshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_offshore' + str(climate_year) + '.csv', index_col=0)
-    cfs["onshore_wind"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/wind_onshore' + str(climate_year) + '.csv', index_col=0)
-    cfs["pv"] = pd.read_csv('./mes_north_sea/clean_data/capacity_factors/pv' + str(climate_year) + '.csv', index_col=0)
+        cfs["offshore_wind"] = pd.read_csv(data_path / f"wind_offshore{str(climate_year)}.csv", index_col=0)
+    cfs["onshore_wind"] = pd.read_csv(data_path / f"wind_onshore{str(climate_year)}.csv", index_col=0)
+    cfs["pv"] = pd.read_csv(data_path / f"pv{str(climate_year)}.csv", index_col=0)
 
     for profile in cfs.keys():
         for node in cfs[profile].columns:
@@ -570,7 +573,10 @@ def define_capacity_factors(input_data_path, settings):
             climate_data.to_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";")
 
 def define_max_renewable_capacities(input_data_path, settings):
-    max_caps = pd.read_csv('./mes_north_sea/clean_data/max_re_cap/max_re_nodes.csv', index_col=0)
+
+    data_path = settings.data_path
+
+    max_caps = pd.read_csv(data_path / "max_re_cap"/ "max_re_nodes.csv", index_col=0)
 
     for node, caps in max_caps.iterrows():
 
@@ -611,20 +617,20 @@ def define_imports_exports(input_data_path, settings, nodes):
 
     if settings.test == 1:
         if settings.year == 2030:
-            data_path = settings.data_path /'import_export/ImportExport_unlimited.xlsx'
+            data_path = settings.data_path /"import_export"/"ImportExport_unlimited.xlsx"
             carbontax = 80
 
         elif settings.year == 2040:
-            data_path = settings.data_path /'import_export/ImportExport_unlimited_2040.xlsx'
+            data_path = settings.data_path / "import_export"/"ImportExport_unlimited_2040.xlsx"
             carbontax = settings.co2_tax
 
     else:
         if settings.year == 2030:
-            data_path = settings.data_path /'import_export/ImportExport_realistic.xlsx'
+            data_path = settings.data_path / "import_export"/"ImportExport_realistic.xlsx"
             carbontax = 80
 
         elif settings.year == 2040:
-            data_path = settings.data_path /'import_export/ImportExport_realistic_2040.xlsx'
+            data_path = settings.data_path /"import_export"/"ImportExport_realistic_2040.xlsx"
             carbontax = settings.co2_tax
 
     import_export = pd.read_excel(data_path, index_col=0)
@@ -638,7 +644,7 @@ def define_imports_exports(input_data_path, settings, nodes):
                             }
 
     if settings.variable_h2_demand:
-        hydrogen_demand = pd.read_csv(settings.data_path /'demand/' + 'HydrogenDemand_NT_' + str(settings.climate_year) + '.csv', index_col=0)
+        hydrogen_demand = pd.read_csv(settings.data_path / "demand" / f"HydrogenDemand_NT_{str(settings.climate_year)}.csv", index_col=0)
 
     for node in nodes.all.keys():
         for car in import_carrier_price:
@@ -684,7 +690,7 @@ def define_imports_exports(input_data_path, settings, nodes):
 def define_charging_efficiencies(settings, nodes, m):
     data_path = settings.data_path
 
-    new_tecs = pd.read_csv(data_path /'installed_capacities/capacities_node.csv',
+    new_tecs = pd.read_csv(data_path /"installed_capacities"/"capacities_node.csv",
                            index_col=0)
 
     for node in nodes.onshore_nodes:
