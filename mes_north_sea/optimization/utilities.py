@@ -7,6 +7,7 @@ import copy
 import os
 import json
 import adopt_net0 as adopt
+from pathlib import Path
 
 
 class Settings():
@@ -28,10 +29,11 @@ class Settings():
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
-        self.data_path = './mes_north_sea/clean_data/'
+
+        self.data_path = Path(__file__).resolve().parent.parent / 'clean_data'
         self.save_path = ''
-        self.tec_data_path = self.data_path + 'technology_data'
-        self.netw_data_path = self.data_path + 'network_data'
+        self.tec_data_path = self.data_path / 'technology_data'
+        self.netw_data_path = self.data_path / 'network_data'
         self.variable_h2_demand = 0
         self.co2_tax = None
 
@@ -51,7 +53,7 @@ def write_to_technology_data(settings):
     year = 2030
     tec_data_path = settings.tec_data_path
 
-    financial_data = pd.read_excel(data_path + 'cost_technologies/TechnologyCost.xlsx', sheet_name='ToModel', skiprows=1)
+    financial_data = pd.read_excel(data_path / 'cost_technologies/TechnologyCost.xlsx', sheet_name='ToModel', skiprows=1)
     financial_data = financial_data[financial_data['Year'] == year]
 
     for filename in os.listdir(tec_data_path):
@@ -95,7 +97,7 @@ def write_to_network_data(settings):
     year = settings.year
     netw_data_path = settings.netw_data_path
 
-    financial_data = pd.read_excel(data_path + 'cost_networks/NetworkCost.xlsx', sheet_name='ToModel', skiprows=1)
+    financial_data = pd.read_excel(data_path / 'cost_networks/NetworkCost.xlsx', sheet_name='ToModel', skiprows=1)
     financial_data = financial_data[financial_data['Year'] == year]
 
     for filename in os.listdir(netw_data_path):
@@ -128,12 +130,12 @@ def read_nodes(settings):
     nodes = SimpleNamespace()
 
     if settings.year == 2030:
-        node_data = data_path + '/nodes/nodes.xlsx'
+        node_data = data_path / "nodes" / "nodes.xlsx"
     elif settings.year == 2040:
-        node_data = data_path + '/nodes/nodes_2040.xlsx'
+        node_data = data_path  / "nodes" / "nodes_2040.xlsx"
 
     if settings.test_nodes:
-        node_data = r"C:\Users\6574114\PycharmProjects\PyHubProductive\mes_north_sea\clean_data\nodes\nodes_test.xlsx"
+        node_data = data_path  / "nodes" / "nodes_test.xlsx"
 
 
     node_list = pd.read_excel(node_data, sheet_name='Nodes_used')
@@ -222,7 +224,7 @@ def define_node_locations(input_data_path, nodes):
 
 def define_installed_capacities(input_data_path, settings, nodes):
     data_path = settings.data_path
-    new_tecs = pd.read_csv(data_path + 'installed_capacities/capacities_node.csv',
+    new_tecs = pd.read_csv(data_path /'installed_capacities/capacities_node.csv',
                            index_col=0)
     for node in nodes.onshore_nodes:
         with open(input_data_path / "period1" / "node_data" / node / "Technologies.json", "r") as json_file:
@@ -261,11 +263,11 @@ def define_new_technologies(input_data_path, settings, nodes):
     data_path = settings.data_path
 
     if settings.year == 2030:
-        new_tecs = pd.read_excel(data_path + 'new_technologies/NewTechnologies.xlsx', index_col=0,
+        new_tecs = pd.read_excel(data_path /'new_technologies/NewTechnologies.xlsx', index_col=0,
                                  sheet_name='NewTechnologies')
 
     elif settings.year == 2040:
-        new_tecs = pd.read_excel(data_path + 'new_technologies/NewTechnologies_2040.xlsx', index_col=0,
+        new_tecs = pd.read_excel(data_path /'new_technologies/NewTechnologies_2040.xlsx', index_col=0,
                                  sheet_name='NewTechnologies')
 
     stage = settings.new_technologies_stage
@@ -322,7 +324,7 @@ def define_networks(input_data_path, settings):
 
 def define_network_topology(input_data_path, settings, nodes):
 
-    data_path = settings.data_path + 'networks/'
+    data_path = settings.data_path /'networks/'
     stage = settings.new_technologies_stage
 
     def get_network_data(file_path, nodes):
@@ -350,7 +352,7 @@ def define_network_topology(input_data_path, settings, nodes):
     # AC GRIDS
     # Existing AC grid
     file_name_ac = 'pyhub_el_ac_all.csv'
-    ac_data = get_network_data(data_path + file_name_ac, nodes)
+    ac_data = get_network_data(data_path /file_name_ac, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityAC", exist_ok=True)
     ac_data['connection_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "existing" / "electricityAC" / "connection.csv",
@@ -374,7 +376,7 @@ def define_network_topology(input_data_path, settings, nodes):
         file_name_ac = 'pyhub_el_ac_all.csv'
 
     # New AC grid
-    ac_data = get_network_data(data_path + file_name_ac, nodes)
+    ac_data = get_network_data(data_path /file_name_ac, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / "electricityAC", exist_ok=True)
     ac_data['connection_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "new" / "electricityAC" / "connection.csv",
@@ -392,7 +394,7 @@ def define_network_topology(input_data_path, settings, nodes):
         file_name_dc = 'pyhub_el_dc_all.csv'
     elif settings.year == 2040:
         file_name_dc = 'pyhub_el_dc_all_2040.csv'
-    dc_data = get_network_data(data_path + file_name_dc, nodes)
+    dc_data = get_network_data(data_path /file_name_dc, nodes)
     os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / "electricityDC", exist_ok=True)
     dc_data['connection_matrix'].to_csv(
         input_data_path / "period1" / "network_topology" / "existing" / "electricityDC" / "connection.csv",
@@ -426,13 +428,13 @@ def define_network_topology(input_data_path, settings, nodes):
         elif settings.year == 2040:
             file_name_dc = 'pyhub_el_dc_all_2040.csv'
 
-    dc_data = get_network_data(data_path + file_name_dc, nodes)
+    dc_data = get_network_data(data_path /file_name_dc, nodes)
 
     if ('ElectricityGrid' in stage) or (stage == 'All') or (stage == 'All_wind_offshore_only'):
         pass
     else:
         if settings.year == 2040:
-            dc_data = get_network_data(data_path + 'pyhub_el_dc_re_only_2040.csv', nodes)
+            dc_data = get_network_data(data_path /'pyhub_el_dc_re_only_2040.csv', nodes)
 
     if settings.simplify_networks:
         dc_netw_name = 'electricityDC'
@@ -459,7 +461,7 @@ def define_network_topology(input_data_path, settings, nodes):
     elif settings.year == 2040:
         file_name = 'pyhub_h2_offshore_2040.csv'
 
-    data = get_network_data(data_path + file_name, nodes)
+    data = get_network_data(data_path /file_name, nodes)
     netw_name = "hydrogenPipelineOffshore"
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
     data['connection_matrix'].to_csv(
@@ -474,7 +476,7 @@ def define_network_topology(input_data_path, settings, nodes):
 
     # onshore new
     file_name = 'pyhub_h2_onshore_new.csv'
-    data = get_network_data(data_path + file_name, nodes)
+    data = get_network_data(data_path /file_name, nodes)
     netw_name = "hydrogenPipelineOnshore_new"
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
     data['connection_matrix'].to_csv(
@@ -489,7 +491,7 @@ def define_network_topology(input_data_path, settings, nodes):
 
     # onshore repurposed
     file_name = 'pyhub_h2_onshore_re.csv'
-    data = get_network_data(data_path + file_name, nodes)
+    data = get_network_data(data_path /file_name, nodes)
     netw_name = "hydrogenPipelineOnshore_re"
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
     data['connection_matrix'].to_csv(
@@ -507,7 +509,7 @@ def define_demand(input_data_path, settings, nodes):
     climate_year = settings.climate_year
     model_year = settings.year
 
-    demand_el = pd.read_csv(settings.data_path + 'demand/' + 'TotalDemand_NT_' + str(model_year) + '_' + str(climate_year) + '.csv', index_col=0)
+    demand_el = pd.read_csv(settings.data_path / 'demand' / f"TotalDemand_NT_{str(model_year)}_{str(climate_year)}.csv", index_col=0)
     for node in nodes.onshore_nodes:
         demand = pd.DataFrame()
         demand["Demand"] = demand_el[node]
@@ -516,8 +518,8 @@ def define_demand(input_data_path, settings, nodes):
 def define_generic_production(input_data_path, settings, nodes):
     climate_year = settings.climate_year
 
-    generic_production = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re' + str(climate_year) + '.csv', index_col=0, header=[0, 1])
-    generic_production_no2009 = pd.read_csv(settings.data_path + 'production_profiles_re/production_profiles_re.csv', index_col=0, header=[0, 1])
+    generic_production = pd.read_csv(settings.data_path / "production_profiles_re" / f"production_profiles_re{str(climate_year)}.csv", index_col=0, header=[0, 1])
+    generic_production_no2009 = pd.read_csv(settings.data_path / "production_profiles_re" / "production_profiles_re.csv", index_col=0, header=[0, 1])
     for node in nodes.all.keys():
         profile = pd.DataFrame()
         if (node, 'total') in generic_production.columns:
@@ -534,7 +536,7 @@ def define_generic_production(input_data_path, settings, nodes):
 def define_hydro_inflow(input_data_path, settings):
     climate_year = settings.climate_year
 
-    inflows = pd.read_csv(settings.data_path + 'hydro_inflows\hydro_inflows' + str(climate_year) + '.csv', index_col=0, header=[0, 1])
+    inflows = pd.read_csv(settings.data_path / "hydro_inflows" / f"hydro_inflows{str(climate_year)}.csv", index_col=0, header=[0, 1])
 
     for col in inflows.columns:
         node = col[0]
@@ -609,20 +611,20 @@ def define_imports_exports(input_data_path, settings, nodes):
 
     if settings.test == 1:
         if settings.year == 2030:
-            data_path = settings.data_path + 'import_export/ImportExport_unlimited.xlsx'
+            data_path = settings.data_path /'import_export/ImportExport_unlimited.xlsx'
             carbontax = 80
 
         elif settings.year == 2040:
-            data_path = settings.data_path + 'import_export/ImportExport_unlimited_2040.xlsx'
+            data_path = settings.data_path /'import_export/ImportExport_unlimited_2040.xlsx'
             carbontax = settings.co2_tax
 
     else:
         if settings.year == 2030:
-            data_path = settings.data_path + 'import_export/ImportExport_realistic.xlsx'
+            data_path = settings.data_path /'import_export/ImportExport_realistic.xlsx'
             carbontax = 80
 
         elif settings.year == 2040:
-            data_path = settings.data_path + 'import_export/ImportExport_realistic_2040.xlsx'
+            data_path = settings.data_path /'import_export/ImportExport_realistic_2040.xlsx'
             carbontax = settings.co2_tax
 
     import_export = pd.read_excel(data_path, index_col=0)
@@ -636,7 +638,7 @@ def define_imports_exports(input_data_path, settings, nodes):
                             }
 
     if settings.variable_h2_demand:
-        hydrogen_demand = pd.read_csv(settings.data_path + 'demand/' + 'HydrogenDemand_NT_' + str(settings.climate_year) + '.csv', index_col=0)
+        hydrogen_demand = pd.read_csv(settings.data_path /'demand/' + 'HydrogenDemand_NT_' + str(settings.climate_year) + '.csv', index_col=0)
 
     for node in nodes.all.keys():
         for car in import_carrier_price:
@@ -682,7 +684,7 @@ def define_imports_exports(input_data_path, settings, nodes):
 def define_charging_efficiencies(settings, nodes, m):
     data_path = settings.data_path
 
-    new_tecs = pd.read_csv(data_path + 'installed_capacities/capacities_node.csv',
+    new_tecs = pd.read_csv(data_path /'installed_capacities/capacities_node.csv',
                            index_col=0)
 
     for node in nodes.onshore_nodes:
