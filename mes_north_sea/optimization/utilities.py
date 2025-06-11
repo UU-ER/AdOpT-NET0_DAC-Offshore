@@ -192,7 +192,8 @@ def define_configuration(input_data_path, settings):
     configuration["solveroptions"]["lpwarmstart"]["value"] = 0
     configuration["solveroptions"]["numericfocus"]["value"] = 3
     configuration["solveroptions"]["timelim"]["value"] = 7*24
-    configuration["solveroptions"]["method"]["value"] = -1
+    configuration["solveroptions"]["method"]["value"] = 2
+    configuration["solveroptions"]["threads"]["value"] = 48
     configuration["solveroptions"]["crossover"] = {}
     configuration["solveroptions"]["crossover"]["value"] = -1
     configuration["solveroptions"]["nodemethod"] = {}
