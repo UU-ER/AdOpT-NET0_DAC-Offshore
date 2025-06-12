@@ -2,6 +2,7 @@ from pathlib import Path
 
 import h5py
 import pandas as pd
+import numpy as np
 from matplotlib import pyplot as plt
 
 from mes_north_sea.postprocessing.utilities import extract_datasets_from_h5_group
@@ -16,11 +17,11 @@ def get_data(cy, results, filter_by='cost_total'):
     plot_data.columns = plot_data.columns.droplevel([0, 1])
     plot_data.index = plot_data.index.map(lambda x: f"{x[0]} | {x[1]}")
 
-    if "Baseline | Baseline" in plot_data:
+    if "Baseline | Baseline" in plot_data.index:
         baseline = pd.DataFrame(plot_data.loc["Baseline | Baseline"]).T
     else:
         baseline = pd.DataFrame()
-    if "All | All" in plot_data:
+    if "All | All" in plot_data.index:
         synergies = pd.DataFrame(plot_data.loc["All | All"]).T
     else:
         synergies = pd.DataFrame()
@@ -29,7 +30,6 @@ def get_data(cy, results, filter_by='cost_total'):
         ]
 
     return pd.concat([synergies, others.sort_values(by=filter_by, ascending=True), baseline])
-
 
 def plot_horizontal_bar_plot(ax, df_base, df_others, cols, scaling_factor=1, write_text=True):
     df_plot = df_base[cols].copy()
@@ -621,7 +621,6 @@ def make_cost_at_emission_target_figure(case, figure_name, plot_other_cys=False)
 
         plt.close()
 
-
 def make_figure3(plot_other_cys):
     make_cost_reduction_figure("Grid Expansion", "Figure3_cost_grid", plot_other_cys)
 
@@ -646,4 +645,107 @@ def make_figure6(plot_other_cys):
 def make_figure9(plot_other_cys):
     make_cost_at_emission_target_figure("Hydrogen", "Figure9_cost_at_emission_hydrogen", plot_other_cys)
 
+def make_tablesS15ff():
+    load_path = Path("C:/Users/6574114/PycharmProjects/PyHubProductive/mes_north_sea/clean_data")
+    save_path = Path("C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_Figures/2025-06-01/TableS15-S17_InstalledCapacities2030")
+
+    all_results = pd.read_excel(
+        "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/Summary_processed.xlsx",
+        header=[0, 1, 2], index_col=0)
+    results_filtered = all_results[
+        (all_results["global", "global", "objective"] == "min costs")
+    ]
+    all_results = all_results.set_index([("global", "global", "Case"), ("global", "global", "Subcase")])
+    all_results.index = all_results.index.map(lambda x: f"{x[0]} | {x[1]}")
+
+    arc_length_ac = pd.read_csv(load_path / "networks" / "pyhub_el_ac_all.csv", sep=";")
+    arc_length_dc = pd.read_csv(load_path / "networks" / "pyhub_el_dc_all_2040.csv", sep=";")
+    arc_l = pd.concat(
+        [arc_length_ac[["node0", "node1", "length"]], arc_length_dc[["node0", "node1", "length"]]]).drop_duplicates()
+    arc_l["arc_id"] = arc_l["node0"] + arc_l["node1"]
+    arc_l["country0"] = [str(a)[0:2] for a in arc_l["node0"]]
+    arc_l["country1"] = [str(a)[0:2] for a in arc_l["node1"]]
+    arc_l["country_connection"] = arc_l["country0"] + arc_l["country1"]
+
+    index_map = {
+        'T-1 (only onshore) ': 'Grid Expansion | onshore only',
+        'T-2 (only offshore) ': 'Grid Expansion | offshore only',
+        'T-3 (no border cross) ': 'Grid Expansion | no Border',
+        'T-All ': 'Grid Expansion | all',
+        'S-1 (only onshore) ': 'Storage | onshore only',
+        'S-2 (only offshore) ': 'Storage | offshore only',
+        'S-All-HPE': 'Storage | all HP',
+        'S-All ': 'Storage | all',
+        'H-1 (only onshore) ': 'Hydrogen | no hydrogen offshore',
+        'H-2 (only offshore) ': 'Hydrogen | no hydrogen onshore',
+        'H-3 (no storage) ': 'Hydrogen | no storage',
+        'H-4 (only local use) ': 'Hydrogen | local use only',
+        'H-All ': 'Hydrogen | all',
+        'Synergies ': 'All | All',
+    }
+
+    for cy in [1995, 2008, 2009]:
+
+        capacities = pd.DataFrame(index = index_map.keys())
+        results_cy = all_results[(all_results[("global", "global", "cy")] == cy)]
+        capacities_raw = results_cy.loc[:, ["tec_sizes"]]
+
+        for scenario in index_map:
+            result_path = results_cy.loc[index_map[scenario],("global", "global", "Path")]
+            with h5py.File(result_path + '/optimization_results.h5', 'r') as hdf_file:
+                network_sizes = extract_datasets_from_h5_group(hdf_file["design/networks/period1"])
+            network_sizes_df = pd.DataFrame(network_sizes).T
+            network_sizes_df = network_sizes_df.unstack(level=2)
+            network_sizes_df.columns = network_sizes_df.columns.droplevel(0)
+            network_sizes_df = pd.DataFrame(network_sizes_df['size']).reset_index()
+            network_sizes_df.columns = ["network", "arc_id", "size"]
+            network_sizes_df = network_sizes_df.merge(arc_l, right_on="arc_id", left_on="arc_id")
+            network_sizes_df["size_GWkm"] = network_sizes_df["size"] /1000 * network_sizes_df["length"]
+
+            network_sizes_aggregated = network_sizes_df[["size_GWkm", "network"]].groupby(["network"]).sum()
+            network_sizes_aggregated = network_sizes_aggregated["size_GWkm"]
+
+            if "hydrogenPipelineOffshore" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "Pipeline offshore (GWkm)"] = network_sizes_aggregated["hydrogenPipelineOffshore"]
+            else:
+                capacities.loc[scenario, "Pipeline offshore (GWkm)"] = np.nan
+
+            if "hydrogenPipelineOnshore_new" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "Pipeline onshore (new) (GWkm)"] = network_sizes_aggregated["hydrogenPipelineOnshore_new"]
+            else:
+                capacities.loc[scenario, "Pipeline onshore (new) (GWkm)"] = np.nan
+
+            if "hydrogenPipelineOnshore_re" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "Pipeline onshore (re) (GWkm)"] = network_sizes_aggregated["hydrogenPipelineOnshore_re"]
+            else:
+                capacities.loc[scenario, "Pipeline onshore (re) (GWkm)"] = np.nan
+
+            if "electricityAC" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "AC (GWkm)"] = network_sizes_aggregated["electricityAC"]
+            else:
+                capacities.loc[scenario, "AC (GWkm)"] = np.nan
+
+            if "electricityDC" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "DC (GWkm)"] = network_sizes_aggregated["electricityDC"]
+            else:
+                capacities.loc[scenario, "DC (GWkm)"] = np.nan
+
+            if scenario == "S-All-HPE":
+                capacities.loc[scenario, "Battery offshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_new_HP', 'size')] / 1000
+                capacities.loc[scenario, "Battery onshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_Offshore_HP', 'size')] / 1000
+            else:
+                capacities.loc[scenario, "Battery onshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_new', 'size')] / 1000
+                capacities.loc[scenario, "Battery offshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_Offshore', 'size')] / 1000
+
+            capacities.loc[scenario, "Electrolyzer offshore (GW)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Electrolyser_PEM_offshore', 'size')]/1000
+            capacities.loc[scenario, "Electrolyzer onshore (GW)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Electrolyser_PEM', 'size')]/1000
+
+            capacities.loc[scenario, "Fuel Cell (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'FuelCell', 'size')]/1000
+            capacities.loc[scenario, "H2 storage (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Storage_Hydrogen', 'size')]/1000
+
+            to_latex(capacities, "", save_path / f"tableS15-17_cy{cy}.txt", rounding=2)
 

@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
     result_path = {}
     result_path["cost"] = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/cost")
-    result_path["emissions"] = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/emission_reduction")
+    # result_path["emissions"] = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/emission_reduction")
     save_path = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030")
     cys = [1995, 2008, 2009]
 
