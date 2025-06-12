@@ -641,8 +641,11 @@ def define_imports_exports(input_data_path, settings, nodes):
     import_carrier_price = {'gas': 40,
                             'electricity': 1000
                             }
-    export_carrier_price = {'hydrogen': import_carrier_price['gas'] + carbontax * 0.108,
+    if settings.model_h2:
+        export_carrier_price = {'hydrogen': import_carrier_price['gas'] + carbontax * 0.108,
                             }
+    else:
+        export_carrier_price = {}
 
     if settings.variable_h2_demand:
         hydrogen_demand = pd.read_csv(settings.data_path / "demand" / f"HydrogenDemand_NT_{str(settings.climate_year)}.csv", index_col=0)
@@ -662,8 +665,12 @@ def define_imports_exports(input_data_path, settings, nodes):
         if settings.variable_h2_demand and settings.year==2040:
             demand = pd.DataFrame()
             demand["Export limit"] = hydrogen_demand[node]
-            adopt.fill_carrier_data(input_data_path, value_or_data=demand, columns=['Export limit'],
-                                    carriers=["hydrogen"], nodes=[node])
+
+            if settings.model_h2:
+                adopt.fill_carrier_data(input_data_path, value_or_data=demand, columns=['Export limit'],
+                                        carriers=["hydrogen"], nodes=[node])
+
+
 
 
 
@@ -676,7 +683,8 @@ def define_imports_exports(input_data_path, settings, nodes):
 
     export_emissions = {'hydrogen': -0.108}
     for car in export_emissions:
-        adopt.fill_carrier_data(input_data_path, value_or_data=export_emissions[car],
+        if settings.model_h2:
+            adopt.fill_carrier_data(input_data_path, value_or_data=export_emissions[car],
                                 columns=['Export emission factor'], carriers=[car], nodes = nodes.onshore_nodes)
 
     # Emission Price
