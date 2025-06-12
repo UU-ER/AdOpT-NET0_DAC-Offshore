@@ -631,7 +631,7 @@ def define_imports_exports(input_data_path, settings, nodes):
             carbontax = 80
 
         elif settings.year == 2040:
-            data_path = settings.data_path /"import_export"/"ImportExport_realistic_2040.xlsx"
+            data_path = settings.data_path /"import_export"/"ImportExport_unlimited_2040.xlsx"
             carbontax = settings.co2_tax
 
     import_export = pd.read_excel(data_path, index_col=0)
