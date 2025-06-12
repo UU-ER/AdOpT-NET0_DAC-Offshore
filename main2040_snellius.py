@@ -100,6 +100,7 @@ if __name__ == "__main__":
         m = adopt.ModelHub()
         m.read_data(input_data_path)
 
+        m.data.model_config["solveroptions"]["threads"]["value"] = 192
         if settings.test:
             m.data.model_config["reporting"]["save_summary_path"][
                 "value"] = save_path
