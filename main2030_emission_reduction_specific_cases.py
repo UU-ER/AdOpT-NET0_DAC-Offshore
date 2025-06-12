@@ -1,4 +1,6 @@
 from pathlib import Path
+import pyomo.environ as pyo
+
 from mes_north_sea.optimization.utilities import *
 
 test = 0
@@ -17,6 +19,8 @@ h2_emissions = 29478397.12
 
 emission_targets = [0.99, 0.98, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
 emission_targets.reverse()
+
+objective_limit = -1
 
 scenarios = {
     # 'Baseline': 'Baseline',
@@ -121,7 +125,21 @@ for stage in scenarios.keys():
                 else:
                     m.data.model_config["reporting"]["case_name"]["value"] = stage + '_minCost_at_' + str(reduction)
 
+                model = m.model[m.info_solving_algorithms["aggregation_model"]]
+                config = m.data.model_config
+
+                if objective_limit != -1:
+                    if model.find_component("const_objective_function"):
+                        if config["solveroptions"]["solver"]["value"] == "gurobi_persistent":
+                            m.solver.remove_constraint(model.const_objective_function)
+                        model.del_component(model.const_objective_function)
+                    model.const_objective_function = pyo.Constraint(
+                        expr=model.var_npv.value <= objective_limit * 1.001
+                    )
+
                 m._optimize_costs_emissionslimit()
+
+                objective_limit = model.var_npv.value
 
 
 
