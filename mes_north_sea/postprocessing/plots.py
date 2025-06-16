@@ -37,5 +37,11 @@ from mes_north_sea.postprocessing.plot_utilities import *
 # make_figure6(plot_other_cys=False)
 # make_figure9(plot_other_cys=False)
 
-# Figure S15 installed capacities for 2030 (aggregated per country and scenario, for each cy)
+# Table S15-17 installed capacities for 2030 (aggregated per country and scenario, for each cy)
 # make_tablesS15ff()
+
+# Table S18- installed capacities for 2030 (aggregated per country and scenario, for each cy)
+make_tablesS18ff()
+
+
+

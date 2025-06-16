@@ -655,7 +655,7 @@ def make_tablesS15ff():
     results_filtered = all_results[
         (all_results["global", "global", "objective"] == "min costs")
     ]
-    all_results = all_results.set_index([("global", "global", "Case"), ("global", "global", "Subcase")])
+    all_results = results_filtered.set_index([("global", "global", "Case"), ("global", "global", "Subcase")])
     all_results.index = all_results.index.map(lambda x: f"{x[0]} | {x[1]}")
 
     arc_length_ac = pd.read_csv(load_path / "networks" / "pyhub_el_ac_all.csv", sep=";")
@@ -748,4 +748,132 @@ def make_tablesS15ff():
             capacities.loc[scenario, "H2 storage (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Storage_Hydrogen', 'size')]/1000
 
             to_latex(capacities, "", save_path / f"tableS15-17_cy{cy}.txt", rounding=2)
+
+def make_tablesS18ff():
+    load_path = Path("C:/Users/6574114/PycharmProjects/PyHubProductive/mes_north_sea/clean_data")
+    save_path = Path("C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_Figures/2025-06-01/TableS18ff_InstalledCapacities2030")
+
+    scenarios = {
+        'T-1 (only onshore) ': 'Grid Expansion | onshore only',
+        'T-2 (only offshore) ': 'Grid Expansion | offshore only',
+        'T-3 (no border cross) ': 'Grid Expansion | no Border',
+        'T-All ': 'Grid Expansion | all',
+        'S-1 (only onshore) ': 'Storage | onshore only',
+        'S-2 (only offshore) ': 'Storage | offshore only',
+        'S-All-HPE': 'Storage | all HP',
+        'S-All ': 'Storage | all',
+        'H-1 (only onshore) ': 'Hydrogen | no hydrogen offshore',
+        'H-2 (only offshore) ': 'Hydrogen | no hydrogen onshore',
+        'H-3 (no storage) ': 'Hydrogen | no storage',
+        'H-4 (only local use) ': 'Hydrogen | local use only',
+        'H-All ': 'Hydrogen | all',
+        'Synergies ': 'All | All',
+    }
+
+    all_results = pd.read_excel(
+        "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/Summary_processed.xlsx",
+        header=[0, 1, 2], index_col=0)
+    results_filtered = all_results[
+        (all_results["global", "global", "objective"] == "min costs")
+    ]
+    results_filtered = results_filtered.set_index([("global", "global", "Case"), ("global", "global", "Subcase")])
+    results_filtered.index = results_filtered.index.map(lambda x: f"{x[0]} | {x[1]}")
+
+    arc_length_ac = pd.read_csv(load_path / "networks" / "pyhub_el_ac_all.csv", sep=";")
+    arc_length_dc = pd.read_csv(load_path / "networks" / "pyhub_el_dc_all_2040.csv", sep=";")
+    arc_l = pd.concat(
+        [arc_length_ac[["node0", "node1", "length"]], arc_length_dc[["node0", "node1", "length"]]]).drop_duplicates()
+    arc_l_dup = arc_l.copy()
+    arc_l_dup.columns = ["node1", "node0", "length"]
+
+    arc_l = pd.concat([arc_l, arc_l_dup])
+
+    arc_l["arc_id"] = arc_l["node0"] + arc_l["node1"]
+    arc_l["country0"] = [str(a)[0:2] for a in arc_l["node0"]]
+    arc_l["country1"] = [str(a)[0:2] for a in arc_l["node1"]]
+    arc_l["country_connection"] = arc_l["country0"] + arc_l["country1"]
+    arc_l = arc_l.drop_duplicates(subset="arc_id")
+
+    latex_tables = []
+
+    for s in scenarios.keys():
+        scenario = scenarios[s]
+        print(scenario)
+
+
+        network_size = []
+        technology_size = []
+        for cy in [1995, 2008, 2009]:
+            results_cy = results_filtered[(results_filtered[("global", "global", "cy")] == cy)]
+            scenario_path = results_cy.loc[scenario, ("global", "global", "Path")]
+
+            # NETWORKS
+            with h5py.File(scenario_path + '/optimization_results.h5', 'r') as hdf_file:
+                network_sizes = extract_datasets_from_h5_group(hdf_file["design/networks/period1"])
+            network_sizes_df = pd.DataFrame(network_sizes).T
+            network_sizes_df = network_sizes_df.unstack(level=2)
+            network_sizes_df.columns = network_sizes_df.columns.droplevel(0)
+            network_sizes_df = pd.DataFrame(network_sizes_df['size']).reset_index()
+            network_sizes_df.columns = ["network", "arc_id", "size"]
+            network_sizes_merged = network_sizes_df.set_index("arc_id").join(arc_l.set_index("arc_id"), how="left")
+
+            network_sizes_merged["edge"] = network_sizes_merged.apply(lambda row: tuple(sorted([row["node0"], row["node1"]])), axis=1)
+            network_sizes_merged_unique = network_sizes_merged.drop_duplicates(subset=["edge", "network"]).drop(columns="edge")
+
+            network_sizes_merged_unique["size_GWkm"] = network_sizes_merged_unique["size"] /1000 * network_sizes_merged_unique["length"]
+
+            network_sizes_aggregated = network_sizes_merged_unique[["size_GWkm", "network", "country_connection"]].groupby(["network", "country_connection"]).sum()
+
+            network_sizes_aggregated.index = pd.MultiIndex.from_arrays([network_sizes_aggregated.index.get_level_values(0),
+                                                                        network_sizes_aggregated.index.get_level_values(1),
+                                                                        [cy] * len(network_sizes_aggregated)], names=["technology", "country", "cy"])
+            network_sizes_aggregated.columns = ["size"]
+            network_size.append(network_sizes_aggregated)
+
+            # TECHNOLOGY SIZES
+            with h5py.File(scenario_path + '/optimization_results.h5', 'r') as hdf_file:
+                tech_design = extract_datasets_from_h5_group(hdf_file["design/nodes"])
+            tech_design_df = pd.DataFrame(tech_design).T
+            tech_design_df = tech_design_df.loc["period1", :, :, "size"]
+            tech_design_df["country"] = [str(i)[0:2] for i in tech_design_df.index.get_level_values(0)]
+            tech_design_df = tech_design_df.reset_index()
+            tech_design_df.columns = ["node", "tech", "size", "country"]
+
+            tech_sizes_aggregated = tech_design_df[["country", "tech", "size"]].groupby(["country", "tech"]).sum()
+            tech_sizes_aggregated = tech_sizes_aggregated[~tech_sizes_aggregated.index.get_level_values(1).str.contains("_existing")]
+
+            tech_sizes_aggregated.index = pd.MultiIndex.from_arrays([tech_sizes_aggregated.index.get_level_values(1),
+                                                                        tech_sizes_aggregated.index.get_level_values(0),
+                                                                        [cy] * len(tech_sizes_aggregated)], names=["technology", "country", "cy"])
+
+            technology_size.append(tech_sizes_aggregated)
+
+        network_size = pd.concat(network_size)
+        network_size = network_size[network_size.index.get_level_values(0).isin(['electricityAC', 'electricityDC', 'hydrogenPipelineOffshore', 'hydrogenPipelineOnshore_new', 'hydrogenPipelineOnshore_re'])]
+
+        technology_size = pd.concat(technology_size)
+
+        final_size = pd.concat([network_size, technology_size])
+
+
+        final_size = final_size.reset_index().pivot(index= ["technology", "country"], columns=["cy"])
+        final_size_export = final_size[final_size.sum(axis=1) != 0]
+        final_size_export.index.names = ["", ""]
+
+        final_size_export.columns = ["1995", "2008", "2009"]
+        final_size_export = final_size_export.apply(pd.to_numeric, errors="coerce").round(0)
+
+        table = final_size_export.to_latex(
+            index=True,
+            na_rep=0,
+            formatters={'name': str.upper},
+            caption="Bla",
+            index_names=False,
+            multirow = False
+        )
+        latex_tables.append(table)
+
+        with open(save_path / "tableS18ff.txt", "a") as f:
+            f.write("\\n")
+            f.write(table)
 
