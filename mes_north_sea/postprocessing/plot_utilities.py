@@ -794,7 +794,6 @@ def make_tablesS18ff():
     arc_l["country_connection"] = arc_l["country0"] + arc_l["country1"]
     arc_l = arc_l.drop_duplicates(subset="arc_id")
 
-    latex_tables = []
 
     for s in scenarios.keys():
         scenario = scenarios[s]
@@ -863,17 +862,36 @@ def make_tablesS18ff():
         final_size_export.columns = ["1995", "2008", "2009"]
         final_size_export = final_size_export.apply(pd.to_numeric, errors="coerce").round(0)
 
-        table = final_size_export.to_latex(
-            index=True,
-            na_rep=0,
-            formatters={'name': str.upper},
-            caption="Bla",
-            index_names=False,
-            multirow = False
-        )
-        latex_tables.append(table)
+        tec_names = final_size_export.index.get_level_values(0).to_list()
 
-        with open(save_path / "tableS18ff.txt", "a") as f:
-            f.write("\\n")
-            f.write(table)
+        tec_replace = {
+            "Electrolyser_PEM": "Electrolyzer (onshore)",
+            "Electrolyser_PEM_offshore": "Electrolyzer (offshore)",
+            "Storage_Hydrogen": "\\ce{H2} Storage",
+            "electricityAC": "Electricity Grid (AC)",
+            "electricityDC": "Electricity Grid (DC)",
+            "hydrogenPipelineOnshore_new": "\\ce{H2} pipeline (onshore, new)",
+            "hydrogenPipelineOnshore_re": "\\ce{H2} pipeline (onshore, repurposed)",
+        }
+
+        tec_names = [tec_replace.get(name, name) for name in tec_names]
+        final_size_export.index = pd.MultiIndex.from_arrays([tec_names, final_size_export.index.get_level_values(1).to_list()])
+
+        if len(final_size_export) > 0:
+            table = final_size_export.to_latex(
+                index=True,
+                float_format="%.1f",
+                na_rep=0,
+                formatters={'name': str.upper},
+                caption=f"Installed Capacities for scenario {s} aggregated to country level for the energy system design in 2030 for different climatic years. Existing assets are not reported.",
+                index_names=False,
+                multirow = False,
+                column_format="llSSS",
+                label=f"tab:capacities2030_{s}"
+            )
+            table = table.replace("\\begin{table}\n\\caption", "\\begin{table}\n\\centering\n\\caption")
+
+            with open(save_path / "tableS18ff.txt", "a") as f:
+                f.write(table)
+                f.write("\n")
 
