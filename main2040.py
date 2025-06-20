@@ -1,9 +1,4 @@
-import adopt_net0 as adopt
-import json
-from pathlib import Path
-import os
-import pandas as pd
-import numpy as np
+import random
 from mes_north_sea.optimization.utilities import *
 
 test = 1
@@ -13,6 +8,7 @@ settings.year = 2040
 settings.variable_h2_demand = 0
 cys = [1995, 2008, 2009]
 co2_tax = [100]
+c_permutation = 0.01
 
 # avg cap factor
 # total_production = pd.Series()
@@ -97,6 +93,14 @@ for stage in scenarios.keys():
 
             m = adopt.ModelHub()
             m.read_data(input_data_path)
+
+            for node in m.data.technology_data["period1"]:
+                for tec in m.data.technology_data["period1"][node]:
+                    print(m.data.technology_data["period1"][node][tec].economics['unit_capex'])
+                    m.data.technology_data["period1"][node][tec].economics['unit_capex'] = \
+                        m.data.technology_data["period1"][node][tec].economics['unit_capex'] * random.uniform(
+                            1 - c_permutation, 1 + c_permutation)
+                    print(m.data.technology_data["period1"][node][tec].economics['unit_capex'])
 
             if settings.test:
                 m.data.model_config["reporting"]["save_summary_path"][

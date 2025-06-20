@@ -1,5 +1,6 @@
 from pathlib import Path
 from mes_north_sea.optimization.utilities import *
+import random
 
 test = 0
 settings = Settings(test=test)
@@ -7,6 +8,7 @@ settings.demand_factor = 1
 settings.year = 2030
 settings.variable_h2_demand = 0
 cys = [1995,2008,2009]
+c_permutation = 0.01
 
 data_path  = "mes_north_sea/data_" + str(settings.year)
 
@@ -88,6 +90,14 @@ for stage in scenarios.keys():
 
             m = adopt.ModelHub()
             m.read_data(input_data_path)
+
+            for node in m.data.technology_data["period1"]:
+                for tec in m.data.technology_data["period1"][node]:
+                    print(m.data.technology_data["period1"][node][tec].economics['unit_capex'])
+                    m.data.technology_data["period1"][node][tec].economics['unit_capex'] = \
+                        m.data.technology_data["period1"][node][tec].economics['unit_capex'] * random.uniform(
+                            1 - c_permutation, 1 + c_permutation)
+                    print(m.data.technology_data["period1"][node][tec].economics['unit_capex'])
 
             m = define_charging_efficiencies(settings, nodes, m)
             m.data.model_config["solveroptions"]["threads"]["value"] = 15
