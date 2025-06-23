@@ -7,7 +7,7 @@ settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2030
 settings.variable_h2_demand = 0
-cys = [1995,2008,2009]
+cys = [2008,2009]
 c_permutation = 0.01
 
 data_path  = "mes_north_sea/data_" + str(settings.year)
@@ -30,10 +30,10 @@ scenarios = {
     #           'ElectricityGrid_on': 'Grid Expansion (onshore only)',
     #           'ElectricityGrid_off': 'Grid Expansion (offshore only)',
     #           'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
-              'Hydrogen_Baseline': 'Hydrogen (all)',
-              'Hydrogen_H1': 'Hydrogen (no storage)',
+    #           'Hydrogen_Baseline': 'Hydrogen (all)',
+    #           'Hydrogen_H1': 'Hydrogen (no storage)',
               'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
-              'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
+              # 'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
               # 'Hydrogen_H4': 'Hydrogen (local use only)',
               'All': 'All Pathways'
              }
@@ -76,10 +76,10 @@ for stage in scenarios.keys():
             define_node_locations(input_data_path, nodes)
             define_installed_capacities(input_data_path, settings, nodes)
             define_new_technologies(input_data_path, settings, nodes)
-            adopt.copy_technology_data(input_data_path, Path(settings.data_path + "technology_data"))
+            adopt.copy_technology_data(input_data_path, Path(settings.data_path / "technology_data"))
             define_networks(input_data_path, settings)
             define_network_topology(input_data_path, settings, nodes)
-            adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
+            adopt.copy_network_data(input_data_path, Path(settings.data_path / "network_data"))
 
             define_demand(input_data_path, settings, nodes)
 
@@ -100,7 +100,7 @@ for stage in scenarios.keys():
                     print(m.data.technology_data["period1"][node][tec].economics['unit_capex'])
 
             m = define_charging_efficiencies(settings, nodes, m)
-            m.data.model_config["solveroptions"]["threads"]["value"] = 15
+            m.data.model_config["solveroptions"]["threads"]["value"] = 8
             if settings.test:
                 m.data.model_config["reporting"]["save_summary_path"][
                     "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030_test/"
@@ -117,8 +117,8 @@ for stage in scenarios.keys():
             m._define_solver_settings()
 
             # min emissions
-            m.data.model_config["reporting"]["case_name"]["value"] = stage + '_minE' + "_cy" + str(settings.climate_year)
-            m._optimize_emissions_net()
+            # m.data.model_config["reporting"]["case_name"]["value"] = stage + '_minE' + "_cy" + str(settings.climate_year)
+            # m._optimize_emissions_net()
             max_em_reduction = (m.model[m.info_solving_algorithms["aggregation_model"]].var_emissions_net.value + h2_emissions) / baseline_emissions
 
             print(max_em_reduction)
