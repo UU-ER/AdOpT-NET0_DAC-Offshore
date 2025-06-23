@@ -25,7 +25,7 @@ class Settings():
 
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-01 01:00'
+            self.end_date = '05-05 00:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'

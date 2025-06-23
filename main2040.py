@@ -77,10 +77,10 @@ for stage in scenarios.keys():
             define_node_locations(input_data_path, nodes)
             define_installed_capacities(input_data_path, settings, nodes)
             define_new_technologies(input_data_path, settings, nodes)
-            adopt.copy_technology_data(input_data_path, Path(settings.data_path + "technology_data"))
+            adopt.copy_technology_data(input_data_path, Path(settings.data_path / "technology_data"))
             define_networks(input_data_path, settings)
             define_network_topology(input_data_path, settings, nodes)
-            adopt.copy_network_data(input_data_path, Path(settings.data_path + "network_data"))
+            adopt.copy_network_data(input_data_path, Path(settings.data_path / "network_data"))
 
             define_demand(input_data_path, settings, nodes)
 
