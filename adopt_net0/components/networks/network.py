@@ -682,6 +682,10 @@ class Network(ModelComponent):
 
             b_arc.disjunction_installation = gdp.Disjunction(rule=bind_disjunctions)
 
+            # Cut capex >= x*S
+            b_arc.const_cut_capex = pyo.Constraint(expr=b_arc.var_capex_aux>= b_arc.var_capex_aux.bounds[1]/b_arc.var_size.bounds[1] * b_arc.var_size)
+
+
         # CAPEX and CAPEX aux
         if self.existing:
             if not self.decommission == "impossible":
