@@ -25,7 +25,7 @@ class Settings():
 
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-05 00:00'
+            self.end_date = '05-01 00:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
@@ -204,10 +204,10 @@ def define_configuration(input_data_path, settings):
     configuration["reporting"]["save_summary_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/" + str(settings.year) + "_250423"
     configuration["reporting"]["save_path"]["value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/" + str(settings.year) + "_250423"
 
-    configuration["scaling"]["scaling_on"]["value"] = 0
+    configuration["scaling"]["scaling_on"]["value"] = 1
     configuration["scaling"]["scaling_factors"]["energy_vars"]["value"] = 1e-2
-    configuration["scaling"]["scaling_factors"]["cost_vars"]["value"] = 1e-3
-    configuration["scaling"]["scaling_factors"]["objective"]["value"] = 1e-3
+    configuration["scaling"]["scaling_factors"]["cost_vars"]["value"] = 1e-2
+    configuration["scaling"]["scaling_factors"]["objective"]["value"] = 1
 
     with open(input_data_path / "ConfigModel.json", "w") as json_file:
         json.dump(configuration, json_file, indent=4)
@@ -240,7 +240,8 @@ def define_installed_capacities(input_data_path, settings, nodes):
         else:
             gas_plant = 'PowerPlant_Gas_noh2'
 
-        tecs_at_node = {gas_plant: round(new_at_node.get('Gas', 0), 0),
+        tecs_at_node = {
+                        gas_plant: round(new_at_node.get('Gas', 0), 0),
                         'PowerPlant_Nuclear': round(new_at_node.get('Nuclear', 0), 0),
                         'PowerPlant_Oil': round(new_at_node.get('Oil', 0), 0),
                         'PowerPlant_Coal': round(new_at_node.get('Coal & Lignite', 0), 0),
