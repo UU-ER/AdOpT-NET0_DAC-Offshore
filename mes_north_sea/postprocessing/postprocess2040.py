@@ -1,4 +1,6 @@
 import warnings
+import os
+import numpy as np
 
 import pandas as pd
 from pathlib import Path
@@ -23,12 +25,13 @@ def process_row(idx_row):
     data_dict[("global", "global", "total_costs")] = row["total_npv"]
     data_dict[("global", "global", "emissions_net")] = row["emissions_net"]
     data_dict[("global", "global", "carbon_costs")] = row["carbon_cost"]
+    data_dict[("global", "global", "carbon_tax")] = row["carbon_tax"]
+    data_dict[("global", "global", "variable_h2_demand")] = row["variable_h2_demand"]
 
 
     h2_emissions = row["h2_emissions"]
     h2_production_cost_smr = row["h2_production_cost_smr"]
     h2_cost_total = row["h2_cost_total"]
-    warnings.warn("ONLY WORKS FRO 2030")
     car_costs = {'gas': 40,
                      'electricity': 1000,
                      'hydrogen': 40 + row["carbon_tax"] * 0.108
@@ -36,11 +39,11 @@ def process_row(idx_row):
     baseline_costs = row['baseline_costs']
     baseline_emissions = row['baseline_emissions']
 
-
-    max_re = pd.read_csv(
-        'C:/Users/6574114/PycharmProjects/PyHubProductive/mes_north_sea/clean_data/production_profiles_re/production_profiles_re' + str(row["climate_year"]) + '.csv',
-        index_col=0, header=[0, 1])
-    max_re = max_re.loc[:, (slice(None), 'total')].sum().sum()
+    # Not valid for 2040
+    # max_re = pd.read_csv(
+    #     'C:/Users/6574114/PycharmProjects/PyHubProductive/mes_north_sea/clean_data/production_profiles_re/production_profiles_re' + str(row["climate_year"]) + '.csv',
+    #     index_col=0, header=[0, 1])
+    # max_re = max_re.loc[:, (slice(None), 'total')].sum().sum()
 
     # Networks
     with h5py.File(case_path + '/optimization_results.h5', 'r') as hdf_file:
@@ -105,7 +108,7 @@ def process_row(idx_row):
 
     data_dict[("global", "electricity", "generic_production")] = (df_sum.loc[("electricity", "generic_production")])
     data_dict[("global", "electricity", "demand")] = (df_sum.loc[("electricity", "demand")])
-    data_dict[("global", "electricity", "curtailment")] = max_re - data_dict[("global", "electricity", "generic_production")]
+    # data_dict[("global", "electricity", "curtailment")] = max_re - data_dict[("global", "electricity", "generic_production")]
 
 
     #costs
@@ -184,30 +187,86 @@ def process_row(idx_row):
 
 if __name__ == "__main__":
 
+
+    #
     result_path = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040")
     # result_path["emissions"] = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/emission_reduction")
     save_path = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040")
     cys = [1995, 2008, 2009]
+    # #
+    # # Get summary from all h5 files in dir
+    # summary_ls = []
+    # for dirpath, dirnames, filenames in os.walk(result_path):
+    #     # exclude "old" directories
+    #     dirnames[:] = [d for d in dirnames if d != "old"]
+    #
+    #     for file in filenames:
+    #         if file.endswith(".h5"):
+    #             full_path = os.path.join(dirpath, file)
+    #             print(full_path)
+    #             with h5py.File(full_path, 'r') as hdf_file:
+    #                 data = extract_datasets_from_h5_group(hdf_file["summary"])
+    #
+    #
+    #                 def flatten_value(val):
+    #                     val = val[0]  # take the first element of the list
+    #                     if isinstance(val, np.generic):  # NumPy scalar
+    #                         return val.item()
+    #                     elif isinstance(val, bytes):  # decode bytes
+    #                         return val.decode('utf-8')
+    #                     else:
+    #                         return val  # already string or number
+    #
+    #                 flattened = {k[0]: flatten_value(v) for k, v in data.items()}
+    #
+    #                 summary_ls.append(pd.DataFrame(flattened, index=[0]))
+    #
+    # summary = pd.concat(summary_ls, ignore_index=True)
+    # summary["climate_year"] = summary["time_stamp"].str.extract(r"cy(\d+)", expand=False).astype(int)
+    # summary["carbon_tax"] = summary["case"].str.extract(r"co2_tax(\d+)", expand=False).astype(int)
+    #
+    # exclude_cases_first_stage = [
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250630101533_ElectricityGrid_all_costs_cy1995_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250701211222_ElectricityGrid_all_costs_cy2008_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250702025404_ElectricityGrid_all_costs_cy2009_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250702103702_ElectricityGrid_all_costs_cy1995_co2_tax200-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250704070031_ElectricityGrid_all_costs_cy2008_co2_tax200-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250705021311_ElectricityGrid_all_costs_cy2009_co2_tax200-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250715122641_ElectricityGrid_all_costs_cy1995_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250715233757_ElectricityGrid_all_costs_cy2008_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250716120540_ElectricityGrid_all_costs_cy2009_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250623161922_Hydrogen_H4_costs_cy1995_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250624081939_Hydrogen_H4_costs_cy2008_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250624182018_Hydrogen_H4_costs_cy2009_co2_tax100-1'
+    # ]
+    #
+    # summary = summary[~summary["time_stamp"].isin(exclude_cases_first_stage)]
+    # summary["variable_h2_demand"] = 0
+    #
+    # cases_var_h2_demand = [
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250715171505_All_costs_cy1995_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250716051718_All_costs_cy2008_co2_tax100-1',
+    #     r'\\Soliscom.uu.nl\geo\USERS\StaffUsers\6574114\EhubResults\MES NorthSea\20250515\2040\20250716182638_All_costs_cy2009_co2_tax100-1'
+    # ]
+    # summary["variable_h2_demand"] = 0
+    # summary.loc[summary["time_stamp"].isin(cases_var_h2_demand), "variable_h2_demand"] = 1
+    #
+    # summary["h2_emissions"] = 81796113.3
+    # summary["h2_production_cost_smr"] = 48.64
+    # summary["h2_cost_total"] = 3.68E+10
+    # summary['Case'] = summary['time_stamp'].apply(lambda x: map_timestamp(x, 0))
+    # summary['Subcase'] = summary['time_stamp'].apply(lambda x: map_timestamp(x, 1))
+    #
+    # for cy in cys:
+    #     summary.loc[(summary['climate_year'] == cy) & (summary['carbon_tax'] == 100), 'baseline_costs'] = summary.loc[(summary['Case'] == 'Baseline') & (summary['climate_year'] == cy) & (summary['carbon_tax'] == 100), 'total_npv'].values[0]
+    #     summary.loc[(summary['climate_year'] == cy) & (summary['carbon_tax'] == 200), 'baseline_costs'] = summary.loc[(summary['Case'] == 'Baseline') & (summary['climate_year'] == cy) & (summary['carbon_tax'] == 200), 'total_npv'].values[0]
+    #
+    #     summary.loc[(summary['climate_year'] == cy) & (summary['carbon_tax'] == 100), 'baseline_emissions'] = summary.loc[(summary['Case'] == 'Baseline') & (summary['climate_year'] == cy) & (summary['carbon_tax'] == 100), 'emissions_net'].values[0]
+    #     summary.loc[(summary['climate_year'] == cy) & (summary['carbon_tax'] == 200), 'baseline_emissions'] = summary.loc[(summary['Case'] == 'Baseline') & (summary['climate_year'] == cy) & (summary['carbon_tax'] == 200), 'emissions_net'].values[0]
+    #
+    # summary.to_excel(save_path / "Summary.xlsx")
 
-    summary = []
-    # load summaries
-    for cy in cys:
-        df = []
-
-        s = pd.read_excel(result_path / "Summary.xlsx")
-        s["climate_year"] = cy
-        s["h2_emissions"] = 81796113.3
-        s["h2_production_cost_smr"] = 48.64
-        s["h2_cost_total"] = 3.68E+10
-        s["carbon_tax"] = 100
-        s['Case'] = s['time_stamp'].apply(lambda x: map_timestamp(x, 0))
-        s['Subcase'] = s['time_stamp'].apply(lambda x: map_timestamp(x, 1))
-        s['baseline_costs'] = s.loc[s['Case'] == 'Baseline', 'total_npv'].values[0] + s["h2_cost_total"]
-        s['baseline_emissions'] = s.loc[s['Case'] == 'Baseline', 'emissions_net'].values[0] + s["h2_emissions"]
-        summary.append(s)
-
-    summary = pd.concat(summary)
-
+    summary = pd.read_excel(save_path / "Summary.xlsx", index_col=0, header=[0])
 
     def classify_text(s):
         if '_minE_' in s:
@@ -221,11 +280,10 @@ if __name__ == "__main__":
 
     summary["objective"] = summary['case'].apply(classify_text)
 
-
     results = []
     # for row in summary.iterrows():
-    #     results.append(process_row(row))
     #     print(row)
+    #     results.append(process_row(row))
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = list(executor.map(process_row, summary.iterrows()))

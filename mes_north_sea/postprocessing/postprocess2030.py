@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
     result_path = {}
     result_path["cost"] = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/cost")
-    # result_path["emissions"] = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/emission_reduction")
+    result_path["emissions"] = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030/emission_reduction")
     save_path = Path("//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2030")
     cys = [1995, 2008, 2009]
 
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     # data = pd.read_excel(result_path_cost / "Summary_processed.xlsx", index_col=0)
     results.columns = pd.MultiIndex.from_tuples(results.columns)
 
-    results.to_excel(save_path  / "Summary_processed.xlsx")
+    results.to_excel(save_path  / "Summary_processed_all.xlsx")
 
     # results1 = pd.read_excel(save_path  / "Summary_processed.xlsx", index_col=0, header=[0,1,2])
 

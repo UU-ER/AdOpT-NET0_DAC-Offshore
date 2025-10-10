@@ -33,6 +33,11 @@ from mes_north_sea.postprocessing.plot_utilities import *
 # make_figure4(plot_other_cys=True)
 # make_figure7(plot_other_cys=True)
 
+# Figure 10 (2040 case)
+# make_figure10(plot_other_cys=False)
+
+# make_figure_co2_tax(plot_other_cys=False)
+
 # Figure 6, 9 abatement costs for different emission targets
 # make_figure6(plot_other_cys=False)
 # make_figure9(plot_other_cys=False)
@@ -41,7 +46,10 @@ from mes_north_sea.postprocessing.plot_utilities import *
 # make_tablesS15ff()
 
 # Table S18- installed capacities for 2030 (aggregated per country and scenario, for each cy)
-make_tablesS18ff()
+# make_tablesS18ff()
+
+# Table S28- installed capacities for 2040 (aggregated per country and scenario, for each cy)
+make_tablesS28ff()
 
 
 

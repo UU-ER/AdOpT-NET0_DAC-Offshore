@@ -9,12 +9,24 @@ from mes_north_sea.postprocessing.utilities import extract_datasets_from_h5_grou
 from mes_north_sea.preprocessing.utilities import to_latex
 
 
-def get_data(cy, results, filter_by='cost_total'):
+def get_data(cy, results, filter_by='cost_total', yr=2030):
     results_base_cy = results[results["global", "global", "cy"] == cy]
     results_base_cy = results_base_cy.set_index([("global", "global", "Case"), ("global", "global", "Subcase")])
     idx = pd.IndexSlice
-    plot_data = results_base_cy.loc[:, idx["global", "final", :]]
+
+    plot_data = results_base_cy.loc[:,
+                idx["global", "final", :]]
     plot_data.columns = plot_data.columns.droplevel([0, 1])
+    if yr == 2040:
+        onshore_wind = results_base_cy.loc[:, idx["tec_sizes", "Onshore_Wind", :]]
+        onshore_wind.columns = ["onshore_wind"]
+        offshore_wind = results_base_cy.loc[:, idx["tec_sizes", "Offshore_Wind", :]]
+        offshore_wind.columns = ["offshore_wind"]
+        pv = results_base_cy.loc[:, idx["tec_sizes", "PV", :]]
+        pv.columns = ["pv"]
+
+        plot_data = plot_data.join(onshore_wind).join(offshore_wind).join(pv)
+
     plot_data.index = plot_data.index.map(lambda x: f"{x[0]} | {x[1]}")
 
     if "Baseline | Baseline" in plot_data.index:
@@ -29,7 +41,10 @@ def get_data(cy, results, filter_by='cost_total'):
         (plot_data.index != "Baseline | Baseline") & (plot_data.index != "All | All")
         ]
 
-    return pd.concat([synergies, others.sort_values(by=filter_by, ascending=True), baseline])
+    if filter_by == "index":
+        return pd.concat([synergies, others.sort_index(), baseline])
+    else:
+        return pd.concat([synergies, others.sort_values(by=filter_by, ascending=True), baseline])
 
 def plot_horizontal_bar_plot(ax, df_base, df_others, cols, scaling_factor=1, write_text=True):
     df_plot = df_base[cols].copy()
@@ -490,7 +505,7 @@ def make_table_s8():
     final_table.to_excel(save_path / f"tableS8.xlsx")
     to_latex(final_table, "", save_path / f"tableS8.txt", rounding=2)
 
-def make_cost_reduction_figure(case, figure_name, plot_other_cys=False):
+def make_cost_reduction_figure2030(case, figure_name, plot_other_cys=False):
 
     save_path = Path("C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_Figures/2025-06-01/") / figure_name
 
@@ -527,6 +542,78 @@ def make_cost_reduction_figure(case, figure_name, plot_other_cys=False):
         ax3.axvline(x=-plot_data_base_cy.loc[:, "abatement_cost"].max(), color='red', linestyle='--')
         ax3.set_xlim(-300, 0)
         ax3.legend().set_visible(False)
+        ax3.set_yticklabels([])
+
+        plt.tight_layout()
+
+        if plot_other_cys:
+            plt.savefig(save_path / f'cost_reduction_{base_cy}_with_other_cys.svg')
+        else:
+            plt.savefig(save_path / f'cost_reduction_{base_cy}.svg')
+
+        plt.close()
+
+
+def make_cost_reduction_figure2040(figure_name, plot_other_cys=False):
+
+    save_path = Path("C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_Figures/2025-06-01/") / figure_name
+
+    results_all = pd.read_excel(
+        "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040/Summary_processed.xlsx",
+        header=[0, 1, 2], index_col=0)
+
+    results_all = results_all[results_all["global", "global", "carbon_tax"] == 100]
+    results_all = results_all[results_all["global", "global", "variable_h2_demand"] == 0]
+
+    cys = [1995, 2008, 2009]
+
+    for base_cy in cys:
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(30, 4))
+
+        plot_data_base_cy = get_data(base_cy, results_all, filter_by="index", yr=2040)
+        plot_data_other_cys = {}
+
+        custom_order = [
+            'Baseline | Baseline',
+            'Grid Expansion | no Border',
+            'Grid Expansion | onshore only',
+            'Grid Expansion | offshore only',
+            'Grid Expansion | all',
+            'Storage | offshore only',
+            'Storage | onshore only',
+            'Storage | all',
+            'Hydrogen | no hydrogen onshore',
+            'Hydrogen | no storage',
+            'Hydrogen | local use only',
+            'Hydrogen | no hydrogen offshore',
+            'Hydrogen | all',
+            'All | All'
+        ]
+        custom_order.reverse()
+        plot_data_base_cy["sorting"] = pd.Categorical(plot_data_base_cy.index, categories=custom_order, ordered=True)
+        plot_data_base_cy = plot_data_base_cy.sort_values('sorting')
+
+        if plot_other_cys:
+            for cy in [x for x in cys if x != base_cy]:
+                plot_data_other_cys[cy] = get_data(cy, results_all, filter_by="index", yr=2040)
+                plot_data_other_cys["sorting"] = pd.Categorical(plot_data_other_cys.index, categories=custom_order,
+                                                              ordered=True)
+                plot_data_other_cys = plot_data_other_cys.sort_values('sorting')
+
+        ax1 = plot_horizontal_bar_plot(ax1, plot_data_base_cy.drop(columns=["sorting"]), plot_data_other_cys, ['hydrogen_costs_smr', 'cost_existing_system', 'cost_new_system'], scaling_factor=10**-9)
+        ax1.axvline(x=plot_data_base_cy.loc[:, "cost_total"].max() * 10**-9, color='red', linestyle='--')
+        ax1.set_xlim(0, 100)
+        ax1.legend().set_visible(False)
+
+        ax2 = plot_horizontal_bar_plot(ax2, plot_data_base_cy.drop(columns=["sorting"]), plot_data_other_cys, ['emissions_smr', 'emissions_other'], scaling_factor=10**-6)
+        ax2.axvline(x=plot_data_base_cy.loc[:, "emissions_total"].max() * 10**-6, color='red', linestyle='--')
+        ax2.set_xlim(0, 200)
+        ax2.legend().set_visible(False)
+        ax2.set_yticklabels([])
+
+        ax3 = plot_horizontal_bar_plot(ax3, plot_data_base_cy.drop(columns=["sorting"])/1000, plot_data_other_cys, ['pv', "onshore_wind", "offshore_wind"], scaling_factor=1)
+        ax3.set_xlim(0, 150)
+        # ax3.legend().set_visible(False)
         ax3.set_yticklabels([])
 
         plt.tight_layout()
@@ -608,6 +695,12 @@ def make_cost_at_emission_target_figure(case, figure_name, plot_other_cys=False)
                 plot_data_other_cys[cy].index = [f"{str(round(i*100,0))}% | {idx}" for idx, i in plot_data_other_cys[cy]["emission_reduction_percentage"].items()]
 
         ax1 = plot_horizontal_bar_plot(ax1, plot_data_base_cy, plot_data_other_cys, ['abatement_cost'], scaling_factor=-1, write_text=False)
+
+        text_pos = 2
+
+        for idx, (y_pos, perc) in enumerate(zip(plot_data_base_cy.index, plot_data_base_cy['abatement_cost'])):
+            ax1.text(text_pos, idx, f"{perc:+.1f}", va='center')
+        text_pos = text_pos + 10
         # ax1.axvline(x=plot_data_base_cy.loc[:, "emissions_total"].max() * 10**-6, color='red', linestyle='--')
         # ax1.set_xlim(0, 120)
         ax1.legend().set_visible(False)
@@ -621,14 +714,79 @@ def make_cost_at_emission_target_figure(case, figure_name, plot_other_cys=False)
 
         plt.close()
 
+def make_cost_reduction_figure2040_co2_tax(figure_name, plot_other_cys=False):
+
+    save_path = Path("C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_Figures/2025-06-01/") / figure_name
+
+    results_all = pd.read_excel(
+        "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040/Summary_processed.xlsx",
+        header=[0, 1, 2], index_col=0)
+
+    high_co2 = results_all[results_all["global", "global", "carbon_tax"] == 200]
+    high_co2["global", "global", "Subcase"] = high_co2["global", "global", "Subcase"] + " | High CO2 tax"
+
+    variable_h2 = results_all[results_all["global", "global", "variable_h2_demand"] == 1]
+    variable_h2["global", "global", "Subcase"] = variable_h2["global", "global", "Subcase"] + " | Variable H2 demand"
+
+    baseline = results_all[(results_all["global", "global", "variable_h2_demand"] == 0) & (results_all["global", "global", "carbon_tax"] == 100) & ((results_all["global", "global", "Case"] == "All") | (results_all["global", "global", "Case"] == "Baseline"))]
+
+    results_all = pd.concat([high_co2,variable_h2,baseline])
+
+    cys = [1995, 2008, 2009]
+
+    for base_cy in cys:
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(30, 4))
+
+        plot_data_base_cy = get_data(base_cy, results_all, filter_by="index", yr=2040)
+
+        plot_data_other_cys = {}
+        if plot_other_cys:
+            for cy in [x for x in cys if x != base_cy]:
+                plot_data_other_cys[cy] = get_data(cy, results_all, filter_by="Case", yr=2040)
+
+
+        ax1 = plot_horizontal_bar_plot(ax1, plot_data_base_cy, plot_data_other_cys,
+                                       ['hydrogen_costs_smr', 'cost_existing_system', 'cost_new_system'],
+                                       scaling_factor=10 ** -9)
+        ax1.axvline(x=plot_data_base_cy.loc[:, "cost_total"].max() * 10 ** -9, color='red', linestyle='--')
+        ax1.set_xlim(0, 100)
+        ax1.legend().set_visible(False)
+
+        ax2 = plot_horizontal_bar_plot(ax2, plot_data_base_cy, plot_data_other_cys,
+                                       ['emissions_smr', 'emissions_other'], scaling_factor=10 ** -6)
+        ax2.axvline(x=plot_data_base_cy.loc[:, "emissions_total"].max() * 10 ** -6, color='red', linestyle='--')
+        ax2.set_xlim(0, 200)
+        ax2.legend().set_visible(False)
+        ax2.set_yticklabels([])
+
+        ax3 = plot_horizontal_bar_plot(ax3, plot_data_base_cy / 1000, plot_data_other_cys,
+                                       ['pv', "onshore_wind", "offshore_wind"], scaling_factor=1)
+        ax3.set_xlim(0, 150)
+        ax3.legend().set_visible(False)
+        ax3.set_yticklabels([])
+
+        plt.tight_layout()
+
+        if plot_other_cys:
+            plt.savefig(save_path / f'cost_reduction_{base_cy}_with_other_cys.svg')
+        else:
+            plt.savefig(save_path / f'cost_reduction_{base_cy}.svg')
+
+
+def make_figure10(plot_other_cys=False):
+    make_cost_reduction_figure2040("Figure10_cost_all", plot_other_cys=plot_other_cys)
+
+def make_figure_co2_tax(plot_other_cys=False):
+    make_cost_reduction_figure2040_co2_tax("Figure_co2_tax", plot_other_cys=plot_other_cys)
+
 def make_figure3(plot_other_cys):
-    make_cost_reduction_figure("Grid Expansion", "Figure3_cost_grid", plot_other_cys)
+    make_cost_reduction_figure2030("Grid Expansion", "Figure3_cost_grid", plot_other_cys)
 
 def make_figure5(plot_other_cys):
-    make_cost_reduction_figure("Storage", "Figure5_cost_storage", plot_other_cys)
+    make_cost_reduction_figure2030("Storage", "Figure5_cost_storage", plot_other_cys)
 
 def make_figure8(plot_other_cys):
-    make_cost_reduction_figure("Hydrogen", "Figure8_cost_hydrogen", plot_other_cys)
+    make_cost_reduction_figure2030("Hydrogen", "Figure8_cost_hydrogen", plot_other_cys)
 
 def make_figure2(plot_other_cys):
     make_emission_reduction_figure("Grid Expansion", "Figure2_emission_grid", plot_other_cys)
@@ -894,4 +1052,133 @@ def make_tablesS18ff():
             with open(save_path / "tableS18ff.txt", "a") as f:
                 f.write(table)
                 f.write("\n")
+
+
+def make_tablesS28ff():
+    load_path = Path("C:/Users/6574114/PycharmProjects/PyHubProductive/mes_north_sea/clean_data")
+    save_path = Path("C:/Users/6574114/OneDrive - Universiteit Utrecht/PhD Jan/Papers/DOSTA - HydrogenOffshore/00_Figures/2025-06-01/TableS28ff_InstalledCapacities2040")
+
+    results_all = pd.read_excel(
+        "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040/Summary_processed.xlsx",
+        header=[0, 1, 2], index_col=0)
+
+    high_co2 = results_all[results_all["global", "global", "carbon_tax"] == 200]
+    high_co2["global", "global", "Subcase"] = high_co2["global", "global", "Subcase"] + " | High CO2 tax"
+
+    variable_h2 = results_all[results_all["global", "global", "variable_h2_demand"] == 1]
+    variable_h2["global", "global", "Subcase"] = variable_h2["global", "global", "Subcase"] + " | Variable H2 demand"
+
+    rest = results_all[(results_all["global", "global", "variable_h2_demand"] == 0) &
+                       (results_all["global", "global", "carbon_tax"] == 100)]
+
+    results_all = pd.concat([high_co2, variable_h2, rest])
+
+    results_filtered = results_all[
+        (results_all["global", "global", "objective"] == "min costs")
+    ]
+    results_filtered = results_filtered.set_index([("global", "global", "Case"), ("global", "global", "Subcase")])
+    results_filtered.index = results_filtered.index.map(lambda x: f"{x[0]} | {x[1]}")
+
+    arc_length_ac = pd.read_csv(load_path / "networks" / "pyhub_el_ac_all.csv", sep=";")
+    arc_length_dc = pd.read_csv(load_path / "networks" / "pyhub_el_dc_all_2040.csv", sep=";")
+    arc_l = pd.concat(
+        [arc_length_ac[["node0", "node1", "length"]], arc_length_dc[["node0", "node1", "length"]]]).drop_duplicates()
+    arc_l["arc_id"] = arc_l["node0"] + arc_l["node1"]
+    arc_l["country0"] = [str(a)[0:2] for a in arc_l["node0"]]
+    arc_l["country1"] = [str(a)[0:2] for a in arc_l["node1"]]
+    arc_l["country_connection"] = arc_l["country0"] + arc_l["country1"]
+
+    index_map = {
+        'Baseline ': 'Baseline | Baseline',
+        'T-1 (only onshore) ': 'Grid Expansion | onshore only',
+        'T-2 (only offshore) ': 'Grid Expansion | offshore only',
+        'T-3 (no border cross) ': 'Grid Expansion | no Border',
+        'T-All ': 'Grid Expansion | all',
+        'S-1 (only onshore) ': 'Storage | onshore only',
+        'S-2 (only offshore) ': 'Storage | offshore only',
+        'S-All ': 'Storage | all',
+        'H-1 (only onshore) ': 'Hydrogen | no hydrogen offshore',
+        'H-2 (only offshore) ': 'Hydrogen | no hydrogen onshore',
+        'H-3 (no storage) ': 'Hydrogen | no storage',
+        'H-4 (only local use) ': 'Hydrogen | local use only',
+        'H-All ': 'Hydrogen | all',
+        'Synergies ': 'All | All',
+    }
+
+    for cy in [1995, 2008, 2009]:
+
+        capacities = pd.DataFrame(index = index_map.keys())
+        results_cy = results_filtered[(results_filtered[("global", "global", "cy")] == cy)]
+        capacities_raw = results_cy.loc[:, ["tec_sizes"]]
+
+        for scenario in index_map:
+            result_path = results_cy.loc[index_map[scenario],("global", "global", "Path")]
+            with h5py.File(result_path + '/optimization_results.h5', 'r') as hdf_file:
+                network_sizes = extract_datasets_from_h5_group(hdf_file["design/networks/period1"])
+            network_sizes_df = pd.DataFrame(network_sizes).T
+            network_sizes_df = network_sizes_df.unstack(level=2)
+            network_sizes_df.columns = network_sizes_df.columns.droplevel(0)
+            network_sizes_df = pd.DataFrame(network_sizes_df['size']).reset_index()
+            network_sizes_df.columns = ["network", "arc_id", "size"]
+            network_sizes_df = network_sizes_df.merge(arc_l, right_on="arc_id", left_on="arc_id")
+            network_sizes_df["size_GWkm"] = network_sizes_df["size"] /1000 * network_sizes_df["length"]
+
+            network_sizes_aggregated = network_sizes_df[["size_GWkm", "network"]].groupby(["network"]).sum()
+            network_sizes_aggregated = network_sizes_aggregated["size_GWkm"]
+
+            if "hydrogenPipelineOffshore" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "Pipeline offshore (GWkm)"] = network_sizes_aggregated["hydrogenPipelineOffshore"]
+            else:
+                capacities.loc[scenario, "Pipeline offshore (GWkm)"] = np.nan
+
+            if "hydrogenPipelineOnshore_new" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "Pipeline onshore (new) (GWkm)"] = network_sizes_aggregated["hydrogenPipelineOnshore_new"]
+            else:
+                capacities.loc[scenario, "Pipeline onshore (new) (GWkm)"] = np.nan
+
+            if "hydrogenPipelineOnshore_re" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "Pipeline onshore (re) (GWkm)"] = network_sizes_aggregated["hydrogenPipelineOnshore_re"]
+            else:
+                capacities.loc[scenario, "Pipeline onshore (re) (GWkm)"] = np.nan
+
+            if "electricityAC" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "AC (GWkm)"] = network_sizes_aggregated["electricityAC"]
+            else:
+                capacities.loc[scenario, "AC (GWkm)"] = np.nan
+
+            if "electricityDC" in network_sizes_aggregated.index:
+                capacities.loc[scenario, "DC (GWkm)"] = network_sizes_aggregated["electricityDC"]
+            else:
+                capacities.loc[scenario, "DC (GWkm)"] = np.nan
+
+            capacities.loc[scenario, "Offshore Wind (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Offshore_Wind', 'size')]/1000
+            capacities.loc[scenario, "Onshore Wind (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Onshore_Wind', 'size')]/1000
+            capacities.loc[scenario, "PV (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'PV', 'size')]/1000
+
+            if scenario == "S-All-HPE":
+                capacities.loc[scenario, "Battery offshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_new_HP', 'size')] / 1000
+                capacities.loc[scenario, "Battery onshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_Offshore_HP', 'size')] / 1000
+            else:
+                capacities.loc[scenario, "Battery onshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_new', 'size')] / 1000
+                capacities.loc[scenario, "Battery offshore (GWh)"] = capacities_raw.loc[index_map[scenario], (
+                'tec_sizes', 'Storage_Battery_Offshore', 'size')] / 1000
+
+            capacities.loc[scenario, "Electrolyzer offshore (GW)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Electrolyser_PEM_offshore', 'size')]/1000
+            capacities.loc[scenario, "Electrolyzer onshore (GW)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Electrolyser_PEM', 'size')]/1000
+
+            capacities.loc[scenario, "Fuel Cell (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'FuelCell', 'size')]/1000
+            capacities.loc[scenario, "H2 storage (GWh)"] = capacities_raw.loc[index_map[scenario], ('tec_sizes', 'Storage_Hydrogen', 'size')]/1000
+
+
+
+            to_latex(capacities, "", save_path / f"tableS28ff_cy{cy}.txt", rounding=1)
+
+
+
+
+
+
 

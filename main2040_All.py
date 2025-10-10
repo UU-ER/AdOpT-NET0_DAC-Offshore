@@ -22,7 +22,7 @@ write_to_network_data(settings)
 write_to_technology_data(settings)
 
 scenarios = {
-    'ElectricityGrid_all': 'Grid Expansion (all)',
+    # 'ElectricityGrid_all': 'Grid Expansion (all)',
     'All': 'All Pathways',
      }
 
@@ -146,6 +146,9 @@ for cy in cys:
             settings.climate_year) + '_co2_tax' + str(co2_tax)
 
         m.solve()
+        m._optimize_emissions_net()
+        m.model["full"].periods["period1"].node_blocks["DE4"].tech_blocks_active["Storage_Battery_new"].pprint()
+
 
 
 
