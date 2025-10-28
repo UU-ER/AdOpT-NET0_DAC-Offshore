@@ -49,7 +49,8 @@ from mes_north_sea.postprocessing.plot_utilities import *
 # make_tablesS18ff()
 
 # Table S28- installed capacities for 2040 (aggregated per country and scenario, for each cy)
-make_tablesS28ff()
+# make_tablesS28ff()
+make_tablesS28ff_co2_tax()
 
 
 
