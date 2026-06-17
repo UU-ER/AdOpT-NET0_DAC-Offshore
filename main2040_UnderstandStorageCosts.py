@@ -2,7 +2,7 @@ import random
 from mes_north_sea.optimization.utilities import *
 import pyomo.environ as pyo
 
-test = 0
+test = 1
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2040
@@ -134,7 +134,7 @@ for stage in scenarios.keys():
             m.model["full"].const_storage_constraint = pyo.Constraint(rule=init_storage_constraint)
 
             # Formulate constaint on total npv
-            m.model["full"].const_npv = pyo.Constraint(expr=m.model["full"].var_npv <= all_costs[cy])
+            m.model["full"].const_npv_new = pyo.Constraint(expr=m.model["full"].var_npv <= all_costs[cy])
 
 
 
