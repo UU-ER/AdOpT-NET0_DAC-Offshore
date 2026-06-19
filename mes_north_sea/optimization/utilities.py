@@ -161,7 +161,7 @@ def define_topology(settings, input_data_path, nodes):
     if settings.model_h2:
         topology["carriers"] = ['electricity', 'gas', 'hydrogen']
     else:
-        topology["carriers"] = ['electricity', 'gas']
+        topology["carriers"] = ['electricity', 'gas', 'CO2captured', 'heat']
 
     if settings.year == 2040:
         topology["start_date"] = str(2041) + "-" + settings.start_date
@@ -494,8 +494,8 @@ def define_network_topology(input_data_path, settings, nodes):
     elif settings.year == 2040:
         file_name_offshore = 'pyhub_co2_offshore_2040.csv'
 
-    data_offshore = get_network_data(data_path / file_name_offshore, nodes, sep=None)
-    data_onshore = get_network_data(data_path / 'pyhub_co2_onshore_new.csv', nodes, sep=None)
+    data_offshore = get_network_data(data_path / file_name_offshore, nodes)
+    data_onshore = get_network_data(data_path / 'pyhub_co2_onshore_new.csv', nodes)
 
     merged_connection = data_offshore['connection_matrix'].combine(
         data_onshore['connection_matrix'], func=lambda a, b: (a + b).clip(upper=1)
