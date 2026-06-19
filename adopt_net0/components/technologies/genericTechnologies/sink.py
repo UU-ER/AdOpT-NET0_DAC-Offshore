@@ -146,6 +146,14 @@ class Sink(Technology):
         """
 
         super(Sink, self).construct_tech_model(b_tec, data, set_t_full, set_t_clustered)
+        b_tec.del_component(b_tec.const_opex_variable)
+        b_tec.del_component(b_tec.var_opex_variable)
+        b_tec.var_opex_variable = pyo.Var(self.set_t_global, domain=pyo.NonNegativeReals)
+
+        def init_opex_variable(const, t):
+            return (b_tec.var_opex_variable[t] == self.input[t, self.main_input_carrier] * b_tec.para_opex_variable)
+
+        b_tec.const_opex_variable = pyo.Constraint(self.set_t_global, rule=init_opex_variable)
 
         # DATA OF TECHNOLOGY
         config = data["config"]
@@ -160,7 +168,7 @@ class Sink(Technology):
         elif config["optimization"]["typicaldays"]["method"]["value"] == 2:
             sequence_storage = self.sequence
 
-        # Sotrage level and injection capacity decision variables
+        # Storage level and injection capacity decision variables
         b_tec.var_storage_level = pyo.Var(
             set_t_full,
             domain=pyo.NonNegativeReals,
