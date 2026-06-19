@@ -610,7 +610,7 @@ def define_hydro_inflow(input_data_path, settings):
 
         climate_data.to_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";")
 
-def define_capacity_factors(input_data_path, settings):
+def define_capacity_factors(input_data_path, settings, nodes):
     climate_year = settings.climate_year
 
     data_path = settings.data_path /'capacity_factors'
@@ -629,6 +629,15 @@ def define_capacity_factors(input_data_path, settings):
             climate_data = pd.read_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";", index_col=0)
             climate_data[profile] = cfs[profile][node].to_numpy()[:len(climate_data)]
             climate_data.to_csv(input_data_path / "period1" / "node_data" / node / "ClimateData.csv", sep=";")
+
+    weather_data = pd.read_csv(settings.data_path / "weather_data" / f"weather_{climate_year}.csv", index_col=0)
+
+    for node in nodes.all.keys():
+        climate_csv = input_data_path / "period1" / "node_data" / node / "ClimateData.csv"
+        climate_data = pd.read_csv(climate_csv, sep=";", index_col=0)
+        climate_data['temp_air'] = weather_data[f"{node}_temp"].to_numpy()[:len(climate_data)]
+        climate_data['rh'] = weather_data[f"{node}_rh"].to_numpy()[:len(climate_data)]
+        climate_data.to_csv(climate_csv, sep=";")
 
 def define_max_renewable_capacities(input_data_path, settings):
 
