@@ -685,13 +685,18 @@ class ModelHub:
             self.solver.add_constraint(model.const_emission_limit)
         self._optimize_cost()
 
-    def _optimize_emissions_neg(self):
+    def _optimize_emissions_neg(self, baseline_emissions_pos):
         """
         Maximize negative emissions.
         """
         model = self.model[self.info_solving_algorithms["aggregation_model"]]
 
         self._delete_objective()
+
+        def init_max_positive_emissions(const):
+            return model.var_emissions_pos <= baseline_emissions_pos
+
+        model.const_max_positive_emissions = pyo.Constraint(rule=init_max_positive_emissions)
 
         def init_emissions_neg_objective(obj):
             return model.var_emissions_neg
