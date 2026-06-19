@@ -73,10 +73,12 @@ class HeatPump(Technology):
         # Ambient air temperature
         T = copy.deepcopy(climate_data["temp_air"])
 
+        application = self.performance_data.get("application", None)
+
         # Determine T_out
-        if self.performance_data["application"] == "radiator_heating":
+        if application == "radiator_heating":
             t_out = 40 - T
-        elif self.performance_data["application"] == "floor_heating":
+        elif application == "floor_heating":
             t_out = 30 - 0.5 * T
         else:
             t_out = self.performance_data["T_out"]
@@ -86,11 +88,15 @@ class HeatPump(Technology):
 
         # Determine COP
         if "AirSourced" in self.name:
-            cop = 6.08 - 0.09 * delta_T + 0.0005 * delta_T**2
+            cop = np.full(time_steps, 1.80)
+            # 6.08 - 0.09 * delta_T + 0.0005 * delta_T**2
+            # 120 degrees desorption and 11 degree ambient T
         elif "GroundSourced" in self.name:
             cop = 10.29 - 0.21 * delta_T + 0.0012 * delta_T**2
         elif "WaterSourced" in self.name:
-            cop = 9.97 - 0.20 * delta_T + 0.0012 * delta_T**2
+            cop = np.full(time_steps, 1.74)
+            # 9.97 - 0.20 * delta_T + 0.0012 * delta_T**2
+            # 120 degrees desorption and 7 degree sea temp
 
         log.info("Deriving performance data for Heat Pump...")
 
