@@ -685,6 +685,25 @@ class ModelHub:
             self.solver.add_constraint(model.const_emission_limit)
         self._optimize_cost()
 
+    def _optimize_emissions_neg(self):
+        """
+        Maximize negative emissions.
+        """
+        model = self.model[self.info_solving_algorithms["aggregation_model"]]
+
+        self._delete_objective()
+
+        def init_emissions_neg_objective(obj):
+            return model.var_emissions_neg
+
+        model.objective = pyo.Objective(
+            rule=init_emissions_neg_objective, sense=pyo.maximize
+        )
+        log_msg = "Set objective on negative emissions (maximize removals)"
+        print(log_msg)
+        log.info(log_msg)
+        self._call_solver()
+
     def scale_model(self):
         """
         Creates a scaled model using the scale factors specified in the json files
