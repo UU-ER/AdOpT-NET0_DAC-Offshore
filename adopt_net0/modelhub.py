@@ -280,6 +280,8 @@ class ModelHub:
         # DEFINE GLOBAL VARIABLES
         model.var_npv = pyo.Var()
         model.var_emissions_net = pyo.Var()
+        model.var_emissions_neg = pyo.Var(within=pyo.NonNegativeReals)
+        model.var_emissions_pos = pyo.Var(within=pyo.NonNegativeReals)
 
         # INVESTMENT PERIOD BLOCK
         def init_period_block(b_period):
