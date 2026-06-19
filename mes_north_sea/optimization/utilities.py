@@ -25,7 +25,7 @@ class Settings():
 
         if test:
             self.start_date = '05-01 00:00'
-            self.end_date = '05-01 00:00'
+            self.end_date = '05-01 05:00'
         else:
             self.start_date = '01-01 00:00'
             self.end_date = '12-31 23:00'
@@ -362,7 +362,7 @@ def define_network_topology(input_data_path, settings, nodes):
     stage = settings.new_technologies_stage
 
     def get_network_data(file_path, nodes):
-        network = pd.read_csv(file_path, sep=';')
+        network = pd.read_csv(file_path, sep=None, engine='python')
 
         network_data = {}
         network_data['size_matrix'] = pd.read_csv(input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";", index_col=0).astype(float)
@@ -488,24 +488,48 @@ def define_network_topology(input_data_path, settings, nodes):
         input_data_path / "period1" / "network_topology" / "new" / dc_netw_name / "size_max_arcs.csv",
         sep=";")
 
-    # H2 NETWORKS
-    # offshore
+    # co2 networks onshore and offshore
     if settings.year == 2030:
-        file_name = 'pyhub_h2_offshore.csv'
+        file_name_offshore = 'pyhub_co2_offshore.csv'
     elif settings.year == 2040:
-        file_name = 'pyhub_h2_offshore_2040.csv'
+        file_name_offshore = 'pyhub_co2_offshore_2040.csv'
 
-    data = get_network_data(data_path /file_name, nodes)
-    netw_name = "hydrogenPipelineOffshore"
+    data_offshore = get_network_data(data_path / file_name_offshore, nodes, sep=None)
+    data_onshore = get_network_data(data_path / 'pyhub_co2_onshore_new.csv', nodes, sep=None)
+
+    merged_connection = data_offshore['connection_matrix'].combine(
+        data_onshore['connection_matrix'], func=lambda a, b: (a + b).clip(upper=1)
+    )
+    merged_distance = data_offshore['distance_matrix'].combine(
+        data_onshore['distance_matrix'], func=lambda a, b: a + b
+    )
+
+    netw_name = "CO2_Pipeline"
     os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
-    data['connection_matrix'].to_csv(
+    merged_connection.to_csv(
         input_data_path / "period1" / "network_topology" / "new" / netw_name / "connection.csv",
-        sep=";")
-    data['distance_matrix'].to_csv(
+        sep=";"
+    )
+    merged_distance.to_csv(
         input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
-        sep=";")
-    # data['size_matrix'].to_csv(
-    #     input_data_path / "period1" / "network_topology" / "new" / netw_name / "size_max_arcs.csv",
+        sep=";"
+    )
+
+    # # H2 NETWORKS
+    # # offshore
+    # if settings.year == 2030:
+    #     file_name = 'pyhub_h2_offshore.csv'
+    # elif settings.year == 2040:
+    #     file_name = 'pyhub_h2_offshore_2040.csv'
+    #
+    # data = get_network_data(data_path /file_name, nodes)
+    # netw_name = "hydrogenPipelineOffshore"
+    # os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
+    # data['connection_matrix'].to_csv(
+    #     input_data_path / "period1" / "network_topology" / "new" / netw_name / "connection.csv",
+    #     sep=";")
+    # data['distance_matrix'].to_csv(
+    #     input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
     #     sep=";")
 
     # onshore new
