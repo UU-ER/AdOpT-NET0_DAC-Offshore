@@ -1,12 +1,13 @@
 import random
 from mes_north_sea.optimization.utilities import *
+import os
 
-test = 1
+test = 0
 settings = Settings(test=test)
 settings.demand_factor = 1
 settings.year = 2040
 settings.variable_h2_demand = 0
-cys = [1995, 2008, 2009]
+cys = [2009]
 co2_tax = [100]
 c_permutation = 0.01
 
@@ -17,47 +18,32 @@ c_permutation = 0.01
 #     time_series.loc[:, (slice(None), 'total')].sum().sum()
 #     total_production[str(cy)] = time_series.loc[:, (slice(None), 'total')].sum().sum()/1000000
 
-data_path = "mes_north_sea/data_" + str(settings.year)
+project_root = Path(__file__).resolve().parent
+data_path = str(project_root / ("mes_north_sea/data_" + str(settings.year)))
+
 write_to_network_data(settings)
+
 write_to_technology_data(settings)
+if os.environ.get('HOSTNAME', '').startswith('sd26') or Path('/data/8051917').exists():
+    save_path = "/data/8051917/results"
+else:
+    save_path = "results"
 
 scenarios = {
-    'Hydrogen_H2': 'Hydrogen (no hydrogen offshore)',
-    'Hydrogen_H1': 'Hydrogen (no storage)',
-    'Hydrogen_H4': 'Hydrogen (local use only)',
-    'Hydrogen_Baseline': 'Hydrogen (all)',
-    'All': 'All Pathways',
-    'Hydrogen_H3': 'Hydrogen (no hydrogen onshore)',
-    'ElectricityGrid_all': 'Grid Expansion (all)',
-    'ElectricityGrid_on': 'Grid Expansion (onshore only)',
-    'ElectricityGrid_off': 'Grid Expansion (offshore only)',
-    'ElectricityGrid_noBorder': 'Grid Expansion (no Border)',
     'RE_only': 'RE only',
-    'Battery_on': 'Battery (onshore only)',
-    'Battery_off': 'Battery (offshore only)',
-    'Battery_all': 'Battery (all)',
              }
-
-
-
 
 for stage in scenarios.keys():
 
     if stage in [
-    'ElectricityGrid_all',
-    'ElectricityGrid_on',
-    'ElectricityGrid_off',
-    'ElectricityGrid_noBorder',
-    'RE_only',
-    'Battery_on',
-    'Battery_off',
-    'Battery_all']:
+    'RE_only']:
         settings.model_h2 = 0
     else:
         settings.model_h2 = 1
 
     for cy in cys:
         input_data_path = Path(data_path + "_" + str(cy))
+        input_data_path.mkdir(parents=True, exist_ok=True)
 
         for tax in co2_tax:
             settings.co2_tax = tax
@@ -103,16 +89,15 @@ for stage in scenarios.keys():
                     print(m.data.technology_data["period1"][node][tec].economics['unit_capex'])
 
             if settings.test:
-                m.data.model_config["reporting"]["save_summary_path"][
-                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040_test/"
-                m.data.model_config["reporting"]["save_path"][
-                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040_test/"
+                final_save_path = save_path + "/2040_test/"
             else:
-                m.data.model_config["reporting"]["save_summary_path"][
-                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040/00_cy" + str(
-                    settings.climate_year)
-                m.data.model_config["reporting"]["save_path"][
-                    "value"] = "//Soliscom.uu.nl/geo/USERS/StaffUsers/6574114/EhubResults/MES NorthSea/20250515/2040/"
+                final_save_path = save_path + "/2040/" + str(settings.climate_year)
+
+            Path(final_save_path).mkdir(parents=True, exist_ok=True)
+
+            m.data.model_config["reporting"]["save_summary_path"]["value"] = final_save_path
+            m.data.model_config["reporting"]["save_path"]["value"] = final_save_path
+
             m.data.model_config["reporting"]["case_name"]["value"] = stage + '_costs' + "_cy" + str(
                 settings.climate_year) + '_co2_tax' + str(tax)
 

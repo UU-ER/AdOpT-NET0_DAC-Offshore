@@ -141,6 +141,7 @@ def read_nodes(settings):
     node_list = pd.read_excel(node_data, sheet_name='Nodes_used')
     nodes.onshore_nodes = node_list[node_list['Type'] == 'onshore']['Node'].values.tolist()
     nodes.offshore_nodes = node_list[node_list['Type'].apply(lambda x: x.startswith('offshore'))]['Node'].values.tolist()
+    nodes.storage_nodes = node_list[node_list['Type'] == 'New_CO2_Storage_2040']['Node'].values.tolist()
     nodes.all = {}
     for row in node_list.iterrows():
         node_data = {}
@@ -276,6 +277,8 @@ def define_new_technologies(input_data_path, settings, nodes):
 
     if not stage == None:
         for node in nodes.all.keys():
+            if node in nodes.storage_nodes:  # skip storage nodes
+                continue
             if not isinstance(new_tecs[stage][node], float):
                 with open(input_data_path / "period1" / "node_data" / node / "Technologies.json", "r") as json_file:
                     technologies = json.load(json_file)
@@ -285,21 +288,50 @@ def define_new_technologies(input_data_path, settings, nodes):
                 with open(input_data_path / "period1" / "node_data" / node / "Technologies.json", "w") as json_file:
                     json.dump(technologies, json_file, indent=4)
 
+def define_storage(input_data_path, settings, nodes):
+    data_path = settings.data_path
+    limits = pd.read_csv(data_path / "storage_limits" / "CO2_storage_limits_2040.csv", sep=',',thousands=',')
+    limits.columns = limits.columns.str.strip()
+    limits = limits.set_index("Node")
+    nodes.storage_nodes = limits.index.tolist()
+
+    for node in nodes.storage_nodes:
+        tec_data_path = (input_data_path / "period1" / "node_data" / node / "technology_data" / "PermanentStorage_CO2_simple.json")
+        if not tec_data_path.exists():
+            continue
+        with open(tec_data_path, "r") as f:
+            tec_data = json.load(f)
+        if node in limits.index:
+            tec_data["size_max"] = float(limits.loc[node, "size_max"])
+            if "Flexibility" not in tec_data:
+                tec_data["Flexibility"] = {}
+            tec_data["Flexibility"]["injection_rate_max"] = float(
+                limits.loc[node, "injection_rate_max"])
+
+        with open(tec_data_path, "w") as f:
+            json.dump(tec_data, f, indent=2)
+
 def define_networks(input_data_path, settings):
     """
     Defines the networks
     """
 
     stage = settings.new_technologies_stage
-
-    # H2 networks
-    if ('Hydrogen' in stage) or (stage == 'All') or (stage == 'All_RE_offshore_only'):
-        if stage != 'Hydrogen_H4':
-            new_h2_networks = ["hydrogenPipelineOffshore", "hydrogenPipelineOnshore_new", "hydrogenPipelineOnshore_re"]
-        else:
-            new_h2_networks = []
+    # CO2 network
+    if settings.year == 2030 or settings.year == 2040:
+        new_co2_networks = ["CO2_Pipeline"]
     else:
-        new_h2_networks = []
+        new_co2_networks = []
+
+
+    # # H2 network
+    # if ('Hydrogen' in stage) or (stage == 'All') or (stage == 'All_RE_offshore_only'):
+    #     if stage != 'Hydrogen_H4':
+    #         new_h2_networks = ["hydrogenPipelineOffshore", "hydrogenPipelineOnshore_new", "hydrogenPipelineOnshore_re"]
+    #     else:
+    #         new_h2_networks = []
+    # else:
+    #     new_h2_networks = []
 
     # El networks
     new_el_networks = []
@@ -317,7 +349,7 @@ def define_networks(input_data_path, settings):
 
     with open(input_data_path / "period1" / "Networks.json", "r") as json_file:
         networks = json.load(json_file)
-    networks["new"] = new_h2_networks + new_el_networks
+    networks["new"] = new_el_networks + new_co2_networks
     networks["existing"] = ["electricityAC", "electricityDC"]
 
     with open(input_data_path / "period1" / "Networks.json", "w") as json_file:
