@@ -595,6 +595,8 @@ class ModelHub:
             self._optimize_costs_minE()
         elif objective == "costs_emissionlimit":
             self._optimize_costs_emissionslimit()
+        elif objective == "north_sea_dac":
+            self._optimize_north_sea_dac()
         else:
             raise Exception("objective in Configurations is incorrect")
 
@@ -640,6 +642,98 @@ class ModelHub:
         print(log_msg)
         log.info(log_msg)
         self._call_solver()
+
+def _optimize_north_sea_dac(self):
+    model = self.model[self.info_solving_algorithms["aggregation_model"]]
+    config = self.data.model_config
+    is_persistent = config["solveroptions"]["solver"]["value"] == "gurobi_persistent"
+    neg_target = config["optimization"]["neg_emission_limit"]["value"]
+    pos_limit = config["optimization"]["pos_emission_limit"]["value"]
+    flow_cost = config["optimization"].get("flow_penalty_cost", {}).get("value", 1.0)
+    storage_cost = config["optimization"].get("storage_penalty_cost", {}).get("value", 0.1)
+
+    if model.find_component("const_pos_emission_limit"):
+        if is_persistent:
+            self.solver.remove_constraint(model.const_pos_emission_limit)
+        model.del_component(model.const_pos_emission_limit)
+    model.const_pos_emission_limit = pyo.Constraint(
+        expr=sum(model.periods[p].var_emissions_pos for p in model.set_periods) <= pos_limit)
+    if is_persistent:
+        self.solver.add_constraint(model.const_pos_emission_limit)
+
+    if model.find_component("const_neg_emission_target_lb"):
+        if is_persistent:
+            self.solver.remove_constraint(model.const_neg_emission_target_lb)
+            self.solver.remove_constraint(model.const_neg_emission_target_ub)
+        model.del_component(model.const_neg_emission_target_lb)
+        model.del_component(model.const_neg_emission_target_ub)
+    model.const_neg_emission_target_lb = pyo.Constraint(
+        expr=model.var_emissions_neg >= neg_target * 0.99)
+    model.const_neg_emission_target_ub = pyo.Constraint(
+        expr=model.var_emissions_neg <= neg_target * 1.01)
+    if is_persistent:
+        self.solver.add_constraint(model.const_neg_emission_target_lb)
+        self.solver.add_constraint(model.const_neg_emission_target_ub)
+
+    # Auxiliary variables for bidirectional flow penalty
+    for comp in ["var_bidir_waste", "con_bidir_waste_ij", "con_bidir_waste_ji", "set_bidir_pairs"]:
+        if model.find_component(comp):
+            model.del_component(model.find_component(comp))
+
+    bidir_pairs = [
+        (period, netw, i, j, t)
+        for period in model.set_periods
+        for b_period in [model.periods[period]]
+        if hasattr(b_period, "network_block")
+        for netw in b_period.network_block
+        for b_netw in [b_period.network_block[netw]]
+        if hasattr(b_netw, "arc_block")
+        for (i, j) in set(b_netw.set_arcs)
+        if (j, i) in set(b_netw.set_arcs) and (i, j) < (j, i)
+        for t in b_period.set_t_full
+    ]
+
+    bidir_lookup = dict(enumerate(bidir_pairs))
+    model.set_bidir_pairs = pyo.Set(initialize=range(len(bidir_pairs)))
+    model.var_bidir_waste = pyo.Var(model.set_bidir_pairs, within=pyo.NonNegativeReals)
+
+    def con_bidir_ij(m, k):
+        period, netw, i, j, t = bidir_lookup[k]
+        return m.var_bidir_waste[k] <= m.periods[period].network_block[netw].arc_block[i, j].var_flow[t]
+
+    def con_bidir_ji(m, k):
+        period, netw, i, j, t = bidir_lookup[k]
+        return m.var_bidir_waste[k] <= m.periods[period].network_block[netw].arc_block[j, i].var_flow[t]
+
+    model.con_bidir_waste_ij = pyo.Constraint(model.set_bidir_pairs, rule=con_bidir_ij)
+    model.con_bidir_waste_ji = pyo.Constraint(model.set_bidir_pairs, rule=con_bidir_ji)
+
+    self._delete_objective()
+
+    def init_north_sea_objective(obj):
+        storage_penalty = storage_cost * sum(
+            b_period.node_blocks[node].tech_blocks_active[tec].var_input[t, "electricity"] +
+            b_period.node_blocks[node].tech_blocks_active[tec].var_output[t, "electricity"]
+            for period in model.set_periods
+            for b_period in [model.periods[period]]
+            for node in model.set_nodes
+            for tec in b_period.node_blocks[node].tech_blocks_active
+            if tec.startswith("Storage_")
+            for t in b_period.set_t_full
+        )
+
+        flow_penalty = flow_cost * sum(
+            model.var_bidir_waste[k]
+            for k in model.set_bidir_pairs
+        )
+
+        return model.var_npv + storage_penalty + flow_penalty
+
+    model.objective = pyo.Objective(rule=init_north_sea_objective, sense=pyo.minimize)
+    log_msg = f"Set objective: north_sea_dac | negative emission target={neg_target}"
+    print(log_msg)
+    log.info(log_msg)
+    self._call_solver()
 
     def _optimize_costs_emissionslimit(self):
         """
