@@ -194,9 +194,9 @@ def define_configuration(input_data_path, settings):
     configuration["solveroptions"]["numericfocus"]["value"] = 3
     configuration["solveroptions"]["timelim"]["value"] = 7*24
     configuration["solveroptions"]["method"]["value"] = 2
-    configuration["solveroptions"]["threads"]["value"] = 48
+    configuration["solveroptions"]["threads"]["value"] = 30
     configuration["solveroptions"]["crossover"] = {}
-    configuration["solveroptions"]["crossover"]["value"] = -1
+    configuration["solveroptions"]["crossover"]["value"] = 0
     configuration["solveroptions"]["nodemethod"] = {}
     configuration["solveroptions"]["nodemethod"]["value"] = -1
     configuration["solveroptions"]["intfeastol"]["value"] = 1e-3
