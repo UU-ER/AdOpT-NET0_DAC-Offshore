@@ -527,3 +527,15 @@ class DacAdsorption(Technology):
                 for t in self.set_t_performance
             ],
         )
+
+        out_max = self.processed_coeff.time_dependent_used["out_max"]
+        coeff_ti = self.processed_coeff.time_independent
+        rated_capacity = coeff_ti["rated_capacity"]
+
+        h5_group.create_dataset(
+            "max_out",
+            data=[
+                out_max[t - 1] * model_block.var_size.value * rated_capacity
+                for t in self.set_t_performance
+            ],
+        )

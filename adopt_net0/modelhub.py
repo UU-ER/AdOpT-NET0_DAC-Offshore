@@ -654,6 +654,7 @@ class ModelHub:
         flow_cost = config["optimization"].get("flow_penalty_cost", {}).get("value", 1.0)
         storage_cost = config["optimization"].get("storage_penalty_cost", {}).get("value", 0.1)
 
+        # Positive emission limit
         if model.find_component("const_pos_emission_limit"):
             if is_persistent:
                 self.solver.remove_constraint(model.const_pos_emission_limit)
@@ -663,6 +664,7 @@ class ModelHub:
         if is_persistent:
             self.solver.add_constraint(model.const_pos_emission_limit)
 
+        # Negative emission target
         if model.find_component("const_neg_emission_target_lb"):
             if is_persistent:
                 self.solver.remove_constraint(model.const_neg_emission_target_lb)
@@ -677,7 +679,7 @@ class ModelHub:
             self.solver.add_constraint(model.const_neg_emission_target_lb)
             self.solver.add_constraint(model.const_neg_emission_target_ub)
 
-    # Auxiliary variables for bidirectional flow penalty
+        # Auxiliary variables for bidirectional flow penalty
         for comp in ["var_bidir_waste", "con_bidir_waste_ij", "con_bidir_waste_ji", "set_bidir_pairs"]:
             if model.find_component(comp):
                 model.del_component(model.find_component(comp))
@@ -693,7 +695,7 @@ class ModelHub:
             for (i, j) in set(b_netw.set_arcs)
             if (j, i) in set(b_netw.set_arcs) and (i, j) < (j, i)
             for t in b_period.set_t_full
-    ]
+        ]
 
         bidir_lookup = dict(enumerate(bidir_pairs))
         model.set_bidir_pairs = pyo.Set(initialize=range(len(bidir_pairs)))
