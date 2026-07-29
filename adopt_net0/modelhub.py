@@ -645,12 +645,10 @@ class ModelHub:
         log.info(log_msg)
         self._call_solver()
 
-    def _optimize_north_sea_dac(self):
+    def _optimize_north_sea_dac(self, neg_target, pos_limit):
         model = self.model[self.info_solving_algorithms["aggregation_model"]]
         config = self.data.model_config
         is_persistent = config["solveroptions"]["solver"]["value"] == "gurobi_persistent"
-        neg_target = config["optimization"]["neg_emission_limit"]["value"]
-        pos_limit = config["optimization"]["pos_emission_limit"]["value"]
         flow_cost = config["optimization"].get("flow_penalty_cost", {}).get("value", 1.0)
         storage_cost = config["optimization"].get("storage_penalty_cost", {}).get("value", 0.1)
 
