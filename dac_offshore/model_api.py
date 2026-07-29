@@ -129,8 +129,9 @@ class ModelApi:
                 data = json.load(f)
             max_negative_emissions = data[self.scenario][str(self.climate_year)]
 
-            self.model.data.model_config["optimization"]["neg_emission_limit"] = {"value": max_negative_emissions * emission_reduction_percentage}
-            self.model.data.model_config["optimization"]["pos_emission_limit"] = {"value": baseline_emissions_pos}
+            neg_target = max_negative_emissions * emission_reduction_percentage
+            pos_limit = baseline_emissions_pos
+
             self.model.data.model_config["reporting"]["case_name"]["value"] = \
                 f"{self.scenario}_neg_E_{int(emission_reduction_percentage*100)}pct_cy{self.climate_year}_co2_tax{CO2_PRICE}"
-            self.model._optimize_north_sea_dac()
+            self.model._optimize_north_sea_dac(pos_limit=pos_limit, neg_target=neg_target)
