@@ -77,8 +77,8 @@ for cy in cys:
         define_node_locations(input_data_path, nodes)
         define_installed_capacities(input_data_path, settings, nodes)
         define_new_technologies(input_data_path, settings, nodes)
-        define_storage(input_data_path, settings, nodes)
         adopt.copy_technology_data(input_data_path, Path(settings.data_path / "technology_data"))
+        define_storage(input_data_path, settings, nodes)
 
         manual_offshore_override = [
             'BE_A', 'BE_B', 'DE_A', 'DE_B', 'DE_C', 'DE_D', 'DE_E', 'DE_F',
