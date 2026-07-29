@@ -663,19 +663,14 @@ class ModelHub:
         if is_persistent:
             self.solver.add_constraint(model.const_pos_emission_limit)
 
-        if model.find_component("const_neg_emission_target_lb"):
+        if model.find_component("const_neg_emission_limit"):
             if is_persistent:
-                self.solver.remove_constraint(model.const_neg_emission_target_lb)
-                self.solver.remove_constraint(model.const_neg_emission_target_ub)
-            model.del_component(model.const_neg_emission_target_lb)
-            model.del_component(model.const_neg_emission_target_ub)
-        model.const_neg_emission_target_lb = pyo.Constraint(
-            expr=model.var_emissions_neg >= neg_target * 0.99)
-        model.const_neg_emission_target_ub = pyo.Constraint(
-            expr=model.var_emissions_neg <= neg_target * 1.01)
+                self.solver.remove_constraint(model.const_neg_emission_limit)
+        model.del_component(model.const_neg_emission_limit)
+        model.const_neg_emission_limit = pyo.Constraint(
+            expr=model.var_emissions_neg >= neg_target)
         if is_persistent:
-            self.solver.add_constraint(model.const_neg_emission_target_lb)
-            self.solver.add_constraint(model.const_neg_emission_target_ub)
+            self.solver.add_constraint(model.const_neg_emission_limit)
 
     # Auxiliary variables for bidirectional flow penalty
         for comp in ["var_bidir_waste", "con_bidir_waste_ij", "con_bidir_waste_ji", "set_bidir_pairs"]:
