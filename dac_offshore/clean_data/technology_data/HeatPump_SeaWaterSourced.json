@@ -45,7 +45,8 @@
     "T_out": 120,
     "performance": {
       "T_in": 7
-    }
+    },
+    "fixed_cop": null
   },
   "Units": {
     "size": "MW",
