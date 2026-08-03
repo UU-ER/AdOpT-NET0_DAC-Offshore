@@ -41,7 +41,8 @@
     ],
     "emission_factor": 0.0,
     "min_part_load": 0,
-    "T_out": 120
+    "T_out": 120,
+    "fixed_cop": null
   },
   "Units": {
     "size": "MW",
