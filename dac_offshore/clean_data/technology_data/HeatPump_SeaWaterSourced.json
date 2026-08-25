@@ -46,7 +46,7 @@
     "performance": {
       "T_in": 7
     },
-    "fixed_cop": null
+    "fixed_cop": 1.74
   },
   "Units": {
     "size": "MW",
