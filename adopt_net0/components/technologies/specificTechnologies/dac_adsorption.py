@@ -60,7 +60,7 @@ class DacAdsorption(Technology):
         performance_data_path = Path(__file__).parent.parent.parent.parent
         performance_data_path = (
             performance_data_path
-            / "database/templates/technology_data/DAC/DAC_adsorption_data/dac_adsorption_performance.txt"
+            / "database/templates/technology_data/DAC/DAC_adsorption_data/dac_adsorption_performance_rezo.txt"
         )
 
         performance_data = pd.read_csv(performance_data_path, sep=",")
@@ -86,6 +86,9 @@ class DacAdsorption(Technology):
 
         # Set minimum temperature
         T.loc[T < min(performance_data.temp_air)] = min(performance_data.temp_air)
+
+        # Set minimum humidity
+        RH.loc[RH < min(performance_data.humidity)] = min(performance_data.humidity)
 
         # Derive performance points for each timestep
         def interpolate_performance_point(t, rh, point_data, var):
