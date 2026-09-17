@@ -35,6 +35,7 @@ class InputDataCreator:
 
         self._write_to_technology_data()
         self._write_to_network_data()
+        self._define_co2_pipeline_costs()
 
         for cy in CLIMATE_YEARS:
             for scenario in SCENARIOS:
@@ -588,3 +589,84 @@ class InputDataCreator:
             carbon_cost_template = carbon_cost_template.reset_index()
             carbon_cost_template.to_csv(carbon_cost_path, sep=';', index=False)
 
+
+    def _define_co2_pipeline_costs(self):
+        """
+        Calculate CO2 pipeline costs for onshore and offshore arcs.
+        
+        - Reads network topologies for CO2 Pipeline onshore and offshore
+        - Calculates the cost for each arc using the database functionalities
+        - Merges the two tables and removes duplicates
+        - Writes the table to clean_data/networks_cost
+        """
+        netw_data_path = self.clean_data_path / 'networks_topology'
+        output_path = self.clean_data_path / 'networks_cost'
+        
+        # Common cost model options
+        base_options = {
+            "currency_out": "EUR",
+            "financial_year_out": 2022, #Todo to specify!
+            "discount_rate": 0.1,
+            "source": "Oeuvray",
+            "timeframe": "mid-term",
+            "massflow_min_kg_per_s": 5, #Todo to specify!
+            "massflow_max_kg_per_s": 10, #Todo to specify!
+            "massflow_evaluation_points": 2,
+            "p_inlet_bar": 10, #Todo to specify!
+            "p_outlet_bar": 70, #Todo to specify!
+            "no_intercept": True,
+        }
+        
+        all_costs = []
+        
+        # Process both onshore and offshore CO2 pipelines
+        for pipeline_type, terrain in [("onshore", "Onshore"), ("offshore", "Offshore")]:
+            file_path = netw_data_path / f'CO2_Pipeline_{pipeline_type}.csv'
+            
+            # Read the CSV file (handle both comma and semicolon delimiters)
+            network_df = pd.read_csv(file_path, sep=None, engine='python')
+            
+            # Process each arc
+            for idx, row in network_df.iterrows():
+                node0 = row['node0']
+                node1 = row['node1']
+                length_km = row['length']
+                
+                # Calculate costs using the database cost model
+                options = base_options.copy()
+                options["length_km"] = length_km
+                options["terrain"] = terrain
+                
+                cost_indicators = adopt.database.calculate_indicators("CO2_Pipeline", options)
+
+                # Store the cost information
+                cost_data = {
+                    'node0': node0,
+                    'node1': node1,
+                    'length_km': length_km,
+                    'terrain': terrain,
+                    'gamma1': cost_indicators['financial_indicators'].get('gamma1', 0),
+                    'gamma2': cost_indicators['financial_indicators'].get('gamma2', 0),
+                    'gamma3': cost_indicators['financial_indicators'].get('gamma3', 0),
+                    'gamma4': cost_indicators['financial_indicators'].get('gamma4', 0),
+                    'opex_fixed': cost_indicators['financial_indicators'].get('opex_fixed', 0),
+                    'opex_variable': cost_indicators['financial_indicators'].get('opex_variable', 0),
+                    'lifetime': cost_indicators['financial_indicators'].get('lifetime', 0),
+                    'levelized_cost': cost_indicators['financial_indicators'].get('levelized_cost', 0),
+                }
+                all_costs.append(cost_data)
+        
+        costs_df = pd.DataFrame(all_costs)
+        
+        # Remove duplicates - keep the first occurrence of each unique arc
+        # Create a normalized key for each arc (sorted node order)
+        # costs_df['arc_key'] = costs_df.apply(
+        #     lambda row: tuple(sorted([row['node0'], row['node1']])),
+        #     axis=1
+        # )
+        # costs_df = costs_df.drop_duplicates(subset=['arc_key'], keep='first')
+        # costs_df = costs_df.drop('arc_key', axis=1)
+        
+        # Write to CSV file
+        output_file = output_path / 'CO2_Pipeline_costs_per_arc.csv'
+        costs_df.to_csv(output_file, index=False)
