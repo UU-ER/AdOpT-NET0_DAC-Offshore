@@ -62,6 +62,8 @@ class InputDataCreator:
                 self._define_networks(input_data_path, scenario)
                 self._define_network_topology(input_data_path, scenario)
                 adopt.copy_network_data(input_data_path, Path(self.clean_data_path / "network_data"))
+                self._copy_network_arc_cost_data(input_data_path, scenario)
+
 
                 # Time series
                 self._define_demand(input_data_path, cy)
@@ -670,3 +672,31 @@ class InputDataCreator:
         # Write to CSV file
         output_file = output_path / 'CO2_Pipeline_costs_per_arc.csv'
         costs_df.to_csv(output_file, index=False)
+
+    def _copy_network_arc_cost_data(self, input_data_path, scenario):
+        """
+        Copy CO2 pipeline cost data per arc to the network_data folder.
+        
+        This method copies the CO2_Pipeline_costs_per_arc.csv file from the clean_data
+        folder to the respective input_data network_data folder for the given scenario.
+        
+        :param input_data_path: Path to the input data folder for the scenario
+        :param scenario: The scenario name (No_DAC, DAC, Onshore_DAC_only, Offshore_DAC_only)
+        """
+        # Only copy cost data if CO2 pipeline exists in this scenario
+        if scenario == 'No_DAC':
+            return
+        
+        # Source file from clean_data
+        source_file = self.clean_data_path / 'networks_cost' / 'CO2_Pipeline_costs_per_arc.csv'
+        
+        # Destination folder
+        dest_folder = input_data_path / "period1" / "network_data"
+
+        # Copy the file
+        dest_file = dest_folder / 'CO2_Pipeline_costs_per_arc.csv'
+        
+        # Read and write to destination
+        cost_data = pd.read_csv(source_file)
+        cost_data.to_csv(dest_file, index=False)
+
