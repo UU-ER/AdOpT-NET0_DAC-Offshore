@@ -57,26 +57,35 @@ class DacAdsorption(Technology):
         nr_segments = self.performance_data["nr_segments"]
 
         # Read performance data from file
-        performance_data_path = Path(__file__).parent.parent.parent.parent
-        performance_data_path = (
-            performance_data_path
-            / "database/templates/technology_data/DAC/DAC_adsorption_data/dac_adsorption_performance_rezo.csv"
+        data_dir = (
+            Path(__file__).parent.parent.parent.parent
+            / "database/templates/technology_data/DAC/DAC_adsorption_data"
         )
+        data_source = self.performance_data.get("performance_data_source", "default")
+        if data_source not in ("default", "rezo"):
+            raise ValueError(
+                f"performance_data_source '{data_source}' is not valid. "
+                f"Options are: 'default', 'rezo'"
+            )
 
-        performance_data = pd.read_csv(performance_data_path, sep=",")
+        performance_data = pd.read_csv(
+            data_dir / f"dac_adsorption_performance_{data_source}.csv", sep=","
+        )
         performance_data = performance_data.rename(
             columns={"T": "temp_air", "RH": "humidity"}
         )
 
-        available_gef = sorted(performance_data["grid_emission_factor"].unique())
-        requested_gef = self.performance_data["grid_emission_factor"]
-        if requested_gef not in available_gef:
-            raise ValueError(
-                f"grid_emission_factor {requested_gef} is not available. "
-                f"Available options are: {available_gef}")
-        performance_data = performance_data.loc[
-            performance_data["grid_emission_factor"] == requested_gef
-        ].drop(columns=["grid_emission_factor"])
+        if data_source == "rezo":
+            available_gef = sorted(performance_data["grid_emission_factor"].unique())
+            requested_gef = self.performance_data["grid_emission_factor"]
+            if requested_gef not in available_gef:
+                raise ValueError(
+                    f"grid_emission_factor {requested_gef} is not available. "
+                    f"Available options are: {available_gef}"
+                )
+            performance_data = performance_data.loc[
+                performance_data["grid_emission_factor"] == requested_gef
+            ].drop(columns=["grid_emission_factor"])
 
         # Unit Conversion of input data
         performance_data.E_tot = performance_data.E_tot.multiply(
