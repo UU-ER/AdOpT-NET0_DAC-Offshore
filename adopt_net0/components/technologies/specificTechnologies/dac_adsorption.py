@@ -60,13 +60,23 @@ class DacAdsorption(Technology):
         performance_data_path = Path(__file__).parent.parent.parent.parent
         performance_data_path = (
             performance_data_path
-            / "database/templates/technology_data/DAC/DAC_adsorption_data/dac_adsorption_performance_rezo.txt"
+            / "database/templates/technology_data/DAC/DAC_adsorption_data/dac_adsorption_performance_rezo.csv"
         )
 
         performance_data = pd.read_csv(performance_data_path, sep=",")
         performance_data = performance_data.rename(
             columns={"T": "temp_air", "RH": "humidity"}
         )
+
+        available_gef = sorted(performance_data["grid_emission_factor"].unique())
+        requested_gef = self.performance_data["grid_emission_factor"]
+        if requested_gef not in available_gef:
+            raise ValueError(
+                f"grid_emission_factor {requested_gef} is not available. "
+                f"Available options are: {available_gef}")
+        performance_data = performance_data.loc[
+            performance_data["grid_emission_factor"] == requested_gef
+        ].drop(columns=["grid_emission_factor"])
 
         # Unit Conversion of input data
         performance_data.E_tot = performance_data.E_tot.multiply(
