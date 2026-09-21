@@ -664,9 +664,9 @@ class ModelHub:
 
         # Negative emission target
         if model.find_component("const_neg_emission_limit"):
+            model.del_component(model.const_neg_emission_limit)
             if is_persistent:
                 self.solver.remove_constraint(model.const_neg_emission_limit)
-        model.del_component(model.const_neg_emission_limit)
         model.const_neg_emission_limit = pyo.Constraint(
             expr=model.var_emissions_neg >= neg_target)
         if is_persistent:
