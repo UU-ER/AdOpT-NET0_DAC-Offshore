@@ -687,16 +687,29 @@ class InputDataCreator:
         if scenario == 'No_DAC':
             return
         
-        # Source file from clean_data
+        # Read the cost data from clean_data
         source_file = self.clean_data_path / 'networks_cost' / 'CO2_Pipeline_costs_per_arc.csv'
-        
-        # Destination folder
-        dest_folder = input_data_path / "period1" / "network_data"
-
-        # Copy the file
-        dest_file = dest_folder / 'CO2_Pipeline_costs_per_arc.csv'
-        
-        # Read and write to destination
         cost_data = pd.read_csv(source_file)
-        cost_data.to_csv(dest_file, index=False)
+        
+        # Get all unique nodes to create the matrix structure
+        all_nodes = sorted(set(list(cost_data['node0'].unique()) + list(cost_data['node1'].unique())))
+        
+        # Create destination folder for topology matrices
+        topology_folder = input_data_path / "period1" / "network_topology" / "new" / "CO2_Pipeline"
+
+        # Create matrix for each gamma parameter
+        for gamma in ['gamma1', 'gamma2', 'gamma3', 'gamma4']:
+            # Initialize matrix with zeros
+            gamma_matrix = pd.DataFrame(0.0, index=all_nodes, columns=all_nodes)
+            
+            # Fill in the values from cost_data
+            for _, row in cost_data.iterrows():
+                node0 = row['node0']
+                node1 = row['node1']
+                value = row[gamma]
+                gamma_matrix.loc[node0, node1] = value
+            
+            # Save to CSV with semicolon separator and index
+            output_file = topology_folder / f"{gamma}.csv"
+            gamma_matrix.to_csv(output_file, sep=";", index=True)
 
