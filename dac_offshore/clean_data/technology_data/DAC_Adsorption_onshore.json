@@ -31,6 +31,8 @@
     ],
     "nr_segments": 1,
     "ohmic_heating": 0,
+    "grid_emission_factor": 0,
+    "grid_emission_factor_comment": "Options: 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 1.3. Source: Rezo et al., 2024 (max productivity case)",
     "emission_factor": -1.0,
     "performance": {
       "eta_elth": 0.97
