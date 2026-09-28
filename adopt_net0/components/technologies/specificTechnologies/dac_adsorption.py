@@ -87,6 +87,12 @@ class DacAdsorption(Technology):
                 performance_data["grid_emission_factor"] == requested_gef
             ].drop(columns=["grid_emission_factor"])
 
+        # input data scaling to 1 tCO2/yr for module size
+        full_load = performance_data.loc[performance_data.Point == performance_data.Point.max()]
+        module_capacity = float(griddata(
+            (full_load.temp_air, full_load.humidity), full_load.CO2_Out, (20, 43))) * 8.76
+        performance_data.CO2_Out = performance_data.CO2_Out / module_capacity
+
         # Unit Conversion of input data
         performance_data.E_tot = performance_data.E_tot.multiply(
             performance_data.CO2_Out / 3600
