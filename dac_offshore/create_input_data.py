@@ -599,56 +599,61 @@ class InputDataCreator:
         # Common cost model options
         base_options = {
             "currency_out": "EUR",
-            "financial_year_out": 2022, #Todo to specify!
+            "financial_year_out": 2025,
             "discount_rate": 0.1,
             "source": "Oeuvray",
             "timeframe": "mid-term",
             "massflow_min_kg_per_s": 5, #Todo to specify!
             "massflow_max_kg_per_s": 10, #Todo to specify!
             "massflow_evaluation_points": 2,
-            "p_inlet_bar": 10, #Todo to specify!
-            "p_outlet_bar": 70, #Todo to specify!
+            "p_inlet_bar": 100, #Todo to specify!
+            "p_outlet_bar": 100, #Todo to specify!
             "no_intercept": True,
         }
         
         all_costs = []
         
         # Process both onshore and offshore CO2 pipelines
-        for pipeline_type, terrain in [("onshore", "Onshore"), ("offshore", "Offshore")]:
-            file_path = netw_data_path / f'CO2_Pipeline_{pipeline_type}.csv'
-            
-            # Read the CSV file (handle both comma and semicolon delimiters)
-            network_df = pd.read_csv(file_path, sep=None, engine='python')
-            
-            # Process each arc
-            for idx, row in network_df.iterrows():
-                node0 = row['node0']
-                node1 = row['node1']
-                length_km = row['length']
-                
-                # Calculate costs using the database cost model
-                options = base_options.copy()
-                options["length_km"] = length_km
-                options["terrain"] = terrain
-                
-                cost_indicators = adopt.database.calculate_indicators("CO2_Pipeline", options)
+        file_path = netw_data_path / f'CO2_Pipeline.csv'
 
-                # Store the cost information
-                cost_data = {
-                    'node0': node0,
-                    'node1': node1,
-                    'length_km': length_km,
-                    'terrain': terrain,
-                    'gamma1': cost_indicators['financial_indicators'].get('gamma1', 0),
-                    'gamma2': cost_indicators['financial_indicators'].get('gamma2', 0),
-                    'gamma3': cost_indicators['financial_indicators'].get('gamma3', 0),
-                    'gamma4': cost_indicators['financial_indicators'].get('gamma4', 0),
-                    'opex_fixed': cost_indicators['financial_indicators'].get('opex_fixed', 0),
-                    'opex_variable': cost_indicators['financial_indicators'].get('opex_variable', 0),
-                    'lifetime': cost_indicators['financial_indicators'].get('lifetime', 0),
-                    'levelized_cost': cost_indicators['financial_indicators'].get('levelized_cost', 0),
-                }
-                all_costs.append(cost_data)
+        # Read the CSV file (handle both comma and semicolon delimiters)
+        network_df = pd.read_csv(file_path, sep=None, engine='python')
+
+        # Process each arc
+        for idx, row in network_df.iterrows():
+            node0 = row['node0']
+            node1 = row['node1']
+            length_km = row['length']
+            terrain = row['Type']
+
+            print(node0, node1, length_km, terrain)
+
+            # Calculate costs using the database cost model
+            options = base_options.copy()
+            options["length_km"] = length_km
+            if terrain == "onshore":
+                options["terrain"] = "Onshore"
+            elif terrain == "offshore":
+                options["terrain"] = "Offshore"
+
+            cost_indicators = adopt.database.calculate_indicators("CO2_Pipeline", options)
+
+            # Store the cost information
+            cost_data = {
+                'node0': node0,
+                'node1': node1,
+                'length_km': length_km,
+                'terrain': terrain,
+                'gamma1': cost_indicators['financial_indicators'].get('gamma1', 0),
+                'gamma2': cost_indicators['financial_indicators'].get('gamma2', 0),
+                'gamma3': cost_indicators['financial_indicators'].get('gamma3', 0),
+                'gamma4': cost_indicators['financial_indicators'].get('gamma4', 0),
+                'opex_fixed': cost_indicators['financial_indicators'].get('opex_fixed', 0),
+                'opex_variable': cost_indicators['financial_indicators'].get('opex_variable', 0),
+                'lifetime': cost_indicators['financial_indicators'].get('lifetime', 0),
+                'levelized_cost': cost_indicators['financial_indicators'].get('levelized_cost', 0),
+            }
+            all_costs.append(cost_data)
         
         costs_df = pd.DataFrame(all_costs)
         
