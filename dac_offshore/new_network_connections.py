@@ -4,7 +4,6 @@ import pandas as pd
 
 base_dir = Path(__file__).parent / "clean_data"
 topo_dir = base_dir / "networks_topology"
-n_closest = 5
 s_nom_max_new = 5
 s_nom_max_new_electricity = 10
 
@@ -37,12 +36,12 @@ def existing_electricity_lines() -> set[frozenset[str]]:
     lines = set()
     for name in ["electricityAC.csv", "electricityDC.csv"]:
         df = pd.read_csv(topo_dir / name, sep=";")
-        df = df[df["s_nom"] > 0]
+        df = df[df["s_nom_max"] > 0]
         lines |= {frozenset((a, b)) for a, b in zip(df["node0"], df["node1"])}
     return lines
 
 
-def propose_co2_pipelines():
+def propose_co2_pipelines(n_closest_onshore, n_closest_offshore):
     meta = pd.read_excel(base_dir / "nodes" / "nodes.xlsx").dropna(subset=["x", "y"])
     meta["Node"] = meta["Node"].astype(str).str.strip()
 
@@ -53,21 +52,25 @@ def propose_co2_pipelines():
     storage = pd.read_csv(base_dir / "co2_storage_limits" / "CO2_storage_limits_2040.csv")
     storage_nodes = set(storage["Node"].astype(str).str.strip()) & all_nodes
     onshore_nodes = set(meta.loc[meta["Type"] == "onshore", "Node"])
+    offshore_nodes = set(meta.loc[meta["Type"].str.contains("offshore"), "Node"])
 
     # Each pipeline is an unordered pair of node names, e.g. {"A", "B"} == {"B", "A"}
     pipelines = set()
 
-    # Rule 1: each storage node -> its nearest onshore node + its n_closest nearest nodes of any type
+    # Rule 1: each storage node -> its nearest onshore node
     for storage_node in sorted(storage_nodes):
-        nearest_onshore = nearest_nodes(storage_node, onshore_nodes, coords, k=1)
-        nearest_any = nearest_nodes(storage_node, all_nodes, coords, k=n_closest)
-        for target in nearest_onshore + nearest_any:
+        for target in nearest_nodes(storage_node, onshore_nodes, coords, k=1):
             pipelines.add(frozenset((storage_node, target)))
 
-    # Rule 2: each onshore node -> its nearest storage node
-    for onshore_node in sorted(onshore_nodes):
-        for target in nearest_nodes(onshore_node, storage_nodes, coords, k=1):
-            pipelines.add(frozenset((onshore_node, target)))
+    # Rule 2: each onshore node -> its k-nearest onshore nodes
+    for node in sorted(onshore_nodes):
+        for target in nearest_nodes(node, onshore_nodes, coords, k=n_closest_onshore):
+            pipelines.add(frozenset((node, target)))
+
+    # Rule 3: each offshore node -> its nearest n nodes
+    for node in sorted(offshore_nodes):
+        for target in nearest_nodes(node, all_nodes, coords, k=n_closest_offshore):
+            pipelines.add(frozenset((node, target)))
 
     rows = []
     for n0, n1 in sorted(tuple(sorted(pipeline)) for pipeline in pipelines):
@@ -86,7 +89,7 @@ def propose_co2_pipelines():
     print(proposed.round(1).to_string(index=False))
 
 
-def propose_electricity_lines():
+def propose_electricity_lines(n_closest):
     meta = pd.read_excel(base_dir / "nodes" / "nodes.xlsx").dropna(subset=["x", "y"])
     meta["Node"] = meta["Node"].astype(str).str.strip()
 
@@ -97,7 +100,6 @@ def propose_electricity_lines():
     storage = pd.read_csv(base_dir / "co2_storage_limits" / "CO2_storage_limits_2040.csv")
     storage_nodes = set(storage["Node"].astype(str).str.strip()) & all_nodes
     onshore_nodes = set(meta.loc[meta["Type"] == "onshore", "Node"])
-    grid_nodes = set(meta.loc[meta["Type"].isin(["onshore", "offshore_existing"]), "Node"])
     existing_lines = existing_electricity_lines()
 
     # Each line is an unordered pair of node names, e.g. {"A", "B"} == {"B", "A"}
@@ -106,7 +108,7 @@ def propose_electricity_lines():
     # Each storage node -> its nearest onshore node + its n_closest nearest grid nodes
     for storage_node in sorted(storage_nodes):
         nearest_onshore = nearest_nodes(storage_node, onshore_nodes, coords, k=1)
-        nearest_other = nearest_nodes(storage_node, grid_nodes, coords, k=n_closest)
+        nearest_other = nearest_nodes(storage_node, all_nodes, coords, k=n_closest)
         for target in nearest_onshore + nearest_other:
             lines.add(frozenset((storage_node, target)))
 
@@ -131,5 +133,9 @@ def propose_electricity_lines():
 
 
 if __name__ == "__main__":
-    propose_co2_pipelines()
-    propose_electricity_lines()
+    n_closest_onshore = 3
+    n_closest_offshore = 3
+    propose_co2_pipelines(n_closest_onshore, n_closest_offshore)
+
+    n_closest = 2
+    propose_electricity_lines(n_closest)
