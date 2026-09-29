@@ -29,6 +29,7 @@ class CO2_Pipeline_CostModel(DataComponent_CostModel):
     - operating_hours_per_a: number of operating hours per year
     - p_inlet_bar: inlet pressure in bar (beginning of pipeline)
     - p_outlet_bar: outlet pressure in bar (end of pipeline)
+    - no_intercept: fit cost function with or without intercept (True/False), without intercept yields a linear cost model
 
     Financial indicators are:
 
@@ -56,6 +57,7 @@ class CO2_Pipeline_CostModel(DataComponent_CostModel):
         self.default_options["operating_hours_per_a"] = 8000
         self.default_options["p_inlet_bar"] = 10
         self.default_options["p_outlet_bar"] = 70
+        self.default_options["no_intercept"] = False
 
     def _set_options(self, options: dict):
         """
@@ -165,7 +167,10 @@ class CO2_Pipeline_CostModel(DataComponent_CostModel):
                 costs.loc[massflow_t_per_h, "levelized_cost"] = cost["levelized_cost"]
 
             # Fit linear cost function to results
-            costs["intercept"] = 1
+            if self.options["no_intercept"]:
+                costs["intercept"] = 0
+            else:
+                costs["intercept"] = 1
             d = costs.reset_index(names="massflow_t_per_h")
             x = d[["massflow_t_per_h", "intercept"]]
             y = d["capex_total"]
