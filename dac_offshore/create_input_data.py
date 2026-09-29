@@ -416,23 +416,15 @@ class InputDataCreator:
                 sep=";")
 
         # CO2 networks onshore and offshore
-        data_offshore = get_network_data(netw_data_path / 'CO2_Pipeline_offshore.csv', self.nodes)
-        data_onshore = get_network_data(netw_data_path / 'CO2_Pipeline_onshore.csv', self.nodes)
-
-        merged_connection = data_offshore['connection_matrix'].combine(
-            data_onshore['connection_matrix'], func=lambda a, b: (a + b).clip(upper=1)
-        )
-        merged_distance = data_offshore['distance_matrix'].combine(
-            data_onshore['distance_matrix'], func=lambda a, b: a + b
-        )
+        data = get_network_data(netw_data_path / 'CO2_Pipeline.csv', self.nodes)
 
         netw_name = "CO2_Pipeline"
         os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
-        merged_connection.to_csv(
+        data['connection_matrix'].to_csv(
             input_data_path / "period1" / "network_topology" / "new" / netw_name / "connection.csv",
             sep=";"
         )
-        merged_distance.to_csv(
+        data['distance_matrix'].to_csv(
             input_data_path / "period1" / "network_topology" / "new" / netw_name / "distance.csv",
             sep=";"
         )

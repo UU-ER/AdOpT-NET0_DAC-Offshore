@@ -85,7 +85,7 @@ def propose_co2_pipelines(n_closest_onshore, n_closest_offshore):
         })
 
     proposed = pd.DataFrame(rows)
-    proposed.to_csv(topo_dir / "proposed_CO2_Pipeline.csv", sep=";", index=False)
+    proposed.to_csv(topo_dir / "CO2_Pipeline.csv", sep=";", index=False)
     print(proposed.round(1).to_string(index=False))
 
 
@@ -124,6 +124,7 @@ def propose_electricity_lines(n_closest):
             "s_nom_max": s_nom_max_new_electricity,
             "node0": n0,
             "node1": n1,
+            "LineCountry": f"{n0[0:2]}-{n1[0:2]}",
             "Type": "offshore",
         })
 

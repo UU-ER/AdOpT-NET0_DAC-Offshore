@@ -79,6 +79,6 @@ if __name__ == "__main__":
          load_edges(["electricityAC.csv", "electricityDC.csv"], pos),
          "Proposed electricity connections", "proposed_connections.svg")
     plot(pos, kind,
-         load_edges(["proposed_CO2_Pipeline.csv"], pos),
+         load_edges(["CO2_Pipeline.csv"], pos),
          [],
          "Proposed CO2 pipelines", "proposed_co2_pipelines.svg")
