@@ -6,7 +6,14 @@ import os
 
 import adopt_net0 as adopt
 from dac_offshore.global_vars import CO2_PRICE, SCENARIOS, CLIMATE_YEARS, GAS_PRICE
+from adopt_net0.database.components.technologies.co2_compression_cost_model import (
+    CO2_Compression_CostModel,
+)
 
+PIPELINE_PRESSURE_INLET_BAR = 80
+PIPELINE_PRESSURE_OUTLET_BAR = 80
+STORAGE_PRESSURE_BAR = 100
+DAC_OUTLET_PRESSURE_BAR = 1
 
 def _read_nodes(node_data_path):
     nodes = SimpleNamespace()
@@ -36,6 +43,7 @@ class InputDataCreator:
         self._write_to_technology_data()
         self._write_to_network_data()
         self._define_co2_pipeline_costs()
+        self._define_co2_pressures()
 
         for cy in CLIMATE_YEARS:
             for scenario in SCENARIOS:
@@ -583,11 +591,40 @@ class InputDataCreator:
             carbon_cost_template = carbon_cost_template.reset_index()
             carbon_cost_template.to_csv(carbon_cost_path, sep=';', index=False)
 
+    def _define_co2_pressures(self):
+        pass
+
+
+        # DAC pressures -> adapt in jsons
+        # DAC_OUTLET_PRESSURE_BAR -> PIPELINE_PRESSURE_INLET_BAR
+
+        # Pipeline pressures -> done in other function, change after merge!
+        # PIPELINE_PRESSURE_INLET_BAR -> PIPELINE_PRESSURE_OUTLET_BAR
+
+        # CO2 sink -> calculate here and write to jsons
+        # PIPELINE_PRESSURE_OUTLET_BAR -> STORAGE_PRESSURE_BAR
+        compression_cost_model = CO2_Compression_CostModel("CO2_Compressor")
+        compression_indicators = compression_cost_model.calculate_indicators(
+            {
+                "currency_out": "EUR",# doesnt matter
+                "financial_year_out": 2025, # doesnt matter
+                "discount_rate": 0.1, # doesnt matter
+                "massflow_min_kg_per_s": 1,# doesnt matter
+                "massflow_max_kg_per_s": 1,# doesnt matter
+                "massflow_evaluation_points": 1,# doesnt matter
+                "p_inlet_bar": PIPELINE_PRESSURE_OUTLET_BAR,
+                "p_outlet_bar": STORAGE_PRESSURE_BAR,
+            }
+        )
+        compression_energy_mwh_t = compression_indicators["technical_indicators"][
+            "energyconsumption"
+        ] # -> Write to json
+
 
     def _define_co2_pipeline_costs(self):
         """
         Calculate CO2 pipeline costs for onshore and offshore arcs.
-        
+
         - Reads network topologies for CO2 Pipeline onshore and offshore
         - Calculates the cost for each arc using the database functionalities
         - Merges the two tables and removes duplicates
@@ -595,7 +632,7 @@ class InputDataCreator:
         """
         netw_data_path = self.clean_data_path / 'networks_topology'
         output_path = self.clean_data_path / 'networks_cost'
-        
+
         # Common cost model options
         base_options = {
             "currency_out": "EUR",
@@ -610,9 +647,9 @@ class InputDataCreator:
             "p_outlet_bar": 100, #Todo to specify!
             "no_intercept": True,
         }
-        
+
         all_costs = []
-        
+
         # Process both onshore and offshore CO2 pipelines
         file_path = netw_data_path / f'CO2_Pipeline.csv'
 
@@ -654,9 +691,9 @@ class InputDataCreator:
                 'levelized_cost': cost_indicators['financial_indicators'].get('levelized_cost', 0),
             }
             all_costs.append(cost_data)
-        
+
         costs_df = pd.DataFrame(all_costs)
-        
+
         # Remove duplicates - keep the first occurrence of each unique arc
         # Create a normalized key for each arc (sorted node order)
         # costs_df['arc_key'] = costs_df.apply(
@@ -665,7 +702,7 @@ class InputDataCreator:
         # )
         # costs_df = costs_df.drop_duplicates(subset=['arc_key'], keep='first')
         # costs_df = costs_df.drop('arc_key', axis=1)
-        
+
         # Write to CSV file
         output_file = output_path / 'CO2_Pipeline_costs_per_arc.csv'
         costs_df.to_csv(output_file, index=False)
@@ -673,24 +710,24 @@ class InputDataCreator:
     def _copy_network_arc_cost_data(self, input_data_path, scenario):
         """
         Copy CO2 pipeline cost data per arc to the network_data folder.
-        
+
         This method copies the CO2_Pipeline_costs_per_arc.csv file from the clean_data
         folder to the respective input_data network_data folder for the given scenario.
-        
+
         :param input_data_path: Path to the input data folder for the scenario
         :param scenario: The scenario name (No_DAC, DAC, Onshore_DAC_only, Offshore_DAC_only)
         """
         # Only copy cost data if CO2 pipeline exists in this scenario
         if scenario == 'No_DAC':
             return
-        
+
         # Read the cost data from clean_data
         source_file = self.clean_data_path / 'networks_cost' / 'CO2_Pipeline_costs_per_arc.csv'
         cost_data = pd.read_csv(source_file)
-        
+
         # Get all unique nodes to create the matrix structure
         all_nodes = sorted(set(list(cost_data['node0'].unique()) + list(cost_data['node1'].unique())))
-        
+
         # Create destination folder for topology matrices
         topology_folder = input_data_path / "period1" / "network_topology" / "new" / "CO2_Pipeline"
 
@@ -698,14 +735,14 @@ class InputDataCreator:
         for gamma in ['gamma1', 'gamma2', 'gamma3', 'gamma4']:
             # Initialize matrix with zeros
             gamma_matrix = pd.DataFrame(0.0, index=all_nodes, columns=all_nodes)
-            
+
             # Fill in the values from cost_data
             for _, row in cost_data.iterrows():
                 node0 = row['node0']
                 node1 = row['node1']
                 value = row[gamma]
                 gamma_matrix.loc[node0, node1] = value
-            
+
             # Save to CSV with semicolon separator and index
             output_file = topology_folder / f"{gamma}.csv"
             gamma_matrix.to_csv(output_file, sep=";", index=True)
