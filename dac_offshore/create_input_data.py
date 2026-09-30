@@ -6,7 +6,14 @@ import os
 
 import adopt_net0 as adopt
 from dac_offshore.global_vars import CO2_PRICE, SCENARIOS, CLIMATE_YEARS, GAS_PRICE
+from adopt_net0.database.components.technologies.co2_compression_cost_model import (
+    CO2_Compression_CostModel,
+)
 
+PIPELINE_PRESSURE_INLET_BAR = 80
+PIPELINE_PRESSURE_OUTLET_BAR = 80
+STORAGE_PRESSURE_BAR = 100
+DAC_OUTLET_PRESSURE_BAR = 1
 
 def _read_nodes(node_data_path):
     nodes = SimpleNamespace()
@@ -35,6 +42,7 @@ class InputDataCreator:
 
         self._write_to_technology_data()
         self._write_to_network_data()
+        self._define_co2_pressures()
 
         for cy in CLIMATE_YEARS:
             for scenario in SCENARIOS:
@@ -579,4 +587,33 @@ class InputDataCreator:
             carbon_cost_template['price'] = CO2_PRICE
             carbon_cost_template = carbon_cost_template.reset_index()
             carbon_cost_template.to_csv(carbon_cost_path, sep=';', index=False)
+
+    def _define_co2_pressures(self):
+        pass
+
+
+        # DAC pressures -> adapt in jsons
+        # DAC_OUTLET_PRESSURE_BAR -> PIPELINE_PRESSURE_INLET_BAR
+
+        # Pipeline pressures -> done in other function, change after merge!
+        # PIPELINE_PRESSURE_INLET_BAR -> PIPELINE_PRESSURE_OUTLET_BAR
+
+        # CO2 sink -> calculate here and write to jsons
+        # PIPELINE_PRESSURE_OUTLET_BAR -> STORAGE_PRESSURE_BAR
+        compression_cost_model = CO2_Compression_CostModel("CO2_Compressor")
+        compression_indicators = compression_cost_model.calculate_indicators(
+            {
+                "currency_out": "EUR",# doesnt matter
+                "financial_year_out": 2025, # doesnt matter
+                "discount_rate": 0.1, # doesnt matter
+                "massflow_min_kg_per_s": 1,# doesnt matter
+                "massflow_max_kg_per_s": 1,# doesnt matter
+                "massflow_evaluation_points": 1,# doesnt matter
+                "p_inlet_bar": PIPELINE_PRESSURE_OUTLET_BAR,
+                "p_outlet_bar": STORAGE_PRESSURE_BAR,
+            }
+        )
+        compression_energy_mwh_t = compression_indicators["technical_indicators"][
+            "energyconsumption"
+        ] # -> Write to json
 
