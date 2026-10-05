@@ -151,7 +151,7 @@ class Sink(Technology):
         b_tec.var_opex_variable = pyo.Var(self.set_t_global, domain=pyo.NonNegativeReals)
 
         def init_opex_variable(const, t):
-            return (b_tec.var_opex_variable[t] == self.input[t, self.main_input_carrier] * b_tec.para_opex_variable)
+            return (b_tec.var_opex_variable[t] == b_tec.var_input[t, self.main_input_carrier] * b_tec.para_opex_variable)
 
         b_tec.const_opex_variable = pyo.Constraint(self.set_t_global, rule=init_opex_variable)
 
