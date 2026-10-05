@@ -770,6 +770,9 @@ class Network(ModelComponent):
 
         # Losses
         def init_flowlosses(const, t):
+            if coeff_ti["loss"] * pyo.value(b_arc.distance) == 0:
+                b_arc.var_losses[t].fix(0)
+                return pyo.Constraint.Skip
             return (
                 b_arc.var_losses[t]
                 == b_arc.var_flow[t] * coeff_ti["loss"] * b_arc.distance
@@ -786,6 +789,8 @@ class Network(ModelComponent):
         )
 
         def init_size_const_low(const, t):
+            if coeff_ti["min_transport"] == 0:
+                return pyo.Constraint.Skip
             return (
                 b_arc.var_size * rated_capacity * coeff_ti["min_transport"]
                 <= b_arc.var_flow[t]
@@ -816,6 +821,9 @@ class Network(ModelComponent):
         b_arc.var_opex_variable = pyo.Var(self.set_t)
 
         def init_opex_variable(const, t):
+            if pyo.value(b_netw.para_opex_variable) == 0:
+                b_arc.var_opex_variable[t].fix(0)
+                return pyo.Constraint.Skip
             return (
                 b_arc.var_opex_variable[t]
                 == b_arc.var_flow[t] * b_netw.para_opex_variable

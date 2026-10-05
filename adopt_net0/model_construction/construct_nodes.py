@@ -230,16 +230,12 @@ def construct_node_block(b_node, data: dict, set_t_full, set_t_clustered):
     # CONSTRAINTS
     # Generic production constraint
     def init_generic_production(const, t, car):
+        profile = pyo.value(b_node.para_production_profile[t, car])
         if data["energybalance_options"][car]["curtailment_possible"] == 0:
-            return (
-                b_node.para_production_profile[t, car]
-                == b_node.var_generic_production[t, car]
-            )
+            b_node.var_generic_production[t, car].fix(profile)
         elif data["energybalance_options"][car]["curtailment_possible"] == 1:
-            return (
-                b_node.para_production_profile[t, car]
-                >= b_node.var_generic_production[t, car]
-            )
+            b_node.var_generic_production[t, car].setub(profile)
+        return pyo.Constraint.Skip
 
     b_node.const_generic_production = pyo.Constraint(
         set_t, b_node.set_carriers, rule=init_generic_production
@@ -247,28 +243,30 @@ def construct_node_block(b_node, data: dict, set_t_full, set_t_clustered):
 
     # Emission constraints
     def init_import_emissions_pos(const, t, car):
-        if b_node.para_import_emissionfactors[t, car] >= 0:
+        if b_node.para_import_emissionfactors[t, car] > 0:
             return (
                 b_node.var_import_flow[t, car]
                 * b_node.para_import_emissionfactors[t, car]
                 == b_node.var_import_emissions_pos[t, car]
             )
         else:
-            return 0 == b_node.var_import_emissions_pos[t, car]
+            b_node.var_import_emissions_pos[t, car].fix(0)
+            return pyo.Constraint.Skip
 
     b_node.const_import_emissions_pos = pyo.Constraint(
         set_t, b_node.set_carriers, rule=init_import_emissions_pos
     )
 
     def init_export_emissions_pos(const, t, car):
-        if b_node.para_export_emissionfactors[t, car] >= 0:
+        if b_node.para_export_emissionfactors[t, car] > 0:
             return (
                 b_node.var_export_flow[t, car]
                 * b_node.para_export_emissionfactors[t, car]
                 == b_node.var_export_emissions_pos[t, car]
             )
         else:
-            return 0 == b_node.var_export_emissions_pos[t, car]
+            b_node.var_export_emissions_pos[t, car].fix(0)
+            return pyo.Constraint.Skip
 
     b_node.const_export_emissions_pos = pyo.Constraint(
         set_t, b_node.set_carriers, rule=init_export_emissions_pos
@@ -282,7 +280,8 @@ def construct_node_block(b_node, data: dict, set_t_full, set_t_clustered):
                 == b_node.var_import_emissions_neg[t, car]
             )
         else:
-            return 0 == b_node.var_import_emissions_neg[t, car]
+            b_node.var_import_emissions_neg[t, car].fix(0)
+            return pyo.Constraint.Skip
 
     b_node.const_import_emissions_neg = pyo.Constraint(
         set_t, b_node.set_carriers, rule=init_import_emissions_neg
@@ -296,7 +295,8 @@ def construct_node_block(b_node, data: dict, set_t_full, set_t_clustered):
                 == b_node.var_export_emissions_neg[t, car]
             )
         else:
-            return 0 == b_node.var_export_emissions_neg[t, car]
+            b_node.var_export_emissions_neg[t, car].fix(0)
+            return pyo.Constraint.Skip
 
     b_node.const_export_emissions_neg = pyo.Constraint(
         set_t, b_node.set_carriers, rule=init_export_emissions_neg

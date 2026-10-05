@@ -86,6 +86,12 @@ def construct_network_constraints(model, config: dict):
 
             if car in b_period.node_blocks[node].set_carriers:
 
+                if not any(
+                    car in b_period.network_block[netw].set_consumed_carriers
+                    for netw in b_period.set_networks
+                ):
+                    b_period.node_blocks[node].var_netw_consumption[t, car].fix(0)
+                    return pyo.Constraint.Skip
                 return b_period.node_blocks[node].var_netw_consumption[t, car] == sum(
                     b_period.network_block[netw].var_consumption[t, car, node]
                     for netw in b_period.set_networks

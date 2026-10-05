@@ -882,6 +882,9 @@ class Technology(ModelComponent):
 
         warnings.warn("OPEX NOT CORRECT IF NOT USED FOR MES NS STUDY")
         def init_opex_variable(const, t):
+            if pyo.value(b_tec.para_opex_variable) == 0:
+                b_tec.var_opex_variable[t].fix(0)
+                return pyo.Constraint.Skip
             return sum(b_tec.var_output[t, car] for car in b_tec.set_output_carriers) * b_tec.para_opex_variable == \
                    b_tec.var_opex_variable[t]
 
@@ -923,14 +926,16 @@ class Technology(ModelComponent):
         if technology_model in ["RES", "RES_CAP"]:
             # Set emissions to zero
             def init_tec_emissions_pos(const, t):
-                return b_tec.var_tec_emissions_pos[t] == 0
+                b_tec.var_tec_emissions_pos[t].fix(0)
+                return pyo.Constraint.Skip
 
             b_tec.const_tec_emissions_pos = pyo.Constraint(
                 self.set_t_global, rule=init_tec_emissions_pos
             )
 
             def init_tec_emissions_neg(const, t):
-                return b_tec.var_tec_emissions_neg[t] == 0
+                b_tec.var_tec_emissions_neg[t].fix(0)
+                return pyo.Constraint.Skip
 
             b_tec.const_tec_emissions_neg = pyo.Constraint(
                 self.set_t_global, rule=init_tec_emissions_neg
@@ -942,14 +947,15 @@ class Technology(ModelComponent):
 
                 def init_tec_emissions_pos(const, t):
                     """emissions_pos = output * emissionfactor"""
-                    if c["emission_factor"] >= 0:
+                    if c["emission_factor"] > 0:
                         return (
                             b_tec.var_output[t, self.main_output_carrier]
                             * b_tec.para_tec_emissionfactor
                             == b_tec.var_tec_emissions_pos[t]
                         )
                     else:
-                        return b_tec.var_tec_emissions_pos[t] == 0
+                        b_tec.var_tec_emissions_pos[t].fix(0)
+                        return pyo.Constraint.Skip
 
                 b_tec.const_tec_emissions_pos = pyo.Constraint(
                     self.set_t_global, rule=init_tec_emissions_pos
@@ -963,7 +969,8 @@ class Technology(ModelComponent):
                             == b_tec.var_tec_emissions_neg[t]
                         )
                     else:
-                        return b_tec.var_tec_emissions_neg[t] == 0
+                        b_tec.var_tec_emissions_neg[t].fix(0)
+                        return pyo.Constraint.Skip
 
                 b_tec.const_tec_emissions_neg = pyo.Constraint(
                     self.set_t_global, rule=init_tec_emissions_neg
@@ -972,14 +979,15 @@ class Technology(ModelComponent):
             elif self.emissions_based_on == "input":
 
                 def init_tec_emissions_pos(const, t):
-                    if c["emission_factor"] >= 0:
+                    if c["emission_factor"] > 0:
                         return (
                             b_tec.var_input[t, self.main_input_carrier]
                             * b_tec.para_tec_emissionfactor
                             == b_tec.var_tec_emissions_pos[t]
                         )
                     else:
-                        return b_tec.var_tec_emissions_pos[t] == 0
+                        b_tec.var_tec_emissions_pos[t].fix(0)
+                        return pyo.Constraint.Skip
 
                 b_tec.const_tec_emissions_pos = pyo.Constraint(
                     self.set_t_global, rule=init_tec_emissions_pos
@@ -994,7 +1002,8 @@ class Technology(ModelComponent):
                             == b_tec.var_tec_emissions_neg[t]
                         )
                     else:
-                        return b_tec.var_tec_emissions_neg[t] == 0
+                        b_tec.var_tec_emissions_neg[t].fix(0)
+                        return pyo.Constraint.Skip
 
                 b_tec.const_tec_emissions_neg = pyo.Constraint(
                     self.set_t_global, rule=init_tec_emissions_neg
@@ -1413,7 +1422,8 @@ class Technology(ModelComponent):
             )
 
             def init_tec_emissions_neg(const, t):
-                return b_tec.var_tec_emissions_neg[t] == 0
+                b_tec.var_tec_emissions_neg[t].fix(0)
+                return pyo.Constraint.Skip
 
             b_tec.const_tec_emissions_neg = pyo.Constraint(
                 self.set_t_global, rule=init_tec_emissions_neg
@@ -1434,7 +1444,8 @@ class Technology(ModelComponent):
             )
 
             def init_tec_emissions_neg(const, t):
-                return b_tec.var_tec_emissions_neg[t] == 0
+                b_tec.var_tec_emissions_neg[t].fix(0)
+                return pyo.Constraint.Skip
 
             b_tec.const_tec_emissions_neg = pyo.Constraint(
                 self.set_t_global, rule=init_tec_emissions_neg
