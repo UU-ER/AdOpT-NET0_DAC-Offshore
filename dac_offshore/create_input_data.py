@@ -170,7 +170,7 @@ class InputDataCreator:
         configuration["solveroptions"]["solver"]["value"] = 'gurobi'
         configuration["solveroptions"]["mipgap"]["value"] = 0.02
         configuration["solveroptions"]["lpwarmstart"]["value"] = 0
-        configuration["solveroptions"]["numericfocus"]["value"] = 3
+        configuration["solveroptions"]["numericfocus"]["value"] = 0
         configuration["solveroptions"]["timelim"]["value"] = 7 * 24
         configuration["solveroptions"]["method"]["value"] = 2
         configuration["solveroptions"]["threads"]["value"] = 30
@@ -181,7 +181,7 @@ class InputDataCreator:
         configuration["solveroptions"]["intfeastol"]["value"] = 1e-3
         configuration["solveroptions"]["feastol"]["value"] = 1e-3
 
-        configuration["scaling"]["scaling_on"]["value"] = 1
+        configuration["scaling"]["scaling_on"]["value"] = 0
         configuration["scaling"]["scaling_factors"]["energy_vars"]["value"] = 1e-2
         configuration["scaling"]["scaling_factors"]["cost_vars"]["value"] = 1e-2
         configuration["scaling"]["scaling_factors"]["objective"]["value"] = 1
