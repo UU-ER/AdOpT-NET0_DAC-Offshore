@@ -1,3 +1,6 @@
+import atexit
+import functools
+import gc
 import random
 import warnings
 from pathlib import Path
@@ -23,6 +26,33 @@ from .components.utilities import (
 import logging
 
 log = logging.getLogger(__name__)
+
+
+# At exit, the collector would walk every model object once more before the memory is
+# returned to the operating system anyway (minutes for large models)
+atexit.register(gc.freeze)
+
+
+def _gc_paused(method):
+    """
+    Pauses Python's cyclic garbage collector while the method runs
+
+    Reading, building and solving create millions of long-lived Pyomo objects, and the
+    collector's repeated passes over them take longer than the work itself. Memory is
+    freed as usual once the collector runs again.
+    """
+
+    @functools.wraps(method)
+    def wrapper(*args, **kwargs):
+        enabled = gc.isenabled()
+        gc.disable()
+        try:
+            return method(*args, **kwargs)
+        finally:
+            if enabled:
+                gc.enable()
+
+    return wrapper
 
 
 class ModelHub:
@@ -61,6 +91,7 @@ class ModelHub:
         self.info_monte_carlo = {}
         self.info_monte_carlo["monte_carlo_run"] = -1
 
+    @_gc_paused
     def read_data(
         self, data_path: Path | str, start_period: int = None, end_period: int = None
     ):
@@ -205,6 +236,7 @@ class ModelHub:
                                         f"json files or switch off the dynamics."
                                     )
 
+    @_gc_paused
     def construct_model(self):
         """
         Constructs the model. The model structure is as follows:
@@ -350,6 +382,7 @@ class ModelHub:
         print(log_msg)
         log.info(log_msg)
 
+    @_gc_paused
     def construct_balances(self):
         """
         Constructs the energy balance, emission balance and calculates costs
@@ -453,6 +486,7 @@ class ModelHub:
                     [summary_existing, pd.DataFrame(data=summary_dict, index=[0])]
                 ).to_excel(save_summary_path, index=False, sheet_name="Summary")
 
+    @_gc_paused
     def add_technology(self, investment_period: str, node: str, technologies: list):
         """
         Adds technologies retrospectively to the model.
@@ -965,6 +999,7 @@ class ModelHub:
             "core.scale_model"
         ).create_using(model_full)
 
+    @_gc_paused
     def _call_solver(self):
         """
         Calls the solver and solves the model
