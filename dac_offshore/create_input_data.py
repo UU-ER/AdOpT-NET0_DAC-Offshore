@@ -10,9 +10,9 @@ from adopt_net0.database.components.technologies.co2_compression_cost_model impo
     CO2_Compression_CostModel,
 )
 
-PIPELINE_PRESSURE_INLET_BAR = 80
-PIPELINE_PRESSURE_OUTLET_BAR = 80
-STORAGE_PRESSURE_BAR = 100
+PIPELINE_PRESSURE_INLET_BAR = 100
+PIPELINE_PRESSURE_OUTLET_BAR = 100
+STORAGE_PRESSURE_BAR = 200
 DAC_OUTLET_PRESSURE_BAR = 1
 
 def _read_nodes(node_data_path):
@@ -592,13 +592,28 @@ class InputDataCreator:
             carbon_cost_template.to_csv(carbon_cost_path, sep=';', index=False)
 
     def _define_co2_pressures(self):
-        pass
 
+        """
+        Defines CO2 pressures for DAC, pipeline, and storage. Writes them to the technology json files
+        - DAC: compression from DAC outlet pressure (1 bar) to pipeline inlet pressure (100 bar)
+        - Pipeline: from pipeline inlet to pipeline outlet pressure
+        - CO2 storage: compression from pipeline outlet pressure to storage pressure
+        """
+        tec_data_path = self.clean_data_path / "technology_data"
 
         # DAC pressures -> adapt in jsons
         # DAC_OUTLET_PRESSURE_BAR -> PIPELINE_PRESSURE_INLET_BAR
+        for dac in ["DAC_Adsorption_offshore.json", "DAC_Adsorption_onshore.json"]:
+            with open(os.path.join(tec_data_path, dac), "r") as openfile:
+                tech_data = json.load(openfile)
 
-        # Pipeline pressures -> done in other function, change after merge!
+            tech_data["Performance"]["compressor_inlet_bar"] = DAC_OUTLET_PRESSURE_BAR
+            tech_data["Performance"]["compressor_outlet_bar"] = PIPELINE_PRESSURE_INLET_BAR
+
+            with open(os.path.join(tec_data_path, dac), "w") as outfile:
+                json.dump(tech_data, outfile, indent=2)
+
+        # Pipeline pressures -> set in _define_co2_pipeline_costs
         # PIPELINE_PRESSURE_INLET_BAR -> PIPELINE_PRESSURE_OUTLET_BAR
 
         # CO2 sink -> calculate here and write to jsons
@@ -616,10 +631,13 @@ class InputDataCreator:
                 "p_outlet_bar": STORAGE_PRESSURE_BAR,
             }
         )
-        compression_energy_mwh_t = compression_indicators["technical_indicators"][
-            "energyconsumption"
-        ] # -> Write to json
-
+        compression_energy_mwh_t = compression_indicators["technical_indicators"]["energyconsumption"]
+        filename = "PermanentStorage_CO2_simple.json"
+        with open(os.path.join(tec_data_path, filename), "r") as openfile:
+            tech_data = json.load(openfile)
+        tech_data["Performance"]["performance"]["energy_consumption"]["in"]["electricity"]=float(round(compression_energy_mwh_t, 4))
+        with open(os.path.join(tec_data_path, filename), 'w') as outfile:
+            json.dump(tech_data, outfile, indent=2)
 
     def _define_co2_pipeline_costs(self):
         """
@@ -643,8 +661,8 @@ class InputDataCreator:
             "massflow_min_kg_per_s": 5, #Todo to specify!
             "massflow_max_kg_per_s": 10, #Todo to specify!
             "massflow_evaluation_points": 2,
-            "p_inlet_bar": 100, #Todo to specify!
-            "p_outlet_bar": 100, #Todo to specify!
+            "p_inlet_bar": PIPELINE_PRESSURE_INLET_BAR,
+            "p_outlet_bar": PIPELINE_PRESSURE_OUTLET_BAR, 
             "no_intercept": True,
         }
 
