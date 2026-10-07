@@ -53,6 +53,35 @@ class DacAdsorption(Technology):
         """
         super(DacAdsorption, self).fit_technology_performance(climate_data, location)
 
+        include_compression_energy = self.performance_data.get("include_compression_energy", False)
+        if include_compression_energy:
+            compressor_inlet_bar = self.performance_data.get("compressor_inlet_bar", 1)
+            compressor_outlet_bar = self.performance_data.get("compressor_outlet_bar", 1)
+
+            from adopt_net0.database.components.technologies.co2_compression_cost_model import (
+                CO2_Compression_CostModel,
+            )
+
+            compression_cost_model = CO2_Compression_CostModel("CO2_Compressor")
+            compression_indicators = compression_cost_model.calculate_indicators(
+                {
+                    "currency_out": "EUR",
+                    "financial_year_out": 2024,
+                    "discount_rate": self.economics["discount_rate"],
+                    "massflow_min_kg_per_s": 1,
+                    "massflow_max_kg_per_s": 1,
+                    "massflow_evaluation_points": 1,
+                    "p_inlet_bar": compressor_inlet_bar,
+                    "p_outlet_bar": compressor_outlet_bar,
+                }
+            )
+            compression_energy_mwh_t = compression_indicators["technical_indicators"][
+                "energyconsumption"
+            ]
+        else:
+            compression_energy_mwh_t = 0
+
+
         # Number of segments
         nr_segments = self.performance_data["nr_segments"]
 
@@ -62,11 +91,6 @@ class DacAdsorption(Technology):
             / "database/templates/technology_data/DAC/DAC_adsorption_data"
         )
         data_source = self.performance_data.get("performance_data_source", "default")
-        if data_source not in ("default", "rezo"):
-            raise ValueError(
-                f"performance_data_source '{data_source}' is not valid. "
-                f"Options are: 'default', 'rezo'"
-            )
 
         performance_data = pd.read_csv(
             data_dir / f"dac_adsorption_performance_{data_source}.csv", sep=","
@@ -87,6 +111,12 @@ class DacAdsorption(Technology):
                 performance_data["grid_emission_factor"] == requested_gef
             ].drop(columns=["grid_emission_factor"])
 
+        # input data scaling to 1 tCO2/yr for module size
+        full_load = performance_data.loc[performance_data.Point == performance_data.Point.max()]
+        module_capacity = float(griddata(
+            (full_load.temp_air, full_load.humidity), full_load.CO2_Out, (20, 43))) * 8.76
+        performance_data.CO2_Out = performance_data.CO2_Out / module_capacity
+
         # Unit Conversion of input data
         performance_data.E_tot = performance_data.E_tot.multiply(
             performance_data.CO2_Out / 3600
@@ -98,6 +128,11 @@ class DacAdsorption(Technology):
             performance_data.CO2_Out / 3600
         )  # in MWh / h
         performance_data.CO2_Out = performance_data.CO2_Out / 1000  # in t / h
+
+        # Add compression energy
+        performance_data["compression_energy"] = compression_energy_mwh_t * performance_data.CO2_Out
+        performance_data.E_tot = performance_data.E_tot + performance_data.compression_energy
+        performance_data.E_el = performance_data.E_el + performance_data.compression_energy
 
         # Get humidity and temperature
         RH = copy.deepcopy(climate_data["rh"])
