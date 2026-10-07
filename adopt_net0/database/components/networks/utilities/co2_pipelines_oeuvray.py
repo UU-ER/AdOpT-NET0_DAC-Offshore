@@ -1158,9 +1158,9 @@ class CO2Compression_Oeuvray(CO2Transport_Oeuvray):
         self._preprocess_data()
 
         # Determine phase
-        if self.p_outlet_mpa < 3e6:
+        if self.p_outlet_mpa < 3:
             self.phase = "gas"
-        elif self.p_outlet_mpa >= 3e6:
+        elif self.p_outlet_mpa >= 3:
             self.phase = "liquid"
 
         # COMPRESSION COST AND ENERGY
