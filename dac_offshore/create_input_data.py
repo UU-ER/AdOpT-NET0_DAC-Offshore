@@ -651,6 +651,12 @@ class InputDataCreator:
         netw_data_path = self.clean_data_path / 'networks_topology'
         output_path = self.clean_data_path / 'networks_cost'
 
+        # around 130 Mt/yr annual capturing possible within system (Maians thesis) -> Equivalent transport all
+        # in one line: 4122 kg/s
+        # Assumed 100 kg/s -> 360 t/h -> 3.15 Mt/yr
+        # For pipelines larger -> we overestimate costs, for pipelines smaller we underestimate costs
+
+
         # Common cost model options
         base_options = {
             "currency_out": "EUR",
@@ -658,9 +664,9 @@ class InputDataCreator:
             "discount_rate": 0.1,
             "source": "Oeuvray",
             "timeframe": "mid-term",
-            "massflow_min_kg_per_s": 5, #Todo to specify!
-            "massflow_max_kg_per_s": 10, #Todo to specify!
-            "massflow_evaluation_points": 2,
+            "massflow_min_kg_per_s": 100,
+            "massflow_max_kg_per_s": 100,
+            "massflow_evaluation_points": 1,
             "p_inlet_bar": PIPELINE_PRESSURE_INLET_BAR,
             "p_outlet_bar": PIPELINE_PRESSURE_OUTLET_BAR, 
             "no_intercept": True,
@@ -760,6 +766,7 @@ class InputDataCreator:
                 node1 = row['node1']
                 value = row[gamma]
                 gamma_matrix.loc[node0, node1] = value
+                gamma_matrix.loc[node1, node0] = value
 
             # Save to CSV with semicolon separator and index
             output_file = topology_folder / f"{gamma}.csv"
