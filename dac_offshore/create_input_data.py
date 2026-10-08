@@ -66,7 +66,7 @@ class InputDataCreator:
                 self._define_new_technologies(input_data_path, scenario)
                 adopt.copy_technology_data(input_data_path, Path(self.clean_data_path / "technology_data"))
                 self._define_max_renewable_capacities(input_data_path)
-                self._define_max_dac_capacities(input_data_path, scenario)
+                self._define_max_co2_storage_capacities(input_data_path, scenario)
 
                 # Networks
                 self._define_networks(input_data_path, scenario)
@@ -396,6 +396,10 @@ class InputDataCreator:
                         network_data['connection_matrix'].loc[row['node1'], row['node0']] = 1
                         network_data['connection_matrix'].loc[row['node0'], row['node1']] = 1
 
+                    if row['s_nom'] > 0:
+                        network_data['connection_matrix_existing'].loc[row['node1'], row['node0']] = 1
+                        network_data['connection_matrix_existing'].loc[row['node0'], row['node1']] = 1
+
             return network_data
 
         # Electricity grids existing
@@ -403,7 +407,7 @@ class InputDataCreator:
             file_name = f'electricity{grid_type}.csv'
             data = get_network_data(netw_data_path / file_name, self.nodes)
             os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}", exist_ok=True)
-            data['connection_matrix'].to_csv(
+            data['connection_matrix_existing'].to_csv(
                 input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}" / "connection.csv",
                 sep=";")
             data['distance_matrix'].to_csv(
@@ -546,7 +550,7 @@ class InputDataCreator:
             with open(os.path.join(tec_data_path, "PV.json"), 'w') as outfile:
                 json.dump(tec_data, outfile, indent=2)
 
-    def _define_max_dac_capacities(self, input_data_path, scenario):
+    def _define_max_co2_storage_capacities(self, input_data_path, scenario):
         if scenario != 'No_DAC':
             limits = pd.read_csv(self.clean_data_path / "co2_storage_limits" / "CO2_storage_limits_2040.csv", sep=',', thousands=',')
             limits.columns = limits.columns.str.strip()
