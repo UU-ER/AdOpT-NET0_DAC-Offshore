@@ -424,7 +424,7 @@ class InputDataCreator:
             data['distance_matrix'].to_csv(
                 input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}" / "distance.csv",
                 sep=";")
-            data['size_matrix'].to_csv(
+            data['max_size_matrix'].to_csv(
                 input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}" / "size_max_arcs.csv",
                 sep=";")
 
