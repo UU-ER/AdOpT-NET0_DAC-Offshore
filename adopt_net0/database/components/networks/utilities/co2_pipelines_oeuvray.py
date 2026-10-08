@@ -1080,7 +1080,7 @@ class CO2Chain_Oeuvray(CO2Transport_Oeuvray):
         cost_pipeline["unit_capex"] = self.optimal_configuration["capex_pipe"]
         cost_pipeline["opex_var"] = 0
         cost_pipeline["opex_fix_abs"] = self.optimal_configuration[
-            "opex_fix_compression"
+            "opex_pipe"
         ]
         cost_pipeline["opex_fix_fraction"] = self.optimal_configuration["opex_pipe"] / (
             cost_pipeline["unit_capex"]
