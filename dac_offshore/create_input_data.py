@@ -14,6 +14,8 @@ PIPELINE_PRESSURE_INLET_BAR = 100
 PIPELINE_PRESSURE_OUTLET_BAR = 100
 STORAGE_PRESSURE_BAR = 200
 DAC_OUTLET_PRESSURE_BAR = 1
+MASSFLOW_PIPELINE_KG_PER_S = 100
+
 
 def _read_nodes(node_data_path):
     nodes = SimpleNamespace()
@@ -600,6 +602,7 @@ class InputDataCreator:
         - CO2 storage: compression from pipeline outlet pressure to storage pressure
         """
         tec_data_path = self.clean_data_path / "technology_data"
+        netw_data_path = self.clean_data_path / "network_data"
 
         # DAC pressures -> adapt in jsons
         # DAC_OUTLET_PRESSURE_BAR -> PIPELINE_PRESSURE_INLET_BAR
@@ -613,8 +616,21 @@ class InputDataCreator:
             with open(os.path.join(tec_data_path, dac), "w") as outfile:
                 json.dump(tech_data, outfile, indent=2)
 
-        # Pipeline pressures -> set in _define_co2_pipeline_costs
+        # Pipeline pressures
         # PIPELINE_PRESSURE_INLET_BAR -> PIPELINE_PRESSURE_OUTLET_BAR
+
+        filename = "CO2_Pipeline.json"
+
+        with open(os.path.join(netw_data_path, filename), "r") as openfile:
+            netw_data = json.load(openfile)
+        netw_data["Performance"]["energyconsumption"]["electricity"] = {
+            "cons_model": "Oeuvray",
+            "p_inlet_bar": PIPELINE_PRESSURE_INLET_BAR,
+            "p_outlet_bar": PIPELINE_PRESSURE_OUTLET_BAR,
+            "massflow_max_kg_per_s": MASSFLOW_PIPELINE_KG_PER_S,
+        }
+        with open(os.path.join(netw_data_path, filename), 'w') as outfile:
+            json.dump(netw_data, outfile, indent=2)
 
         # CO2 sink -> calculate here and write to jsons
         # PIPELINE_PRESSURE_OUTLET_BAR -> STORAGE_PRESSURE_BAR
@@ -664,8 +680,8 @@ class InputDataCreator:
             "discount_rate": 0.1,
             "source": "Oeuvray",
             "timeframe": "mid-term",
-            "massflow_min_kg_per_s": 100,
-            "massflow_max_kg_per_s": 100,
+            "massflow_min_kg_per_s": MASSFLOW_PIPELINE_KG_PER_S,
+            "massflow_max_kg_per_s": MASSFLOW_PIPELINE_KG_PER_S,
             "massflow_evaluation_points": 1,
             "p_inlet_bar": PIPELINE_PRESSURE_INLET_BAR,
             "p_outlet_bar": PIPELINE_PRESSURE_OUTLET_BAR, 
