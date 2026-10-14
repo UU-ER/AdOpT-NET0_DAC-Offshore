@@ -7,13 +7,13 @@
   "size_min": 0,
   "size_max": 500000,
   "Economics": {
-    "comment": "CAPEX coefficients are in EUR, EUR/t/h or EUR/t/h/km, opex_variable in EUR/t total output, opex_fixed in % of up-front CAPEX",
+    "comment": "CAPEX coefficients are in EUR, EUR/t/h or EUR/t/h/km, opex_variable in EUR/t total output, opex_fixed in % of CAPEX_annual",
     "gamma1": 0.0,
     "gamma2": 0.0,
     "gamma3": 0.0,
     "gamma4": 33000.0,
     "opex_variable": 0.0,
-    "opex_fixed": 0.061,
+    "opex_fixed": 0.605,
     "discount_rate": 0.1,
     "lifetime": 50.0,
     "decommission_cost": 0
