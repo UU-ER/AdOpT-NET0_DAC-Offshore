@@ -54,7 +54,7 @@ class Network(ModelComponent):
       CAPEX calculation (annualized from given data on up-front CAPEX, lifetime and
       discount rate)
     - ``para_opex_variable``: Variable OPEX
-    - ``para_opex_fixed``: Fixed OPEX in % of up-front CAPEX
+    - ``para_opex_fixed``: Fixed OPEX in % of annualized CAPEX
     - ``para_decommissioning_cost_annual``: decommissioning costs for existing networks
 
     **Variable declarations:**
@@ -1085,12 +1085,6 @@ class Network(ModelComponent):
         :param h5_group: h5 group to write to
         """
         coeff_ti = self.processed_coeff.time_independent
-        economics = self.economics
-        discount_rate = set_discount_rate(config, economics)
-        fraction_of_year_modelled = data.topology["fraction_of_year_modelled"]
-        annualization_factor = annualize(
-            discount_rate, economics["lifetime"], fraction_of_year_modelled
-        )
 
         for arc_name in model_block.set_arcs:
             arc = model_block.arc_block[arc_name]
@@ -1116,10 +1110,7 @@ class Network(ModelComponent):
             arc_group.create_dataset("capex", data=arc.var_capex.value)
             arc_group.create_dataset(
                 "opex_fixed",
-                data=[
-                    model_block.para_opex_fixed.value
-                    * (arc.var_capex_aux.value / annualization_factor)
-                ],
+                data=[model_block.para_opex_fixed.value * arc.var_capex_aux.value],
             )
             arc_group.create_dataset(
                 "opex_variable",
