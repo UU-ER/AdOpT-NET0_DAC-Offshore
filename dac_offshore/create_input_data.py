@@ -269,7 +269,7 @@ class InputDataCreator:
                 json.dump(technologies, json_file, indent=4)
 
     def _write_to_technology_data(self):
-        year = 2030
+        year = 2040
 
         financial_data = pd.read_excel(self.clean_data_path / 'technologies_cost' / 'TechnologyCost.xlsx', sheet_name='ToModel_2025',
                                        skiprows=1)
