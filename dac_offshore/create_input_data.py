@@ -269,9 +269,9 @@ class InputDataCreator:
                 json.dump(technologies, json_file, indent=4)
 
     def _write_to_technology_data(self):
-        year = 2030
+        year = 2040
 
-        financial_data = pd.read_excel(self.clean_data_path / 'technologies_cost' / 'TechnologyCost.xlsx', sheet_name='ToModel',
+        financial_data = pd.read_excel(self.clean_data_path / 'technologies_cost' / 'TechnologyCost.xlsx', sheet_name='ToModel_2025',
                                        skiprows=1)
         financial_data = financial_data[financial_data['Year'] == year]
 
@@ -316,7 +316,8 @@ class InputDataCreator:
 
         netw_data_path = self.clean_data_path / 'network_data'
 
-        financial_data = pd.read_excel(self.clean_data_path / 'networks_cost' / 'NetworkCost.xlsx', sheet_name='ToModel', skiprows=1)
+        financial_data = pd.read_excel(self.clean_data_path / 'networks_cost' / 'NetworkCost.xlsx', sheet_name='ToModel_2025'
+                                                                                                               '', skiprows=1)
         financial_data = financial_data[financial_data['Year'] == year]
 
         for filename in os.listdir(netw_data_path):
