@@ -247,11 +247,11 @@ class InputDataCreator:
         if scenario == 'No_DAC':
             columns = ['No_DAC']
         elif scenario ==  'DAC':
-            columns = ['No_DAC', 'Onshore_DAC_only', 'Offshore_DAC_only']
+            columns = ['No_DAC', 'Onshore_DAC_only', 'Offshore_DAC_only', 'CO2_Storage']
         elif scenario ==  'Onshore_DAC_only':
-            columns = ['No_DAC', 'Onshore_DAC_only']
+            columns = ['No_DAC', 'Onshore_DAC_only', 'CO2_Storage']
         elif scenario ==  'Offshore_DAC_only':
-            columns = ['No_DAC', 'Offshore_DAC_only']
+            columns = ['No_DAC', 'Offshore_DAC_only', 'CO2_Storage']
         else:
             raise Exception('Scenario not known')
 
