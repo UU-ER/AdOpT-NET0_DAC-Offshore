@@ -16,6 +16,8 @@ STORAGE_PRESSURE_BAR = 200
 DAC_OUTLET_PRESSURE_BAR = 1
 MASSFLOW_PIPELINE_KG_PER_S = 100
 
+NETWORK_DETOUR_FACTOR = 1.1
+
 
 def _read_nodes(node_data_path):
     nodes = SimpleNamespace()
@@ -367,7 +369,7 @@ class InputDataCreator:
 
         netw_data_path = self.clean_data_path / 'networks_topology'
 
-        def get_network_data(file_path, nodes):
+        def get_network_data(file_path, nodes, length_factor):
             network = pd.read_csv(file_path, sep=None, engine='python')
 
             network_data = {}
@@ -387,8 +389,8 @@ class InputDataCreator:
                 if (row.node0 in nodes.all.keys()) & (row.node1 in nodes.all.keys()):
                     network_data['size_matrix'].loc[row['node0'], row['node1']] = row['s_nom'] * 1000
                     network_data['size_matrix'].loc[row['node1'], row['node0']] = row['s_nom'] * 1000
-                    network_data['distance_matrix'].loc[row['node0'], row['node1']] = row['length']
-                    network_data['distance_matrix'].loc[row['node1'], row['node0']] = row['length']
+                    network_data['distance_matrix'].loc[row['node0'], row['node1']] = row['length'] * length_factor
+                    network_data['distance_matrix'].loc[row['node1'], row['node0']] = row['length'] * length_factor
                     network_data['max_size_matrix'].loc[row['node1'], row['node0']] = row['s_nom_max'] * 1000 - row[
                         's_nom'] * 1000
                     network_data['max_size_matrix'].loc[row['node0'], row['node1']] = row['s_nom_max'] * 1000 - row[
@@ -406,7 +408,7 @@ class InputDataCreator:
         # Electricity grids existing
         for grid_type in ["AC", "DC"]:
             file_name = f'electricity{grid_type}.csv'
-            data = get_network_data(netw_data_path / file_name, self.nodes)
+            data = get_network_data(netw_data_path / file_name, self.nodes, NETWORK_DETOUR_FACTOR)
             os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}", exist_ok=True)
             data['connection_matrix_existing'].to_csv(
                 input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}" / "connection.csv",
@@ -421,7 +423,7 @@ class InputDataCreator:
         # Electricity grids new
         for grid_type in ["AC", "DC"]:
             file_name = f'electricity{grid_type}.csv'
-            data = get_network_data(netw_data_path / file_name, self.nodes)
+            data = get_network_data(netw_data_path / file_name, self.nodes, NETWORK_DETOUR_FACTOR)
             os.makedirs(input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}", exist_ok=True)
             data['connection_matrix'].to_csv(
                 input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}" / "connection.csv",
@@ -434,7 +436,7 @@ class InputDataCreator:
                 sep=";")
 
         # CO2 networks onshore and offshore
-        data = get_network_data(netw_data_path / 'CO2_Pipeline.csv', self.nodes)
+        data = get_network_data(netw_data_path / 'CO2_Pipeline.csv', self.nodes, NETWORK_DETOUR_FACTOR)
 
         netw_name = "CO2_Pipeline"
         os.makedirs(input_data_path / "period1" / "network_topology" / "new" / netw_name, exist_ok=True)
@@ -705,7 +707,7 @@ class InputDataCreator:
         for idx, row in network_df.iterrows():
             node0 = row['node0']
             node1 = row['node1']
-            length_km = row['length']
+            length_km = row['length'] * NETWORK_DETOUR_FACTOR
             terrain = row['Type']
 
             print(node0, node1, length_km, terrain)
