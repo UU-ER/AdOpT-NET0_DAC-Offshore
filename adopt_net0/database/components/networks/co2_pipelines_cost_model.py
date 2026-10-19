@@ -156,7 +156,6 @@ class CO2_Pipeline_CostModel(DataComponent_CostModel):
                     cost["cost_pipeline"]["opex_var"] * correction_factor
                     + cost["cost_compression"]["opex_var"]
                 )
-                # Fixed opex as fraction of annualized capex: capex_total is annualized over the compressor lifetime (cr_compressor)
                 costs.loc[massflow_t_per_h, "opex_fix"] = (
                     cost["cost_pipeline"]["opex_fix_abs"]
                     + cost["cost_compression"]["opex_fix_abs"]
