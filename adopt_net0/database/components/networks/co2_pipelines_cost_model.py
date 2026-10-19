@@ -34,7 +34,7 @@ class CO2_Pipeline_CostModel(DataComponent_CostModel):
     Financial indicators are:
 
     - gamma1, gamma2, gamma3, gamma4 in [currency] (equivalent to the cost parameters of a network)
-    - fixed opex as fraction of up-front capex
+    - fixed opex as fraction of annualized capex
     - variable opex in [currency]/ton
     - lifetime in years
     - levelized_cost in [currency]/t
@@ -156,10 +156,11 @@ class CO2_Pipeline_CostModel(DataComponent_CostModel):
                     cost["cost_pipeline"]["opex_var"] * correction_factor
                     + cost["cost_compression"]["opex_var"]
                 )
+                # Fixed opex as fraction of annualized capex: capex_total is annualized over the compressor lifetime (cr_compressor)
                 costs.loc[massflow_t_per_h, "opex_fix"] = (
                     cost["cost_pipeline"]["opex_fix_abs"]
                     + cost["cost_compression"]["opex_fix_abs"]
-                ) / costs.loc[massflow_t_per_h, "capex_total"]
+                ) / (costs.loc[massflow_t_per_h, "capex_total"] * cr_compressor)
                 costs.loc[massflow_t_per_h, "specific_compression_energy"] = cost[
                     "energy_requirements"
                 ]["specific_compression_energy"]
