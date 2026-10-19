@@ -750,14 +750,11 @@ class InputDataCreator:
         # costs_df = costs_df.drop_duplicates(subset=['arc_key'], keep='first')
         # costs_df = costs_df.drop('arc_key', axis=1)
 
-        # The cost model gives opex_fixed as a fraction of up-front capex which is annualized
+        # opex_fixed from the cost model is already a fraction of annualized capex,
+        # annualized over the cost model lifetime -> write both to the network json
         netw_json = self.clean_data_path / 'network_data' / 'CO2_Pipeline.json'
         with open(netw_json, 'r') as f:
             netw_data = json.load(f)
-        r = netw_data['Economics']['discount_rate']
-        crf = r / (1 - (1 + r) ** -netw_data['Economics']['lifetime'])
-        costs_df['opex_fixed'] = costs_df['opex_fixed'] / crf
-
         netw_data['Economics']['opex_fixed'] = float(round(costs_df['opex_fixed'].mean(), 3))
         with open(netw_json, 'w') as f:
             json.dump(netw_data, f, indent=2)
