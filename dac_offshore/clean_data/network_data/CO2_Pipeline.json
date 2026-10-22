@@ -32,9 +32,11 @@
         "k_flowDistance": 0
       },
       "electricity": {
-        "cons_model": 1,
-        "k_flow": 0,
-        "k_flowDistance": 0
+        "cons_model": "Oeuvray",
+        "p_inlet_bar": 100,
+        "p_outlet_bar": 100,
+        "massflow_max_kg_per_s": 100,
+        "set_small_consumption_to_zero_threshold": 0.01
       }
     },
     "rated_capacity": 1.0

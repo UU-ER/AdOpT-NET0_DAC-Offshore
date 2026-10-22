@@ -176,6 +176,22 @@ class Fluid(Network):
                 self.energy_consumption[car]["receive"]["k_flow"] = 0
                 self.energy_consumption[car]["receive"]["k_flowDistance"] = 0
 
+            elif energycons[car]["cons_model"] == "Oeuvray":
+                # The actual compression energy depends on each arc's own distance
+
+                oeuvray_options = dict(energycons[car])
+                oeuvray_options.pop("cons_model")
+                self.energy_consumption[car]["cons_model"] = "Oeuvray"
+                self.energy_consumption[car]["oeuvray_options"] = oeuvray_options
+
+                # Required dummy values
+                self.energy_consumption[car]["send"] = {}
+                self.energy_consumption[car]["send"]["k_flow"] = 0
+                self.energy_consumption[car]["send"]["k_flowDistance"] = 0
+                self.energy_consumption[car]["receive"] = {}
+                self.energy_consumption[car]["receive"]["k_flow"] = 0
+                self.energy_consumption[car]["receive"]["k_flowDistance"] = 0
+
     def _define_energyconsumption_arc(self, b_arc, b_netw):
         """
         Defines the energy consumption for an arc
@@ -208,13 +224,46 @@ class Fluid(Network):
             ),
         )
 
+        if self.performance_data["energyconsumption"]["electricity"]["cons_model"] == "Oeuvray":
+
+            from adopt_net0.database.components.networks.utilities import (
+                CO2Chain_Oeuvray,
+            )
+            oeuvray_calculator = CO2Chain_Oeuvray()
+
+            result = oeuvray_calculator.calculate_cost(
+                {
+                    "length_km": b_arc.distance,
+                    "timeframe": "mid-term",
+                    "massflow_kg_per_s": self.energy_consumption["electricity"]["oeuvray_options"]["massflow_max_kg_per_s"],
+                    "terrain": "Offshore",
+                    "electricity_price_eur_per_mw": 60,
+                    "operating_hours_per_a": 8000,
+                    "p_inlet_bar": self.energy_consumption["electricity"]["oeuvray_options"]["p_inlet_bar"],
+                    "p_outlet_bar": self.energy_consumption["electricity"]["oeuvray_options"]["p_outlet_bar"],
+                    "discount_rate": self.economics.get("discount_rate", 0.1),
+                }
+            )
+            specific_energy_mwh_per_t = result["energy_requirements"][
+                "specific_compression_energy"
+            ]
+
+            if specific_energy_mwh_per_t <= self.energy_consumption["electricity"]["oeuvray_options"]["set_small_consumption_to_zero_threshold"]:
+                specific_energy_mwh_per_t = 0
+
         # Sending node
         def init_consumption_send(const, t, car):
+            if self.performance_data["energyconsumption"]["electricity"]["cons_model"] == "Oeuvray":
+                para_send_kflow = specific_energy_mwh_per_t
+                para_send_kflowDistance = 0
+            else:
+                para_send_kflow = b_netw.para_send_kflow[car]
+                para_send_kflowDistance = b_netw.para_send_kflowDistance[car]
             return (
                 b_arc.var_consumption_send[t, car]
-                == b_arc.var_flow[t] * b_netw.para_send_kflow[car]
+                == b_arc.var_flow[t] * para_send_kflow
                 + b_arc.var_flow[t]
-                * b_netw.para_send_kflowDistance[car]
+                * para_send_kflowDistance
                 * b_arc.distance
             )
 
@@ -224,11 +273,17 @@ class Fluid(Network):
 
         # Receiving node
         def init_consumption_receive(const, t, car):
+            if self.performance_data["energyconsumption"][car]["cons_model"] == "Oeuvray":
+                para_receive_kflow = 0
+                para_receive_kflowDistance = 0
+            else:
+                para_receive_kflow = b_netw.para_receive_kflow[car]
+                para_receive_kflowDistance = b_netw.para_receive_kflowDistance[car]
             return (
                 b_arc.var_consumption_receive[t, car]
-                == b_arc.var_flow[t] * b_netw.para_receive_kflow[car]
+                == b_arc.var_flow[t] * para_receive_kflow
                 + b_arc.var_flow[t]
-                * b_netw.para_receive_kflowDistance[car]
+                * para_receive_kflowDistance
                 * b_arc.distance
             )
 
