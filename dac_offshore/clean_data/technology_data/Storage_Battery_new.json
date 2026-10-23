@@ -30,9 +30,9 @@
     "emission_factor": 0.0,
     "allow_only_one_direction": 0,
     "performance": {
-      "eta_in": NaN,
-      "eta_out": NaN,
-      "lambda": NaN,
+      "eta_in": 0.985,
+      "eta_out": 0.975,
+      "lambda": 4.168664498693797e-05,
       "theta": 0
     }
   },
