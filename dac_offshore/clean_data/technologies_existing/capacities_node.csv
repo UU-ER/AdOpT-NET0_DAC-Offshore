@@ -5,10 +5,10 @@
 3,3,BE2,BE,Hydro - Pump Storage Closed Loop (Energy),5750.0
 4,4,BE2,BE,Hydro - Run of River (Turbine),148.2020000000001
 5,5,BE2,BE,Nuclear,0
-6,6,DE1,DE,Coal & Lignite,8225.00805144123
-7,7,DE2,DE,Coal & Lignite,476.80313087862
-8,8,DE3,DE,Coal & Lignite,296.8774211008287
-9,9,DE4,DE,Coal & Lignite,8043.21439657932
+6,6,DE1,DE,Coal & Lignite,0
+7,7,DE2,DE,Coal & Lignite,0
+8,8,DE3,DE,Coal & Lignite,0
+9,9,DE4,DE,Coal & Lignite,0
 10,10,DE1,DE,Gas,6981.297779747183
 11,11,DE2,DE,Gas,6744.905728407346
 12,12,DE3,DE,Gas,870.1379568099076
