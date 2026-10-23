@@ -287,6 +287,7 @@ class InputDataCreator:
             tec = filename.replace('.json', '')
             tec = tec.replace('_noh2', '')
 
+            print(tec)
             new_financial_data = financial_data[financial_data['Technology'] == tec]
             tec_data['Economics']['unit_capex'] = float(round(new_financial_data['Investment Cost'].values[0], 2))
             tec_data['Economics']['opex_variable'] = float(round(new_financial_data['OPEX Variable'].values[0], 3))
@@ -385,6 +386,9 @@ class InputDataCreator:
             network_data['connection_matrix'] = pd.read_csv(
                 input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";",
                 index_col=0).astype(float)
+            network_data['connection_matrix_existing'] = pd.read_csv(
+                input_data_path / "period1" / "network_topology" / "existing" / "connection.csv", sep=";",
+                index_col=0).astype(float)
             for idx, row in network.iterrows():
                 if (row.node0 in nodes.all.keys()) & (row.node1 in nodes.all.keys()):
                     network_data['size_matrix'].loc[row['node0'], row['node1']] = row['s_nom'] * 1000
@@ -398,10 +402,16 @@ class InputDataCreator:
                     if row['s_nom_max'] > 0:
                         network_data['connection_matrix'].loc[row['node1'], row['node0']] = 1
                         network_data['connection_matrix'].loc[row['node0'], row['node1']] = 1
+                    else:
+                        network_data['connection_matrix'].loc[row['node1'], row['node0']] = 0
+                        network_data['connection_matrix'].loc[row['node0'], row['node1']] = 0
 
                     if row['s_nom'] > 0:
                         network_data['connection_matrix_existing'].loc[row['node1'], row['node0']] = 1
                         network_data['connection_matrix_existing'].loc[row['node0'], row['node1']] = 1
+                    else:
+                        network_data['connection_matrix_existing'].loc[row['node1'], row['node0']] = 0
+                        network_data['connection_matrix_existing'].loc[row['node0'], row['node1']] = 0
 
             return network_data
 
@@ -635,6 +645,7 @@ class InputDataCreator:
             "p_inlet_bar": PIPELINE_PRESSURE_INLET_BAR,
             "p_outlet_bar": PIPELINE_PRESSURE_OUTLET_BAR,
             "massflow_max_kg_per_s": MASSFLOW_PIPELINE_KG_PER_S,
+            "set_small_consumption_to_zero_threshold": 0.001
         }
         with open(os.path.join(netw_data_path, filename), 'w') as outfile:
             json.dump(netw_data, outfile, indent=2)

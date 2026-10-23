@@ -180,7 +180,6 @@ class Fluid(Network):
                 # The actual compression energy depends on each arc's own distance
 
                 oeuvray_options = dict(energycons[car])
-                oeuvray_options.pop("cons_model")
                 self.energy_consumption[car]["cons_model"] = "Oeuvray"
                 self.energy_consumption[car]["oeuvray_options"] = oeuvray_options
 
@@ -253,7 +252,7 @@ class Fluid(Network):
 
         # Sending node
         def init_consumption_send(const, t, car):
-            if self.performance_data["energyconsumption"]["electricity"]["cons_model"] == "Oeuvray":
+            if self.performance_data["energyconsumption"][car]["cons_model"] == "Oeuvray":
                 para_send_kflow = specific_energy_mwh_per_t
                 para_send_kflowDistance = 0
             else:
