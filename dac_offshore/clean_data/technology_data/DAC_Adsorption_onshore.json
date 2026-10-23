@@ -7,7 +7,7 @@
   "Economics": {
     "comment": "CAPEX in EUR/tCO2/yr or as a piecewise function, opex_variable in EUR/MWh total output, opex_fixed in % of annualized CAPEX",
     "capex_model": 1,
-    "unit_capex": 1781.82,
+    "unit_capex": 5672.63,
     "fix_capex": 0,
     "piecewise_capex": {
       "bp_x": "not defined",

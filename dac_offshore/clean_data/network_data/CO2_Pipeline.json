@@ -13,7 +13,7 @@
     "gamma3": 0.0,
     "gamma4": 33000.0,
     "opex_variable": 0.0,
-    "opex_fixed": 0.605,
+    "opex_fixed": 0.411,
     "discount_rate": 0.1,
     "lifetime": 50,
     "decommission_cost": 0
@@ -36,7 +36,7 @@
         "p_inlet_bar": 100,
         "p_outlet_bar": 100,
         "massflow_max_kg_per_s": 100,
-        "set_small_consumption_to_zero_threshold": 0.01
+        "set_small_consumption_to_zero_threshold": 0.001
       }
     },
     "rated_capacity": 1.0
