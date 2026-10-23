@@ -18,7 +18,7 @@
         "not defined"
       ]
     },
-    "opex_variable": 4.2,
+    "opex_variable": 5.493,
     "opex_fixed": 0.0,
     "discount_rate": 0.1,
     "lifetime": 25.0,
@@ -43,7 +43,7 @@
       ],
       "out": [
         0,
-        0.61
+        NaN
       ]
     }
   }

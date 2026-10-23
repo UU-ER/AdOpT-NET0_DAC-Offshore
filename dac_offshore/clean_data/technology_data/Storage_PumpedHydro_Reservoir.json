@@ -32,9 +32,9 @@
     "can_pump": 0,
     "maximum_discharge_time_discrete": 0,
     "performance": {
-      "eta_in": 1.0,
-      "eta_out": 0.89,
-      "lambda": 0.0,
+      "eta_in": NaN,
+      "eta_out": NaN,
+      "lambda": NaN,
       "charge_max": 0.1,
       "discharge_max": 0.1,
       "spilling_max": 1
