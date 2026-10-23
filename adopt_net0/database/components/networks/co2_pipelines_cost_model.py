@@ -159,7 +159,7 @@ class CO2_Pipeline_CostModel(DataComponent_CostModel):
                 costs.loc[massflow_t_per_h, "opex_fix"] = (
                     cost["cost_pipeline"]["opex_fix_abs"]
                     + cost["cost_compression"]["opex_fix_abs"]
-                ) / (costs.loc[massflow_t_per_h, "capex_total"] * cr_compressor)
+                ) / (costs.loc[massflow_t_per_h, "capex_total"] * cr_pipeline)
                 costs.loc[massflow_t_per_h, "specific_compression_energy"] = cost[
                     "energy_requirements"
                 ]["specific_compression_energy"]
