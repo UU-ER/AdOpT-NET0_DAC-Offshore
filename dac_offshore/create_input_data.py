@@ -287,7 +287,6 @@ class InputDataCreator:
             tec = filename.replace('.json', '')
             tec = tec.replace('_noh2', '')
 
-            print(tec)
             new_financial_data = financial_data[financial_data['Technology'] == tec]
             tec_data['Economics']['unit_capex'] = float(round(new_financial_data['Investment Cost'].values[0], 2))
             tec_data['Economics']['opex_variable'] = float(round(new_financial_data['OPEX Variable'].values[0], 3))
@@ -399,7 +398,7 @@ class InputDataCreator:
                         's_nom'] * 1000
                     network_data['max_size_matrix'].loc[row['node0'], row['node1']] = row['s_nom_max'] * 1000 - row[
                         's_nom'] * 1000
-                    if row['s_nom_max'] > 0:
+                    if row['s_nom_max'] - row['s_nom'] > 0:
                         network_data['connection_matrix'].loc[row['node1'], row['node0']] = 1
                         network_data['connection_matrix'].loc[row['node0'], row['node1']] = 1
                     else:
@@ -720,8 +719,6 @@ class InputDataCreator:
             node1 = row['node1']
             length_km = row['length'] * NETWORK_DETOUR_FACTOR
             terrain = row['Type']
-
-            print(node0, node1, length_km, terrain)
 
             # Calculate costs using the database cost model
             options = base_options.copy()
