@@ -15,6 +15,8 @@ summary_1 = results_1["summary"]  # columns are 1-tuples, e.g. ("emissions_net",
 summary_2 = results_2["summary"]
 tec_design_1 = results_1["technology_design"]  # columns: Period, Node, Technology, Variable, Value
 tec_design_2 = results_2["technology_design"]
+tec_operation_1 = results_1["technology_operation"]  # columns: (Period, Node, Technology, Variable), rows: timesteps
+tec_operation_2 = results_2["technology_operation"]
 
 comparison = []
 
@@ -62,6 +64,22 @@ for node, tec in sorted(set(sizes_1.index) | set(sizes_2.index)):
     comparison.append(
         {"Variable": "Capacity", "Node": node, "Carrier": tec, "Result_1": size_1, "Result_2": size_2,
          "Delta": size_2 - size_1})
+
+# Total in/outputs of all technologies (summed over time) per node
+in_out_vars = [v for v in tec_operation_1.columns.get_level_values("Variable").unique()
+               if v.endswith("_input") or v.endswith("_output")]
+totals_1 = tec_operation_1.sum().droplevel("Period")
+totals_2 = tec_operation_2.sum().droplevel("Period")
+for node, tec, variable in sorted(set(
+        idx for idx in totals_1.index if idx[2] in in_out_vars
+) | set(
+        idx for idx in totals_2.index if idx[2] in in_out_vars
+)):
+    value_1 = totals_1.get((node, tec, variable), 0)
+    value_2 = totals_2.get((node, tec, variable), 0)
+    comparison.append(
+        {"Variable": variable, "Node": node, "Carrier": tec, "Result_1": value_1, "Result_2": value_2,
+         "Delta": value_2 - value_1})
 
 # Export to CSV
 df_comparison = pd.DataFrame(comparison)
