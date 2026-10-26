@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 from read_data import read_results_from_h5
 
-path_result_1 = Path(r"A:\ResearchData\MESNS\00_FinalResults\v01\2040_costs\2040_costs_Synergies_co2tax200_cy1995.h5")
+path_result_1 = Path(r"A:\ResearchData\MESNS\00_FinalResults\v01\2040_costs\2040_costs_Synergies_co2tax100_cy1995.h5")
 path_result_2 = Path(r"C:\Users\jwiegner\OneDrive - ETH Zurich\00_Papers_Journal\00_2025-DACOffshore\DAC-Offshore-MaianJan\cy1995\no_dac_new\optimization_results.h5")
 
 # Read results from both files
@@ -55,15 +55,35 @@ comparison.append(
     {"Variable": "Total_Emissions", "Node": None, "Carrier": None, "Result_1": total_emissions_1, "Result_2": total_emissions_2,
      "Delta": total_emissions_2 - total_emissions_1})
 
-# Capacities of all technologies per node
-sizes_1 = tec_design_1[tec_design_1["Variable"] == "size"].set_index(["Node", "Technology"])["Value"]
-sizes_2 = tec_design_2[tec_design_2["Variable"] == "size"].set_index(["Node", "Technology"])["Value"]
-for node, tec in sorted(set(sizes_1.index) | set(sizes_2.index)):
-    size_1 = sizes_1.get((node, tec), 0)
-    size_2 = sizes_2.get((node, tec), 0)
+# Capacity, CAPEX, OPEX (fixed/variable) and CO2 cost of all technologies per node
+pivot_1 = tec_design_1.pivot_table(index=["Node", "Technology"], columns="Variable", values="Value", aggfunc="sum")
+pivot_2 = tec_design_2.pivot_table(index=["Node", "Technology"], columns="Variable", values="Value", aggfunc="sum")
+
+# Effective carbon price (EUR/tCO2) derived from total carbon cost / total net emissions, used to split CO2 cost per technology
+carbon_price_1 = summary_1[("carbon_cost",)].values[0] / summary_1[("emissions_net",)].values[0] if summary_1[("emissions_net",)].values[0] else 0
+carbon_price_2 = summary_2[("carbon_cost",)].values[0] / summary_2[("emissions_net",)].values[0] if summary_2[("emissions_net",)].values[0] else 0
+
+tec_metrics = {"Capacity": "size", "CAPEX": "capex_tot", "OPEX_Fixed": "opex_fixed", "OPEX_Variable": "opex_variable"}
+
+for node, tec in sorted(set(pivot_1.index) | set(pivot_2.index)):
+    row_1 = pivot_1.loc[(node, tec)] if (node, tec) in pivot_1.index else pd.Series(dtype=float)
+    row_2 = pivot_2.loc[(node, tec)] if (node, tec) in pivot_2.index else pd.Series(dtype=float)
+
+    for label, col in tec_metrics.items():
+        val_1 = row_1.get(col, 0)
+        val_2 = row_2.get(col, 0)
+        comparison.append(
+            {"Variable": label, "Node": node, "Carrier": tec, "Result_1": val_1, "Result_2": val_2,
+             "Delta": val_2 - val_1})
+
+    net_emissions_1 = row_1.get("emissions_pos", 0) - row_1.get("emissions_neg", 0)
+    net_emissions_2 = row_2.get("emissions_pos", 0) - row_2.get("emissions_neg", 0)
+    co2_cost_1 = net_emissions_1 * carbon_price_1
+    co2_cost_2 = net_emissions_2 * carbon_price_2
     comparison.append(
-        {"Variable": "Capacity", "Node": node, "Carrier": tec, "Result_1": size_1, "Result_2": size_2,
-         "Delta": size_2 - size_1})
+        {"Variable": "CO2_Cost", "Node": node, "Carrier": tec, "Result_1": co2_cost_1, "Result_2": co2_cost_2,
+         "Delta": co2_cost_2 - co2_cost_1})
+
 
 # Total in/outputs of all technologies (summed over time) per node
 in_out_vars = [v for v in tec_operation_1.columns.get_level_values("Variable").unique()
