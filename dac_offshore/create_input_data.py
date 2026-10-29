@@ -177,7 +177,7 @@ class InputDataCreator:
             configuration = json.load(json_file)
 
         configuration["optimization"]["typicaldays"]["N"]["value"] = 0
-        configuration["optimization"]["typicaldays"]["method"]["value"] = 2
+        configuration["optimization"]["typicaldays"]["method"]["value"] = 1
 
         configuration["solveroptions"]["solver"]["value"] = 'gurobi'
         configuration["solveroptions"]["mipgap"]["value"] = 0.02
@@ -355,12 +355,12 @@ class InputDataCreator:
             new_co2_networks = []
 
         # El networks
-        new_el_networks = ["electricityAC", "electricityDC"]
+        new_el_networks = ["electricityAC_onshore", "electricityDC_onshore", "electricityDC_offshore"]
 
         with open(input_data_path / "period1" / "Networks.json", "r") as json_file:
             networks = json.load(json_file)
         networks["new"] = new_el_networks + new_co2_networks
-        networks["existing"] = ["electricityAC", "electricityDC"]
+        networks["existing"] = ["electricityAC_onshore", "electricityDC_onshore", "electricityDC_offshore","electricityAC_offshore"]
 
         with open(input_data_path / "period1" / "Networks.json", "w") as json_file:
             json.dump(networks, json_file, indent=4)
@@ -369,8 +369,10 @@ class InputDataCreator:
 
         netw_data_path = self.clean_data_path / 'networks_topology'
 
-        def get_network_data(file_path, nodes, length_factor):
+        def get_network_data(file_path, nodes, length_factor, line_type=None):
             network = pd.read_csv(file_path, sep=None, engine='python')
+            if line_type is not None:
+                network = network[network['Type'] == line_type]
 
             network_data = {}
             network_data['size_matrix'] = pd.read_csv(
@@ -416,33 +418,31 @@ class InputDataCreator:
 
         # Electricity grids existing
         for grid_type in ["AC", "DC"]:
-            file_name = f'electricity{grid_type}.csv'
-            data = get_network_data(netw_data_path / file_name, self.nodes, NETWORK_DETOUR_FACTOR)
-            os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}", exist_ok=True)
-            data['connection_matrix_existing'].to_csv(
-                input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}" / "connection.csv",
-                sep=";")
-            data['distance_matrix'].to_csv(
-                input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}" / "distance.csv",
-                sep=";")
-            data['size_matrix'].to_csv(
-                input_data_path / "period1" / "network_topology" / "existing" / f"electricity{grid_type}" / "size.csv",
-                sep=";")
+            for line_type in ["onshore", "offshore"]:
+                name = f'electricity{grid_type}_{line_type}'
+                data = get_network_data(netw_data_path / f'electricity{grid_type}.csv', self.nodes, NETWORK_DETOUR_FACTOR, line_type)
+                os.makedirs(input_data_path / "period1" / "network_topology" / "existing" / name, exist_ok=True)
+                data['connection_matrix_existing'].to_csv(input_data_path / "period1" / "network_topology" / "existing" / name / "connection.csv", sep=";")
+                data['distance_matrix'].to_csv(
+                    input_data_path / "period1" / "network_topology" / "existing" / name / "distance.csv", sep=";")
+                data['size_matrix'].to_csv(
+                    input_data_path / "period1" / "network_topology" / "existing" / name / "size.csv", sep=";")
 
         # Electricity grids new
         for grid_type in ["AC", "DC"]:
-            file_name = f'electricity{grid_type}.csv'
-            data = get_network_data(netw_data_path / file_name, self.nodes, NETWORK_DETOUR_FACTOR)
-            os.makedirs(input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}", exist_ok=True)
-            data['connection_matrix'].to_csv(
-                input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}" / "connection.csv",
-                sep=";")
-            data['distance_matrix'].to_csv(
-                input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}" / "distance.csv",
-                sep=";")
-            data['max_size_matrix'].to_csv(
-                input_data_path / "period1" / "network_topology" / "new" / f"electricity{grid_type}" / "size_max_arcs.csv",
-                sep=";")
+            for line_type in ["onshore", "offshore"]:
+                name = f'electricity{grid_type}_{line_type}'
+                data = get_network_data(netw_data_path / f'electricity{grid_type}.csv', self.nodes, NETWORK_DETOUR_FACTOR, line_type)
+                os.makedirs(input_data_path / "period1" / "network_topology" / "new" / name, exist_ok=True)
+                data['connection_matrix'].to_csv(
+                    input_data_path / "period1" / "network_topology" / "new" / name / "connection.csv",
+                    sep=";")
+                data['distance_matrix'].to_csv(
+                    input_data_path / "period1" / "network_topology" / "new" / name / "distance.csv",
+                    sep=";")
+                data['max_size_matrix'].to_csv(
+                    input_data_path / "period1" / "network_topology" / "new" / name / "size_max_arcs.csv",
+                    sep=";")
 
         # CO2 networks onshore and offshore
         data = get_network_data(netw_data_path / 'CO2_Pipeline.csv', self.nodes, NETWORK_DETOUR_FACTOR)
