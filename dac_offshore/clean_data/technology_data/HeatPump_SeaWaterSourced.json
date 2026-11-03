@@ -43,6 +43,7 @@
     "min_part_load": 0,
     "application": "other",
     "T_out": 120,
+    "cop_calculation": "fixed_cop",
     "performance": {
       "T_in": 7
     },
