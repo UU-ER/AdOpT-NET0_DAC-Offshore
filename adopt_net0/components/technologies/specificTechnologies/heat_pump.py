@@ -87,15 +87,18 @@ class HeatPump(Technology):
         delta_T = t_out - T
 
         # Determine COP
-        fixed_cop = self.performance_data.get("fixed_cop")
-        if fixed_cop is not None:
-            cop = np.full(time_steps, fixed_cop)
-        elif "AirSourced" in self.name:
-            cop = 6.08 - 0.09 * delta_T + 0.0005 * delta_T**2
-        elif "GroundSourced" in self.name:
-            cop = 10.29 - 0.21 * delta_T + 0.0012 * delta_T**2
-        elif "WaterSourced" in self.name:
-            cop = 9.97 - 0.20 * delta_T + 0.0012 * delta_T**2
+        cop_calculation = self.performance_data.get("cop_calculation")
+        if cop_calculation == "fixed_cop":
+            cop = np.full(time_steps, self.performance_data.get("fixed_cop"))
+        elif cop_calculation == "Carnot_with_second_law_efficiency":
+            cop = self.performance_data.get("carnot_efficiency") * (t_out + 273) / delta_T
+        else:
+            if "AirSourced" in self.name:
+                cop = 6.08 - 0.09 * delta_T + 0.0005 * delta_T**2
+            elif "GroundSourced" in self.name:
+                cop = 10.29 - 0.21 * delta_T + 0.0012 * delta_T**2
+            elif "WaterSourced" in self.name:
+                cop = 9.97 - 0.20 * delta_T + 0.0012 * delta_T**2
 
         log.info("Deriving performance data for Heat Pump...")
 
