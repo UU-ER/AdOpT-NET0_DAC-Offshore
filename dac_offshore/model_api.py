@@ -127,7 +127,7 @@ class ModelApi:
 
             with open(self.max_negative_emissions_path, 'r') as f:
                 data = json.load(f)
-            max_negative_emissions = data[self.scenario][str(self.climate_year)]
+            max_negative_emissions = data["DAC"][str(self.climate_year)]
 
             neg_target = max_negative_emissions * emission_reduction_percentage
             pos_limit = baseline_emissions_pos
