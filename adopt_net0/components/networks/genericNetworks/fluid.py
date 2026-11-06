@@ -156,7 +156,7 @@ class Fluid(Network):
             if energycons[car]["cons_model"] == 1:
                 self.energy_consumption[car]["send"] = {}
                 self.energy_consumption[car]["send"] = energycons[car]
-                self.energy_consumption[car]["send"].pop("cons_model")
+                #self.energy_consumption[car]["send"].pop("cons_model")
                 self.energy_consumption[car]["receive"] = {}
                 self.energy_consumption[car]["receive"]["k_flow"] = 0
                 self.energy_consumption[car]["receive"]["k_flowDistance"] = 0
