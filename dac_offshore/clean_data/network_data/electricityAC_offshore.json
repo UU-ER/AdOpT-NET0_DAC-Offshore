@@ -7,9 +7,9 @@
     "gamma1": 0.0,
     "gamma2": 0.0,
     "gamma3": 0.0,
-    "gamma4": 5474,
+    "gamma4": 5474.0,
     "opex_variable": 0.0,
-    "opex_fixed": 0.2445,
+    "opex_fixed": 0.244,
     "discount_rate": 0.1,
     "lifetime": 40.0,
     "decommission_cost": 0
