@@ -1,3 +1,5 @@
+from pathlib import Path
+
 # # REDUCED RUNS
 # BASELINE_SCENARIO = ['No_DAC']
 # DAC_SCENARIOS = ['DAC']
@@ -18,3 +20,10 @@ CO2_PRICE = 189
 GAS_PRICE = 72
 NEGATIVE_FRACTIONS = [0.05, 0.1, 0.15, 0.2]
 RUN_ID = 1
+TEST=True
+
+# Results folders, selected with --run_on
+SAVE_PATHS = {
+    "local": Path("dac_offshore/results"),
+    "euler": Path("/cluster/scratch/jwiegner/AdOpT_DAC-Offshore/results"),
+}
