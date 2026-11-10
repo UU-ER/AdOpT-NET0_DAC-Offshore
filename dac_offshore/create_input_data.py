@@ -184,7 +184,7 @@ class InputDataCreator:
         configuration["solveroptions"]["lpwarmstart"]["value"] = 0
         configuration["solveroptions"]["numericfocus"]["value"] = 0
         configuration["solveroptions"]["timelim"]["value"] = 7 * 24
-        configuration["solveroptions"]["method"]["value"] = 3
+        configuration["solveroptions"]["method"]["value"] = 2
         configuration["solveroptions"]["threads"]["value"] = 16
         configuration["solveroptions"]["crossover"] = {}
         configuration["solveroptions"]["crossover"]["value"] = 0
