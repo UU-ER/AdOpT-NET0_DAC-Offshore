@@ -19,8 +19,8 @@ module load gcc/12.2.0
 module load python/3.12.8
 module load gurobi/13.0.0
 
-source /cluster/home/jwiegner/AdOpT_DAC-Offshore/.venv/bin/activate
-cd /cluster/home/jwiegner/AdOpT_DAC-Offshore
+source /cluster/home/jwiegner/AdOpT-NET0_DAC-Offshore/.venv/bin/activate
+cd /cluster/home/jwiegner/AdOpT-NET0_DAC-Offshore
 
 python main_dac_offshore_run_baseline_emissions.py --task_id ${SLURM_ARRAY_TASK_ID} --run_on euler || exit 1
 python main_dac_offshore_run_max_emission_reduction.py --task_id ${SLURM_ARRAY_TASK_ID} --run_on euler

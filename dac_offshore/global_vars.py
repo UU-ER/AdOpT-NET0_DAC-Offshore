@@ -20,7 +20,7 @@ CO2_PRICE = 189
 GAS_PRICE = 72
 NEGATIVE_FRACTIONS = [0.05, 0.1, 0.15, 0.2]
 RUN_ID = 1
-TEST=True
+TEST=False
 
 # Results folders, selected with --run_on
 SAVE_PATHS = {
