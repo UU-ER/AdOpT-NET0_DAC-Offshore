@@ -4,17 +4,17 @@ import itertools
 from dac_offshore.model_api import ModelApi
 from dac_offshore.global_vars import *
 
-TASKS = list(itertools.product(NEGATIVE_FRACTIONS, DAC_SCENARIOS, CLIMATE_YEARS))
+TASKS = list(itertools.product(NEGATIVE_EMMISSIONS_MT, DAC_SCENARIOS, CLIMATE_YEARS))
 
 
 def main(task_id, run_on):
     # Emission reduction
-    neg_fraction, scenario, cy = TASKS[task_id]
+    neg_target_Mt, scenario, cy = TASKS[task_id]
     m_api = ModelApi(test=TEST, run_id=RUN_ID, climate_year=cy, scenario=scenario)
     m_api.build_model()
     m_api.define_save_paths(SAVE_PATHS[run_on])
     m_api.construct_model()
-    m_api.solve_model(optimization_type="cost_at_emission_reduction", emission_reduction_percentage=neg_fraction)
+    m_api.solve_model(optimization_type="cost_at_emission_reduction", neg_target_Mt=neg_target_Mt)
 
 
 if __name__ == "__main__":

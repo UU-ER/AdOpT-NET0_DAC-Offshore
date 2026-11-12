@@ -76,7 +76,7 @@ class ModelApi:
         self.model.construct_balances()
         self.model._define_solver_settings()
 
-    def solve_model(self, optimization_type, emission_reduction_percentage=None):
+    def solve_model(self, optimization_type, neg_target_Mt=None):
 
         if optimization_type == "cost":
 
@@ -130,13 +130,9 @@ class ModelApi:
                 data = json.load(f)
             baseline_emissions_pos = data[str(self.climate_year)]
 
-            with open(self.max_negative_emissions_path, 'r') as f:
-                data = json.load(f)
-            max_negative_emissions = data["DAC"][str(self.climate_year)]
-
-            neg_target = max_negative_emissions * emission_reduction_percentage
             pos_limit = baseline_emissions_pos
 
+            neg_target_t = neg_target_Mt*10^6
             self.model.data.model_config["reporting"]["case_name"]["value"] = \
-                f"{self.scenario}_neg_E_{int(emission_reduction_percentage*100)}pct_cy{self.climate_year}_co2_tax{CO2_PRICE}"
-            self.model._optimize_north_sea_dac(pos_limit=pos_limit, neg_target=neg_target)
+                f"{self.scenario}_neg_E_{int(neg_target_Mt)}Mt_cy{self.climate_year}_co2_tax{CO2_PRICE}"
+            self.model._optimize_north_sea_dac(pos_limit=pos_limit, neg_target=neg_target_t)
