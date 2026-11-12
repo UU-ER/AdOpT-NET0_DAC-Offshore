@@ -132,7 +132,7 @@ class ModelApi:
 
             pos_limit = baseline_emissions_pos
 
-            neg_target_t = neg_target_Mt*10^6
+            neg_target_t = neg_target_Mt*10**6
             self.model.data.model_config["reporting"]["case_name"]["value"] = \
                 f"{self.scenario}_neg_E_{int(neg_target_Mt)}Mt_cy{self.climate_year}_co2_tax{CO2_PRICE}"
             self.model._optimize_north_sea_dac(pos_limit=pos_limit, neg_target=neg_target_t)
