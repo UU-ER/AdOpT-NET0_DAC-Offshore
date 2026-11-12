@@ -220,7 +220,67 @@ EUR/t. The energy share is moderate even though DAC energy use is high (see 5.5,
    plotting networks.
 7. **Removals earn no CO2 price.** With a 189 EUR/t credit, net costs would be ~190 EUR/t lower.
 
-## 6. Flags from the max runs
+## 6. Offshore wind cost assumption
+
+**Short answer: yes, offshore wind is too expensive in the model, by roughly 20–40 %, mainly because the
+offshore HVDC converter is counted twice.** This likely explains why offshore wind is almost never built
+(also not for offshore DAC, 5.5 point 1).
+
+**Where the number comes from.** `Offshore_Wind` uses 3.14 M EUR2025/MW (`TechnologyCost.xlsx`, sheet
+`ToModel_2025`, year 2040). That is DEA *Far shore wind, DC connected, fixed bottom* (2040): total 2.90
+M EUR2020/MW minus export cables (0.53), so 2.37, × 1.325 (euro-area PPI 2020→2025). It still includes
+the **offshore substation (0.97 M EUR2020/MW = 1.29 M EUR2025/MW)**, which for a DC-connected farm is the
+HVDC converter platform.
+
+**The DC links charge for the converter again.** A new `electricityDC_offshore` arc costs 0.77 M EUR/MW
+(converter pair, `gamma2`) plus 3,910 EUR/MW/km (`NetworkCost.xlsx`). Offshore wind does use such links.
+In the 1995 baseline, the 22.9 GW at NO_A are exported through ~21 GW of new DC links (NO_A–DE_B 10 GW,
+NO_A–NO1 4.7 GW, NO_A–DE_I 3.4 GW, …), each paying its own converter pair.
+
+| MEUR2025/MW (2040) | Value |
+|---|---|
+| DEA total (turbine, foundation, array, substation, export cable) | 3.84 |
+| DEA without substation and export cable | 1.86 |
+| **Model `Offshore_Wind`** | **3.14** |
+| Model DC link, 175 km (DEA reference distance) | 1.45 |
+| **Model wind + DC link** | **4.59** (+20 % vs. DEA total) |
+| Consistent alternative: DEA without substation/export cable + DC link | 3.31 |
+
+For reference, IRENA reports a global average installed cost of ~2,800 USD/kW (≈ 2.6 M EUR/MW, incl.
+grid connection) for offshore wind commissioned in 2023 [1]. The model's 3.14 M EUR/MW for the wind farm
+alone, or 4.6 incl. the link, for 2040 is clearly at the high end.
+
+**Effect on LCOE** (model inputs, 10 % discount rate, CF 56.5 % offshore / 34 % onshore / 9.5 % PV, from
+the model's capacity factors):
+
+| | EUR/MWh |
+|---|---|
+| Onshore wind | 62 |
+| PV | 73 |
+| Offshore wind (model) | 78 |
+| Offshore wind (model) + DC link to shore | 120 |
+| Offshore wind without substation | 48 |
+| Offshore wind without substation + DC link | 89 |
+
+With the double counting removed, offshore wind at the farm (48 EUR/MWh) is cheaper than onshore wind
+(62). Including the link it's still more expensive (89), but the gap shrinks a lot. Wherever an offshore
+DAC or demand sits next to the wind farm, no long link is needed at all.
+
+Two smaller points:
+- **PPI inflation:** all costs are inflated with the euro-area producer price index (×1.325 for
+  2020→2025), which includes the 2022 energy price spike. A consumer-price index would give roughly ×1.2,
+  i.e. ~10 % lower costs. This applies to all technologies, so it shifts levels, not the merit order.
+- **Onshore wind and PV look consistent with DEA.** Onshore is 1.47 M EUR2025/MW = DEA 2040 1.11 × 1.325;
+  PV is 0.5 M EUR/MW.
+
+**Suggestion:** use DEA without substation and export cable (1.86 M EUR2025/MW) for `Offshore_Wind`, and
+let the DC network carry the converter and cable costs. Or keep the substation in the wind cost and drop
+the converter share (`gamma2`) for links that start at offshore wind nodes. Either way, offshore wind
+results (and the offshore DAC energy supply) would likely change. Re-run at least one target case to check.
+
+[1] [IRENA, Renewable Power Generation Costs in 2023](https://www.irena.org/Publications/2024/Sep/Renewable-Power-Generation-Costs-in-2023)
+
+## 7. Flags from the max runs
 
 **Flag 1 – DAC captures ~105 % of its nameplate size.** Captured / installed = 105.0–105.7 % for onshore
 and offshore in every climate year. `max_out` reaches 466.26 t/h for a 3.8 Mt/yr unit, while
@@ -242,7 +302,7 @@ balance; offshore wind sizes. All offshore wind sizes equal `RemainingPotential_
 `max_re_nodes.csv` (or the 125 GW cap), so the earlier ×1000 potential error
 (`validate_vre_potential/notes.md`) does not show up here.
 
-## 7. Open questions
+## 8. Open questions
 
 1. Is DAC `size_max` (3.8 Mt/yr onshore, 0.4 Mt/yr offshore per node) meant to define the upper bound? If
    the bound should reflect storage, VRE or transport instead, DAC `size_max` has to be loosened.
@@ -257,8 +317,9 @@ balance; offshore wind sizes. All offshore wind sizes equal `RemainingPotential_
    point 1).
 7. Is the DAC energy use from the Rezo "max productivity" data (~4 MWh_th/t heat) intended (5.5, point 3)?
 8. Can you add the cy 2008 h5 files and the 1995 onshore-only runs (summary missing, 10 % h5 truncated)?
+9. Is the offshore substation meant to be in `Offshore_Wind` *and* the converter in the DC links (section 6)?
 
-## 8. Code
+## 9. Code
 
 Run from the repository root, in this order:
 
@@ -267,6 +328,7 @@ Run from the repository root, in this order:
 | `concat_summaries.py` | Reads every `<cy>/<case>/Summary.xlsx` under `ROOT_PATH`, appends them into one table, adds `dac_configuration`, `emission_target`, `climate_year`, `result_path` and `specific_capture_cost` → `data/Summary_2040_processed.csv` |
 | `extract_run_metrics.py` | Reads design and selected operation data from each h5 file (DAC output and energy use, CO2 stored, RE generation and curtailment, network design, and how much of each candidate upper-bound constraint is used) → `data/technology_design.csv`, `data/network_design.csv`, `data/run_metrics.csv`. Run as `python -m dac_offshore.claude_quick_analysis.extract_run_metrics` (it imports `validate_vre_potential.read_data`) |
 | `plot_results.py` | Makes figures 1–4 (max and baseline runs) in `figures/` |
+| `check_offshore_wind_cost.py` | Compares the offshore wind CAPEX with the DEA source data and computes LCOEs with the model inputs → `data/offshore_wind_cost_check.csv` |
 | `plot_capture_costs.py` | Average and marginal capture cost from the summary (→ `data/capture_costs.csv`, figure 5); capture cost by technology and DAC operation from the h5 data (→ `data/capture_cost_by_technology.csv`, `data/dac_operation.csv`, figure 6) |
 
 `ROOT_PATH` in `concat_summaries.py` points to `results/2040_1`. Runs missing there (cy 2008, 1995
