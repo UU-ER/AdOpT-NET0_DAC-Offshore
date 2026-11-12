@@ -17,6 +17,11 @@ summary = pd.read_csv(data_dir / "Summary_2040_processed.csv")
 metrics = pd.read_csv(data_dir / "run_metrics.csv")
 design = pd.read_csv(data_dir / "technology_design.csv")
 
+# Only the max and baseline runs, the target runs are plotted in plot_capture_costs.py
+summary = summary[summary["emission_target"].isin(["max", "none"])]
+metrics = metrics[metrics["case"].isin(summary["case"])]
+design = design[design["case"].isin(summary["case"])]
+
 CLIMATE_YEARS = sorted(summary["climate_year"].unique())
 COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7"]
 GREY = "#52514e"

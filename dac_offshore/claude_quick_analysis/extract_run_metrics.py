@@ -15,6 +15,7 @@ here = Path(__file__).parent
 SUMMARY_FILE = here / "data" / "Summary_2040_processed.csv"
 DESIGN_FILE = here / "data" / "technology_design.csv"
 METRICS_FILE = here / "data" / "run_metrics.csv"
+NETWORK_DESIGN_FILE = here / "data" / "network_design.csv"
 CO2_STORAGE_LIMITS_FILE = here.parent / "clean_data" / "co2_storage_limits" / "CO2_storage_limits_2040.csv"
 
 # Injection rate (t/h) in PermanentStorage_CO2_simple.json, used for nodes not in the limits file
@@ -156,6 +157,7 @@ def get_run_metrics(path_h5):
     metrics["dac_electricity"] = sum_technology_operation(
         path_h5, "DAC_Adsorption", "electricity_input"
     )
+    metrics["dac_heat"] = sum_technology_operation(path_h5, "DAC_Adsorption", "heat_input")
     metrics["electricity_demand"] = sum_energy_balance(path_h5, "electricity", "demand")
     metrics["network_consumption"] = sum_energy_balance(
         path_h5, "electricity", "network_consumption"
@@ -164,17 +166,42 @@ def get_run_metrics(path_h5):
     return metrics
 
 
+def read_network_design(path_h5):
+    """
+    Reads the design of all networks: one row per arc with size and annualised costs
+    """
+    variables = ["size", "capex", "opex_fixed", "opex_variable"]
+    rows = []
+    with h5py.File(path_h5, "r") as hdf_file:
+        networks = hdf_file["design/networks/period1"]
+        for network in networks:
+            for arc in networks[network]:
+                row = {"Network": network, "Arc_ID": arc}
+                for variable in variables:
+                    row[variable] = np.sum(networks[network][arc][variable][()])
+                rows.append(row)
+    return pd.DataFrame(rows)
+
+
 summary = pd.read_csv(SUMMARY_FILE)
 
 designs = []
+network_designs = []
 metrics = []
 for _, run in summary.iterrows():
     path_h5 = Path(run["result_path"]) / "optimization_results.h5"
+    if not path_h5.exists():
+        print(f"Skipping {run['case']}: no h5 file")
+        continue
     print(f"Reading {run['case']}")
 
     design = read_technology_design(str(path_h5))
     design["case"] = run["case"]
     designs.append(design)
+
+    network_design = read_network_design(path_h5)
+    network_design["case"] = run["case"]
+    network_designs.append(network_design)
 
     run_metrics = get_run_metrics(path_h5)
     run_metrics.update(get_upper_bound_utilisation(path_h5))
@@ -187,7 +214,11 @@ design["Value"] = pd.to_numeric(design["Value"])
 design.to_csv(DESIGN_FILE, index=False)
 print(f"Saved {DESIGN_FILE}")
 
+network_design = pd.concat(network_designs, ignore_index=True)
+network_design.to_csv(NETWORK_DESIGN_FILE, index=False)
+print(f"Saved {NETWORK_DESIGN_FILE}")
+
 metrics = pd.DataFrame(metrics)
-metrics = summary[["case", "dac_configuration", "climate_year"]].merge(metrics, on="case")
+metrics = summary[["case", "dac_configuration", "emission_target", "climate_year"]].merge(metrics, on="case")
 metrics.to_csv(METRICS_FILE, index=False)
 print(f"Saved {METRICS_FILE}")
