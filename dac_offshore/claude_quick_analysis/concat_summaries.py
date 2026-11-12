@@ -5,7 +5,7 @@ import pandas as pd
 
 # Root folder containing <climate_year>/<case_type>/Summary.xlsx and the result folders
 ROOT_PATH = Path(
-    r"C:\Users\jwiegner\OneDrive - ETH Zurich\00_Papers_Journal\00_2025-DACOffshore\DAC-Offshore-MaianJan\2040_1"
+    r"C:\Users\jwiegner\OneDrive - ETH Zurich\00_Papers_Journal\00_2025-DACOffshore\DAC-Offshore-MaianJan\results\2040_1"
 )
 
 SUMMARY_SHEET = "Summary"
