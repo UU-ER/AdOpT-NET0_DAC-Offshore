@@ -82,7 +82,8 @@ class ModelApi:
 
             self.model.data.model_config["reporting"]["case_name"]["value"] = \
                 f"{self.scenario}_baseline_cy{self.climate_year}_co2_tax{CO2_PRICE}"
-            self.model._optimize_cost()
+            # same storage and flow penalties as the emission-target runs, so that costs are comparable
+            self.model._optimize_cost_penalized()
 
             # save baseline emissions
             model = self.model.model[self.model.info_solving_algorithms["aggregation_model"]]

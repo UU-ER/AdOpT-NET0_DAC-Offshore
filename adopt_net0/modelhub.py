@@ -645,32 +645,26 @@ class ModelHub:
         log.info(log_msg)
         self._call_solver()
 
-    def _optimize_north_sea_dac(self, neg_target, pos_limit):
+    def _optimize_cost_penalized(self):
+        """
+        Minimizes costs plus storage and flow penalties (same objective as
+        :func:`~_optimize_north_sea_dac`, but without emission constraints)
+        """
+        self._set_penalized_cost_objective()
+        log_msg = "Set objective: costs with storage and flow penalties"
+        print(log_msg)
+        log.info(log_msg)
+        self._call_solver()
+
+    def _set_penalized_cost_objective(self):
+        """
+        Sets objective to npv plus a penalty on electricity storage throughput and
+        on simultaneous flows in both directions of an arc
+        """
         model = self.model[self.info_solving_algorithms["aggregation_model"]]
         config = self.data.model_config
-        is_persistent = config["solveroptions"]["solver"]["value"] == "gurobi_persistent"
         flow_cost = config["optimization"].get("flow_penalty_cost", {}).get("value", 1.0)
         storage_cost = config["optimization"].get("storage_penalty_cost", {}).get("value", 0.1)
-
-        # Positive emission limit
-        if model.find_component("const_pos_emission_limit"):
-            if is_persistent:
-                self.solver.remove_constraint(model.const_pos_emission_limit)
-            model.del_component(model.const_pos_emission_limit)
-        model.const_pos_emission_limit = pyo.Constraint(
-            expr=sum(model.periods[p].var_emissions_pos for p in model.set_periods) <= pos_limit)
-        if is_persistent:
-            self.solver.add_constraint(model.const_pos_emission_limit)
-
-        # Negative emission target
-        if model.find_component("const_neg_emission_limit"):
-            model.del_component(model.const_neg_emission_limit)
-            if is_persistent:
-                self.solver.remove_constraint(model.const_neg_emission_limit)
-        model.const_neg_emission_limit = pyo.Constraint(
-            expr=model.var_emissions_neg >= neg_target)
-        if is_persistent:
-            self.solver.add_constraint(model.const_neg_emission_limit)
 
         # Auxiliary variables for bidirectional flow penalty
         for comp in ["var_bidir_waste", "con_bidir_waste_ij", "con_bidir_waste_ji", "set_bidir_pairs"]:
@@ -707,7 +701,7 @@ class ModelHub:
 
         self._delete_objective()
 
-        def init_north_sea_objective(obj):
+        def init_penalized_cost_objective(obj):
             storage_penalty = storage_cost * sum(
                 b_period.node_blocks[node].tech_blocks_active[tec].var_input[t, "electricity"] +
                 b_period.node_blocks[node].tech_blocks_active[tec].var_output[t, "electricity"]
@@ -726,7 +720,34 @@ class ModelHub:
 
             return model.var_npv + storage_penalty + flow_penalty
 
-        model.objective = pyo.Objective(rule=init_north_sea_objective, sense=pyo.minimize)
+        model.objective = pyo.Objective(rule=init_penalized_cost_objective, sense=pyo.minimize)
+
+    def _optimize_north_sea_dac(self, neg_target, pos_limit):
+        model = self.model[self.info_solving_algorithms["aggregation_model"]]
+        config = self.data.model_config
+        is_persistent = config["solveroptions"]["solver"]["value"] == "gurobi_persistent"
+
+        # Positive emission limit
+        if model.find_component("const_pos_emission_limit"):
+            if is_persistent:
+                self.solver.remove_constraint(model.const_pos_emission_limit)
+            model.del_component(model.const_pos_emission_limit)
+        model.const_pos_emission_limit = pyo.Constraint(
+            expr=sum(model.periods[p].var_emissions_pos for p in model.set_periods) <= pos_limit)
+        if is_persistent:
+            self.solver.add_constraint(model.const_pos_emission_limit)
+
+        # Negative emission target
+        if model.find_component("const_neg_emission_limit"):
+            model.del_component(model.const_neg_emission_limit)
+            if is_persistent:
+                self.solver.remove_constraint(model.const_neg_emission_limit)
+        model.const_neg_emission_limit = pyo.Constraint(
+            expr=model.var_emissions_neg >= neg_target)
+        if is_persistent:
+            self.solver.add_constraint(model.const_neg_emission_limit)
+
+        self._set_penalized_cost_objective()
         log_msg = f"Set objective: north_sea_dac | negative emission target={neg_target}"
         print(log_msg)
         log.info(log_msg)
