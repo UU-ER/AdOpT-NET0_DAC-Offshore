@@ -142,6 +142,45 @@ def plot_lines(targets, column, ylabel, filename, ylim=None):
     save(fig, filename)
 
 
+def plot_capture_cost(targets, filename):
+    """
+    Capture cost of all climate years in one chart: color and marker = configuration, line
+    style = climate year. Hollow markers: cost per tonne of net reduction where it differs
+    (positive emissions below the baseline), plotted at the net reduction.
+    """
+    line_styles = {1995: "-", 2008: "--", 2009: ":"}
+    fig, ax = plt.subplots(figsize=(7.5, 4.5))
+    for configuration, (color, marker) in CONFIGURATIONS.items():
+        for cy, line_style in line_styles.items():
+            runs = targets[(targets["climate_year"] == cy)
+                           & (targets["dac_configuration"] == configuration)]
+            ax.plot(runs["target_Mt"], runs["total_npv"], color=color,
+                    linestyle=line_style, linewidth=2, marker=marker, markersize=7,
+                    markeredgecolor="white", markeredgewidth=1)
+            differs = (runs["net_reduction_Mt"] - runs["target_Mt"]) > 0.01
+            ax.scatter(runs.loc[differs, "net_reduction_Mt"], runs.loc[differs, "cost_per_net_reduction"],
+                       facecolor="white", edgecolor=color, marker=marker, s=40, zorder=3)
+    # Two legends: configuration (color/marker) and climate year (line style)
+    configuration_handles = [plt.Line2D([], [], color=color, marker=marker, linewidth=2,
+                                        markeredgecolor="white", label=configuration)
+                             for configuration, (color, marker) in CONFIGURATIONS.items()]
+    year_handles = [plt.Line2D([], [], color=GREY, linestyle=line_style, linewidth=2, label=f"cy {cy}")
+                    for cy, line_style in line_styles.items()]
+    hollow_handle = [plt.Line2D([], [], color=GREY, marker="o", linestyle="", markerfacecolor="white",
+                                label="Per tonne of net\nreduction (if different)")]
+    legend = ax.legend(handles=configuration_handles, loc="upper left",
+                       bbox_to_anchor=(1.02, 1), frameon=False, title="Configuration")
+    ax.add_artist(legend)
+    ax.legend(handles=year_handles + hollow_handle, loc="upper left", bbox_to_anchor=(1.02, 0.55),
+              frameon=False, title="Climate year")
+    ax.set_xlabel("Negative emissions (Mt/yr)")
+    ax.set_ylabel("Capture cost (EUR/t)")
+    ax.set_xticks([2, 4, 6, 8])
+    ax.set_ylim(950, 1180)
+    fig.tight_layout()
+    save(fig, filename)
+
+
 def plot_cost_by_group(targets, filename):
     """
     Capture cost split by technology group (EUR/t), one panel per configuration
@@ -184,6 +223,13 @@ costs = costs.join(summary[["total_npv", "cost_imports", "carbon_cost", "emissio
 costs = costs.join(get_electricity_demand(operation)).fillna({"dac_electricity_demand": 0})
 targets = get_specific_differences(summary, costs)
 targets["Imports + carbon cost"] = targets["cost_imports"] + targets["carbon_cost"]
+# Net reduction = negative emissions + reduction of positive emissions vs. No DAC
+no_dac = summary[summary["dac_configuration"] == "No DAC"].set_index("climate_year")
+emissions_pos_reduction = (targets["climate_year"].map(no_dac["emissions_pos"])
+                           - summary.loc[targets.index, "emissions_pos"])
+targets["net_reduction_Mt"] = targets["target_Mt"] + emissions_pos_reduction / 1e6
+targets["cost_per_net_reduction"] = (targets["total_npv"] * targets["target_Mt"]
+                                     / targets["net_reduction_Mt"])
 targets["Electricity supply"] = targets[ELECTRICITY_GROUPS].sum(axis=1)
 # Cost of the additional electricity supply per MWh used by DAC and heat pumps
 targets["electricity_cost_per_MWh"] = (targets["Electricity supply"]
@@ -191,7 +237,7 @@ targets["electricity_cost_per_MWh"] = (targets["Electricity supply"]
 targets.to_csv(data_dir / "capture_cost_by_group.csv")
 print(f"Saved {data_dir / 'capture_cost_by_group.csv'}")
 
-plot_lines(targets, "total_npv", "Capture cost (EUR/t)", "fig1_capture_cost.png", (950, 1200))
+plot_capture_cost(targets, "fig1_capture_cost.png")
 plot_cost_by_group(targets, "fig2_capture_cost_by_technology.png")
 plot_lines(targets, "dac_electricity_demand", "Electricity, DAC + heat pumps (MWh/t)",
            "fig3_electricity_per_tonne.png", (0, 6))
