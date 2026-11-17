@@ -329,6 +329,19 @@ def initialize_configuration_templates() -> dict:
                     "options": [],
                     "value": ["RES", "STOR", "Hydro_Open"],
                 },
+                "extreme_periods": {
+                    "description": "Adds extreme days as additional typical days: "
+                    "highest total electricity demand, lowest mean wind and PV capacity "
+                    "factor, lowest total generic production and hydro inflow (up to "
+                    "N + 5 typical days).",
+                    "options": [True, False],
+                    "value": True,
+                },
+                "seed": {
+                    "description": "Random seed for the k-means clustering, so that "
+                    "the typical days are reproducible (None = random).",
+                    "value": 0,
+                },
             },
             "multiyear": {
                 "description": "Enable multiyear analysis, if turned off max time horizon is 1 year.",
