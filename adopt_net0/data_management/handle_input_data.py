@@ -634,6 +634,7 @@ class DataHandle:
                 hoursPerPeriod=hours_per_day,
                 noSegments=hours_per_day,
                 clusterMethod="k_means",
+                extremePeriodMethod="new_cluster_center"
             )
 
             typPeriods = aggregation.createTypicalPeriods()
