@@ -9,7 +9,7 @@ import pandas as pd
 import sys
 import datetime
 
-from .utilities import get_set_t
+from .utilities import get_set_t, get_hour_factors
 from .data_management import DataHandle, create_technology_class
 from .model_construction import *
 from .result_management.read_results import add_values_to_summary
@@ -674,27 +674,39 @@ class ModelHub:
 
         self._delete_objective()
 
+        # With typical days (method 1), technology and network variables are indexed
+        # over the clustered time steps, so the penalties iterate over each variable's
+        # own index and are weighted with the occurrence of each clustered hour (same
+        # weighting as in the balances, ones for full resolution and method 2)
+        hour_factors = {
+            period: get_hour_factors(config, self.data, period)
+            for period in model.set_periods
+        }
+
         def init_penalized_cost_objective(obj):
             storage_penalty = storage_cost * sum(
-                b_period.node_blocks[node].tech_blocks_active[tec].var_input[t, "electricity"] +
-                b_period.node_blocks[node].tech_blocks_active[tec].var_output[t, "electricity"]
+                hour_factors[period][t - 1] * (
+                    b_tec.var_input[t, "electricity"] + b_tec.var_output[t, "electricity"]
+                )
                 for period in model.set_periods
                 for b_period in [model.periods[period]]
                 for node in model.set_nodes
                 for tec in b_period.node_blocks[node].tech_blocks_active
                 if tec.startswith("Storage_")
-                for t in b_period.set_t_full
+                for b_tec in [b_period.node_blocks[node].tech_blocks_active[tec]]
+                for (t, car) in b_tec.var_input
+                if car == "electricity"
         )
 
             flow_penalty = flow_cost * sum(
-                b_netw.arc_block[arc].var_flow[t]
+                hour_factors[period][t - 1] * b_netw.arc_block[arc].var_flow[t]
                 for period in model.set_periods
                 for b_period in [model.periods[period]]
                 if hasattr(b_period, "network_block")
                 for netw in b_period.network_block
                 for b_netw in [b_period.network_block[netw]]
                 for arc in b_netw.set_arcs
-                for t in b_period.set_t_full
+                for t in b_netw.arc_block[arc].var_flow
         )
 
             return model.var_npv + storage_penalty + flow_penalty
