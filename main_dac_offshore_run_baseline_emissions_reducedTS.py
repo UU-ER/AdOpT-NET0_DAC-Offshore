@@ -10,7 +10,7 @@ TASKS = list(itertools.product(BASELINE_SCENARIO, CLIMATE_YEARS))
 
 # Time aggregation settings, applied on top of ConfigModel.json (input data stays untouched)
 TYPICAL_DAYS = 20
-TD_METHOD = 1  # 1: everything clustered, 2: balances + technologies_with_full_res at full resolution
+TD_METHOD = 2  # 1: everything clustered, 2: balances + technologies_with_full_res at full resolution
 TECHNOLOGIES_WITH_FULL_RES = None  # None: keep list from ConfigModel.json
 
 
