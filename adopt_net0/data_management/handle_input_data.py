@@ -607,6 +607,99 @@ class DataHandle:
                     elif aggregation_model == "averaged":
                         tec_data.processed_coeff.time_dependent_averaged = coeff_td
 
+    @staticmethod
+    def _add_extreme_period_columns(full_res_data_matrix: pd.DataFrame) -> tuple:
+        """
+        Adds system-wide helper columns that define the extreme periods for tsam
+        (one additional typical day each, if it is not already a cluster center):
+
+        - day with the highest residual demand (total electricity demand - total
+          generic electricity production, peak hour)
+        - day with the lowest mean wind and PV capacity factor (on- and offshore wind
+          and PV, all nodes)
+
+        :param pd.DataFrame full_res_data_matrix: data to cluster
+        :return: data with helper columns, keyword arguments for tsam
+        """
+        columns = full_res_data_matrix.columns.to_frame(index=False)
+        is_electricity = (columns["type_series"] == "time_series") & (
+            columns["Carrier"] == "electricity"
+        )
+        is_demand = is_electricity & (columns["Key2"] == "Demand")
+        is_generic = is_electricity & (columns["Key2"] == "Generic production")
+        is_wind_pv = (
+            (columns["type_series"] == "tec_series")
+            & (columns["Carrier"] == "capfactor")
+            & columns["Key1"].isin(["Offshore_Wind", "Onshore_Wind", "PV"])
+        )
+
+        helper_columns = {}
+        extreme_period_args = {"addPeakMax": [], "addMeanMin": []}
+        if is_demand.any():
+            column = ("extreme_periods", "all", "sum", "residual_demand", "")
+            helper_columns[column] = full_res_data_matrix.loc[:, is_demand.values].sum(
+                axis=1
+            ) - full_res_data_matrix.loc[:, is_generic.values].sum(axis=1)
+            extreme_period_args["addPeakMax"].append(column)
+        else:
+            log.info("No demand series found, no residual demand extreme period added")
+        if is_wind_pv.any():
+            column = ("extreme_periods", "all", "mean", "wind_pv_capfactor", "")
+            helper_columns[column] = full_res_data_matrix.loc[:, is_wind_pv.values].mean(
+                axis=1
+            )
+            extreme_period_args["addMeanMin"].append(column)
+        else:
+            log.info("No wind or PV series found, no wind and PV extreme period added")
+
+        if not helper_columns:
+            log.warning("No series for extreme periods found, no extreme periods added")
+            return full_res_data_matrix, {}
+
+        helper_columns = pd.DataFrame(helper_columns, index=full_res_data_matrix.index)
+        helper_columns.columns.names = full_res_data_matrix.columns.names
+        extreme_period_args["weightDict"] = {
+            column: tsam.MIN_WEIGHT for column in helper_columns.columns
+        }
+        return pd.concat([full_res_data_matrix, helper_columns], axis=1), extreme_period_args
+
+    @staticmethod
+    def _grouped_clustering_weights(full_res_data_matrix: pd.DataFrame) -> dict:
+        """
+        Weights for tsam, so that every group of series has the same total weight in
+        the clustering, independent of how many series it has: demand, generic
+        production, capacity factors, hydro inflow, technology performance (with
+        temperature and humidity, which drive it) and other series. tsam multiplies
+        the normalized series with the weight, so a group of n series gets 1/sqrt(n).
+        The capacity factors and hydro inflows in ClimateData are copies of the
+        technology series and are ignored. Constant series don't affect the
+        clustering and are not counted.
+
+        :param pd.DataFrame full_res_data_matrix: data to cluster
+        :return: weights by column
+        """
+        groups = {}
+        varying = full_res_data_matrix.columns[full_res_data_matrix.std().values > 0]
+        for column in varying:
+            type_series, node, key1, carrier, key2 = column
+            if type_series == "tec_series":
+                group = {"capfactor": "capfactor", "hydro_inflow": "hydro_inflow"}.get(
+                    carrier, "performance"
+                )
+            elif carrier == "electricity" and key2 in ["Demand", "Generic production"]:
+                group = key2
+            elif key1 == "ClimateData":
+                group = "performance" if key2 in ["temp_air", "rh"] else None
+            else:
+                group = "other"
+            groups[column] = group
+
+        sizes = pd.Series(groups).value_counts()
+        return {
+            column: tsam.MIN_WEIGHT if group is None else 1 / np.sqrt(sizes[group])
+            for column, group in groups.items()
+        }
+
     def _cluster_data(self):
         """
         Cluster full resolution input data
@@ -614,10 +707,21 @@ class DataHandle:
         Uses the package tsam to cluster all time-dependent input data (time series
         and time dependent technology performance).
         """
-        nr_clusters = self.model_config["optimization"]["typicaldays"]["N"]["value"]
+        typicaldays_config = self.model_config["optimization"]["typicaldays"]
+
+        def setting(name, default):
+            # settings missing in older configurations keep the previous behaviour
+            return typicaldays_config.get(name, {}).get("value", default)
+
+        nr_clusters = typicaldays_config["N"]["value"]
+        add_extreme_periods = setting("extreme_periods", False)
+        cluster_method = setting("cluster_method", "k_means")
+        representation_method = setting("representation_method", None)
+        extreme_period_method = setting("extreme_period_method", "new_cluster_center")
+        weighting = setting("weighting", "equal")
+        seed = setting("seed", 0)
         hours_per_day = self.topology["hours_per_day"]["full"]
 
-        self.topology["time_index"]["clustered"] = range(0, nr_clusters * hours_per_day)
 
         clustered_resolution = {}
         for investment_period in self.topology["investment_periods"]:
@@ -627,16 +731,51 @@ class DataHandle:
 
             full_res_data_matrix = self._collect_full_res_data(investment_period)
 
+            weight_dict = {}
+            if weighting == "grouped":
+                weight_dict = self._grouped_clustering_weights(full_res_data_matrix)
+
+            # Extreme periods: tsam adds one extra typical day per listed column, so
+            # system-wide helper columns are used instead of every single node. They
+            # get a negligible weight in the clustering and are not written back.
+            extreme_period_args = {}
+            if add_extreme_periods:
+                full_res_data_matrix, extreme_period_args = self._add_extreme_period_columns(
+                    full_res_data_matrix
+                )
+                if extreme_period_args:
+                    extreme_period_args["extremePeriodMethod"] = extreme_period_method
+                    weight_dict.update(extreme_period_args.pop("weightDict"))
+
+            # sklearn KMeans is called by tsam without random_state, so the global
+            # numpy seed makes the clustering reproducible
+            if seed is not None:
+                np.random.seed(seed)
+
             # Cluster to typical days
             aggregation = tsam.TimeSeriesAggregation(
                 full_res_data_matrix,
                 noTypicalPeriods=nr_clusters,
                 hoursPerPeriod=hours_per_day,
                 noSegments=hours_per_day,
-                clusterMethod="k_means",
+                clusterMethod=cluster_method,
+                representationMethod=representation_method,
+                weightDict=weight_dict if weight_dict else None,
+                **extreme_period_args,
             )
 
             typPeriods = aggregation.createTypicalPeriods()
+
+            # Extreme periods are additional typical days
+            nr_typical_days = len(aggregation._clusterPeriodNoOccur)
+            self.topology["time_index"]["clustered"] = range(
+                0, nr_typical_days * hours_per_day
+            )
+            if nr_typical_days != nr_clusters:
+                log.info(
+                    f"Added {nr_typical_days - nr_clusters} extreme period(s): "
+                    f"{list(aggregation.extremePeriods)}"
+                )
 
             # Determine help variables
             cluster_order = aggregation._clusterOrder
