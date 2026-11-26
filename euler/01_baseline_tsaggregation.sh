@@ -7,9 +7,9 @@
 # Number of tasks: see TASKS in main_dac_offshore_run_baseline_emissions_reducedTS.py
 #SBATCH --job-name=dac_baseline_tsa
 #SBATCH --array=0-2
-#SBATCH --time=16:00:00
+#SBATCH --time=3:00:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=12
 #SBATCH --mem-per-cpu=8G
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
