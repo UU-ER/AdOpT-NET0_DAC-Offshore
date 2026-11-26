@@ -329,6 +329,53 @@ def initialize_configuration_templates() -> dict:
                     "options": [],
                     "value": ["RES", "STOR", "Hydro_Open"],
                 },
+                "extreme_periods": {
+                    "description": "Adds extreme days as additional typical days: "
+                    "highest residual demand (total demand - total generic "
+                    "production) and lowest mean wind and PV capacity factor. With "
+                    "append or new_cluster_center they come on top of the N typical "
+                    "days.",
+                    "options": [True, False],
+                    "value": True,
+                },
+                "extreme_period_method": {
+                    "description": "How tsam adds the extreme days: append (own "
+                    "typical day), new_cluster_center (own typical day, closer days "
+                    "are assigned to it) or replace_cluster_center (replaces the "
+                    "center of its cluster, no additional day).",
+                    "options": ["append", "new_cluster_center", "replace_cluster_center"],
+                    "value": "append",
+                },
+                "cluster_method": {
+                    "description": "Clustering method of tsam.",
+                    "options": ["hierarchical", "k_means", "k_medoids"],
+                    "value": "hierarchical",
+                },
+                "representation_method": {
+                    "description": "Representation of the clusters in tsam (None = "
+                    "tsam default of the cluster method). medoidRepresentation uses "
+                    "real days, so peaks are not averaged out.",
+                    "options": [
+                        None,
+                        "meanRepresentation",
+                        "medoidRepresentation",
+                        "durationRepresentation",
+                    ],
+                    "value": "medoidRepresentation",
+                },
+                "weighting": {
+                    "description": "equal: every series has the same weight in the "
+                    "clustering; grouped: every group of series (demand, generic "
+                    "production, capacity factors, hydro inflow, technology "
+                    "performance, other) has the same total weight.",
+                    "options": ["equal", "grouped"],
+                    "value": "grouped",
+                },
+                "seed": {
+                    "description": "Random seed for the k-means clustering, so that "
+                    "the typical days are reproducible (None = random).",
+                    "value": 0,
+                },
             },
             "multiyear": {
                 "description": "Enable multiyear analysis, if turned off max time horizon is 1 year.",

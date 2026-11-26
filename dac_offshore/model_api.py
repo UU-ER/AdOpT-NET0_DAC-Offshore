@@ -25,8 +25,9 @@ class ModelApi:
         self.scenario = scenario
         self.run_id = run_id
 
-        self.baseline_emissions_path = Path(__file__).resolve().parent / 'emission_data' / f"baseline_emissions_test_{str(self.test)}.json"
-        self.max_negative_emissions_path = Path(__file__).resolve().parent / 'emission_data' / f"max_negative_emissions_test_{str(self.test)}.json"
+        # one file per climate year, so that parallel runs of different climate years do not interfere
+        self.baseline_emissions_path = Path(__file__).resolve().parent / 'emission_data' / f"baseline_emissions_test_{str(self.test)}_cy{self.climate_year}.json"
+        self.max_negative_emissions_path = Path(__file__).resolve().parent / 'emission_data' / f"max_negative_emissions_test_{str(self.test)}_cy{self.climate_year}.json"
 
         if test:
             self.start_period = 50
@@ -58,12 +59,12 @@ class ModelApi:
         InputDataCreator.define_charging_efficiencies(self.model)
 
     def define_save_paths(self, save_path):
+        # one folder (incl. Summary.xlsx) per climate year and scenario, so that parallel runs interfere less
         if self.test:
-            run_save_path = save_path / f"2040_test_{self.run_id}"
-            summary_save_path = run_save_path
+            run_save_path = save_path / f"2040_test_{self.run_id}" / str(self.climate_year) / str(self.scenario)
         else:
-            run_save_path = save_path / f"2040_{self.run_id}" / str(self.climate_year)
-            summary_save_path = save_path / f"2040_{self.run_id}"
+            run_save_path = save_path / f"2040_{self.run_id}" / str(self.climate_year) / str(self.scenario)
+        summary_save_path = run_save_path
 
         Path(run_save_path).mkdir(parents=True, exist_ok=True)
 
@@ -75,22 +76,25 @@ class ModelApi:
         self.model.construct_balances()
         self.model._define_solver_settings()
 
-    def solve_model(self, optimization_type, emission_reduction_percentage=None):
+    def solve_model(self, optimization_type, neg_target_Mt=None):
 
         if optimization_type == "cost":
 
             self.model.data.model_config["reporting"]["case_name"]["value"] = \
                 f"{self.scenario}_baseline_cy{self.climate_year}_co2_tax{CO2_PRICE}"
-            self.model._optimize_cost()
+            # same storage and flow penalties as the emission-target runs, so that costs are comparable
+            self.model._optimize_cost_penalized()
 
             # save baseline emissions
             model = self.model.model[self.model.info_solving_algorithms["aggregation_model"]]
             baseline_emissions = sum(model.periods[p].var_emissions_pos.value for p in model.set_periods)
             
             # Save baseline emissions to file
-            with open(self.baseline_emissions_path, 'r') as f:
-                data = json.load(f)
-                data[str(self.climate_year)] = baseline_emissions
+            data = {}
+            if self.baseline_emissions_path.exists():
+                with open(self.baseline_emissions_path, 'r') as f:
+                    data = json.load(f)
+            data[str(self.climate_year)] = baseline_emissions
 
             with open(self.baseline_emissions_path, 'w') as f:
                 json.dump(data, f)
@@ -109,8 +113,10 @@ class ModelApi:
             model = self.model.model[self.model.info_solving_algorithms["aggregation_model"]]
             max_negative_emissions = sum(model.periods[p].var_emissions_neg.value for p in model.set_periods)
 
-            with open(self.max_negative_emissions_path, 'r') as f:
-                data = json.load(f)
+            data = {}
+            if self.max_negative_emissions_path.exists():
+                with open(self.max_negative_emissions_path, 'r') as f:
+                    data = json.load(f)
 
             if self.scenario not in data:
                 data[self.scenario] = {}
@@ -125,13 +131,9 @@ class ModelApi:
                 data = json.load(f)
             baseline_emissions_pos = data[str(self.climate_year)]
 
-            with open(self.max_negative_emissions_path, 'r') as f:
-                data = json.load(f)
-            max_negative_emissions = data["DAC"][str(self.climate_year)]
-
-            neg_target = max_negative_emissions * emission_reduction_percentage
             pos_limit = baseline_emissions_pos
 
+            neg_target_t = neg_target_Mt*10**6
             self.model.data.model_config["reporting"]["case_name"]["value"] = \
-                f"{self.scenario}_neg_E_{int(emission_reduction_percentage*100)}pct_cy{self.climate_year}_co2_tax{CO2_PRICE}"
-            self.model._optimize_north_sea_dac(pos_limit=pos_limit, neg_target=neg_target)
+                f"{self.scenario}_neg_E_{int(neg_target_Mt)}Mt_cy{self.climate_year}_co2_tax{CO2_PRICE}"
+            self.model._optimize_north_sea_dac(pos_limit=pos_limit, neg_target=neg_target_t)

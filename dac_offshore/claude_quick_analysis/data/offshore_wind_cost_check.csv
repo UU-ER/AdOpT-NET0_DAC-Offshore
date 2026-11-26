@@ -1,0 +1,13 @@
+,value
+"DEA 2040 total (turbine, foundation, substation, export cable)",3.8436570999999997
+DEA 2040 without substation and export cable,1.8555586
+Model Offshore_Wind (DEA total - export cables),3.14119562243502
+"Model DC offshore link (175 km, converter pair + cable)",1.452981
+Model Offshore_Wind + DC link,4.59417662243502
+Consistent: DEA without substation/export cable + DC link,3.3085396
+PV,73.03497621627582
+Offshore_Wind,77.85286852092506
+Onshore_Wind,61.99666541452737
+Offshore_Wind + DC link,119.61555212200903
+Offshore_Wind without substation,47.61100037504953
+Offshore_Wind without substation + DC link,89.37368397613349
