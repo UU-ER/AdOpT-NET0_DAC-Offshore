@@ -1,4 +1,4 @@
-import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -64,30 +64,37 @@ for node in production_profiles_nodes.columns:
     production_profiles[(node, 'Wind onshore')] = production_profiles_nodes[node].to_numpy()
     production_profiles[(node, 'total')] = production_profiles[node].drop(columns='total').sum(axis=1)
 
-# Wind offshore
+# Wind offshore (same method as DataPreprocessing/utilities/generate_offshore_windfarm_production.py)
 power_curves = pd.read_csv('./adopt_net0/database/templates/technology_data/RES/WT_data/WT_data.csv', delimiter=';')
-power_curve = power_curves[power_curves['TurbineName'] == 'WindTurbine_Offshore_9500']
-cut_in = power_curve.iloc[0]['CutInMS']
-cut_out = power_curve.iloc[0]['CutOffMS']
-rated_power_turbine_model = power_curve.iloc[0]['RatedPowerkW']
-hub_height = 150
 alpha = 0.11
-f = interp1d(np.linspace(0, 35, 71), power_curve.iloc[:, 13:84].to_numpy())
 
-wind_farms = json.load(open('./mes_north_sea/reporting/spatial_data/WindFarms.geojson'))['features']
-cap_offshore = pd.DataFrame([farm['properties'] for farm in wind_farms])
+cap_offshore = pd.read_csv(Path(__file__).parent / 'WindFarms_v4.csv', delimiter=';')
 cap_offshore = cap_offshore[cap_offshore['NODE_2'].notna()]
 
 for node in cap_offshore['NODE_2'].unique():
     cap_at_node = cap_offshore[cap_offshore['NODE_2'] == node]
     total_generation = np.zeros(8760)
     for idx, park in cap_at_node.iterrows():
+        power_curve = power_curves[power_curves['TurbineName'] == park['TURBINE_TYPE_POWER']]
+        cut_in = power_curve.iloc[0]['CutInMS']
+        cut_out = power_curve.iloc[0]['CutOffMS']
+        rated_power_turbine_model = power_curve.iloc[0]['RatedPowerkW']
+        f = interp1d(np.linspace(0, 35, 71), power_curve.iloc[:, 13:84].to_numpy())
+
+        if park['YEAR'] < 2010:
+            hub_height = 80
+        elif park['YEAR'] < 2020:
+            hub_height = 100
+        else:
+            hub_height = 120
+
         ws_hubheight = ws100(float(park['lat']), float(park['lon'])) * (hub_height / 100) ** alpha
         ws_hubheight[ws_hubheight < 0] = 0
         ws_hubheight[ws_hubheight > 35] = 35
         capacity_factor = f(ws_hubheight)[0] / rated_power_turbine_model
         capacity_factor[ws_hubheight < cut_in] = 0
         capacity_factor[ws_hubheight > cut_out] = 0
+        capacity_factor = capacity_factor * 0.95
         total_generation = total_generation + float(park['POWER_MW']) * capacity_factor[0:8760]
 
     production_profiles[(node, 'Wind offshore')] = total_generation

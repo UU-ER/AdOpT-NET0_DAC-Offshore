@@ -1,0 +1,192 @@
+OBJECTID;NAME;OWNER;Project_Phase;POWER_MW;STATUS;COUNTRY;TURBINES;YEAR;TYPE_TURBINE;CAPACITY_TURBINE;HUB_HEIGHT;Transformer Platform;N_TURBINES;COAST_DIST;NOTES;SOURCE;AREA;CONNCECTION_POS;OPERATIONAL2030;LANDING;OFFSHORE_NODE;lon;lat;NODE;NO_CONNECTION_POSSIBLE;NODE_TYPE;NODE_2;TURBINE_TYPE_POWER
+;N-3.8;;;433;Planned;Germany;;2026;;;;NOR-3-3;;;;NEP;23.23;TRUE;1;DE2;DE_A;6.893;54.068;DE_A;0;New_Offshore_Farms;DE_A;WindTurbine_Offshore_15000_IEA
+;N-6.6;;;630;Planned;Germany;;2028;;;;NOR-6-3;;;;NEP;43.674;TRUE;1;DE2;DE_A;5.953;54.266;DE_A;0;New_Offshore_Farms;DE_A;WindTurbine_Offshore_15000_IEA
+;N-6.7;;;270;Planned;Germany;;2028;;;;NOR-6-3;;;;NEP;15.842;TRUE;1;DE2;DE_A;5.846;54.361;DE_A;0;New_Offshore_Farms;DE_A;WindTurbine_Offshore_15000_IEA
+;N-7.2;;;980;Planned;Germany;;2027;;;;NOR-7-2;;;;NEP;58.378;TRUE;1;DE3;DE_A;6.224;54.288;DE_A;0;New_Offshore_Farms;DE_A;WindTurbine_Offshore_15000_IEA
+;O-1.3;;;300;Planned;Germany;;2026;;;;OST-1-4;;;;NEP;25.437;FALSE;1;DE4;NoCluster;14.028;54.892;DE4;1;Allocated_to_onshore;DE4;WindTurbine_Offshore_15000_IEA
+;N-3.5;;;420;Planned;Germany;;2028;;;;NOR-3-2;;;;NEP;28.846;TRUE;1;DE2;DE_A;6.849;54.026;DE_A;0;New_Offshore_Farms;DE_A;WindTurbine_Offshore_15000_IEA
+;N-3.6;;;480;Planned;Germany;;2028;;;;NOR-3-2;;;;NEP;33.161;TRUE;1;DE2;DE_A;6.772;54.046;DE_A;0;New_Offshore_Farms;DE_A;WindTurbine_Offshore_15000_IEA
+;N-3.7;;;225;Planned;Germany;;2026;;;;NOR-3-3;;;;NEP;17.322;TRUE;1;DE2;DE_A;7.062;54.045;DE_A;0;New_Offshore_Farms;DE_A;WindTurbine_Offshore_15000_IEA
+;N-10.1;;;2000;Planned;Germany;;2030;;;;NOR-10-1;;;;NEP;147.911;TRUE;1;DE1;DE_B;6.061;54.651;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;N-12.1;;;2000;Planned;Germany;;2030;;;;NOR-12-1;;;;NEP;193.393;TRUE;1;DE2;DE_B;6.162;54.768;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;N-11.1;;;2000;Planned;Germany;;2030;;;;NOR-11-1;;;;NEP;192.083;TRUE;1;DE1;DE_B;6.374;54.733;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;N-12.2;;;2000;Planned;Germany;;2030;;;;NOR-12-2;;;;NEP;187.162;TRUE;1;DE1;DE_B;6.121;54.873;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;N-9.1;;;2000;Planned;Germany;;2029;;;;NOR-9-1;;;;NEP;157.542;TRUE;1;DE1;DE_B;5.769;54.446;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;N-9.3;;;1500;Planned;Germany;;2029;;;;NOR-9-3;;;;NEP;105.796;TRUE;1;DE2;DE_B;5.88;54.55;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;N-9.2;;;2000;Planned;Germany;;2029;;;;NOR-9-2;;;;NEP;157.342;TRUE;1;DE2;DE_B;5.676;54.488;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;N-10.2;;;500;Planned;Germany;;2030;;;;NOR-9-3;;;;NEP;31.041;TRUE;1;DE2;DE_B;6.078;54.592;DE_B;0;New_Offshore_Farms;DE_B;WindTurbine_Offshore_15000_IEA
+;O-2.2;;;1000;Planned;Germany;;2030;;;;OST-2-4;;;;NEP;92.017;FALSE;1;DE4;NoCluster;13.775;54.847;DE4;1;Allocated_to_onshore;DE4;WindTurbine_Offshore_15000_IEA
+;IJmuiden Ver Kavel I;;;1000;Planned;Netherlands;;2029;;;;;;62023.33718;;rijkswaterstaat;93.128;TRUE;1;NL1;NL_A;3.554;52.801;NL_A;0;New_Offshore_Farms;NL_A;WindTurbine_Offshore_15000_IEA
+;IJmuiden Ver Kavel II;;;1000;Planned;Netherlands;;2029;;;;;;62023.33718;;rijkswaterstaat;96.072;TRUE;1;NL1;NL_A;3.431;52.838;NL_A;0;New_Offshore_Farms;NL_A;WindTurbine_Offshore_15000_IEA
+;IJmuiden Ver Kavel III;;;1000;Planned;Netherlands;;2028;;;;;;62023.33718;;rijkswaterstaat;94.058;TRUE;1;NL1;NL_A;3.643;52.881;NL_A;0;New_Offshore_Farms;NL_A;WindTurbine_Offshore_15000_IEA
+;IJmuiden Ver Kavel IV;;;1000;Planned;Netherlands;;2028;;;;;;62023.33718;;rijkswaterstaat;103.132;TRUE;1;NL1;NL_A;3.518;52.943;NL_A;0;New_Offshore_Farms;NL_A;WindTurbine_Offshore_15000_IEA
+;Borssele Kavel II;Orsted;;376;Production;Netherlands;47;2020;SG 8.0-167;8;116;Borssele Alpha;47;24230.41162;;rijkswaterstaat;63.528;FALSE;1;NL1;NL_C;3.069;51.635;NL1;1;Existing_Offshore_Fa;NL_C;V164/8000
+;Borssele Kavel III;Blauwind;;351.5;Production;Netherlands;37;2020;V164-9.5 MW;9.5;109;Borssele Beta;37;29530.46426;;rijkswaterstaat;71.49;FALSE;1;NL1;NL_C;2.969;51.669;NL1;1;Existing_Offshore_Fa;NL_C;V164/9500
+;Borssele Kavel IV;Blauwind;;380;Production;Netherlands;40;2020;V164-9.5 MW;9.5;109;Borssele Beta;40;40217.61262;;rijkswaterstaat;74.647;FALSE;1;NL1;NL_C;2.882;51.736;NL1;1;Existing_Offshore_Fa;NL_C;V164/9500
+;Borssele Kavel V;;;19;Production;Netherlands;2;2020;V164-9.5 MW;9.5;;Borssele Beta;2;34823.96128;;rijkswaterstaat;0.59;FALSE;1;NL1;NL_C;3.003;51.709;NL1;1;Existing_Offshore_Fa;NL_C;V164/9500
+;Egmond aan Zee;Noordzeewind;;108;Production;Netherlands;36;2006;V90-3.0 MW Offshore;3;70;Egmon aan Zee;36;10065.16014;;rijkswaterstaat;26.127;FALSE;1;NL2;NoCluster;4.421;52.607;NL2;1;Allocated_to_onshore;NL2;V90/3000
+;Prinses Amalia;Eneco;;120;Production;Netherlands;60;2008;V80-2.0 MW;2;60;Prinses Amalia;60;23327.0834;;rijkswaterstaat;21.669;FALSE;1;NL2;NoCluster;4.224;52.588;NL2;1;Allocated_to_onshore;NL2;V80/2000
+;Luchterduinen;Eneco & Mitsubishi;;129;Production;Netherlands;43;2015;V112-3.0 MW Offshore;3;81;Luchterduinen;43;22340.70219;;rijkswaterstaat;15.903;FALSE;1;NL1;NL_D;4.163;52.405;NL1;1;Existing_Offshore_Fa;NL_D;V112/3000 Offshore
+;ZeeEnergie / Gemini II;;;300;Production;Netherlands;75;2017;SWT-4.0-130;4;88.5;Gemini II;300;57835.07239;;rijkswaterstaat;33.362;FALSE;1;NL3;NL_E;5.884;54.035;NL3;1;Existing_Offshore_Fa;NL_E;SWT-3.6-120
+;Buitengaats / Gemini I;;;300;Production;Netherlands;75;2017;SWT-4.0-130;4;88.5;Gemini I;75;56043.86009;;rijkswaterstaat;34.262;FALSE;1;NL3;NL_E;6.042;54.038;NL3;1;Existing_Offshore_Fa;NL_E;SWT-3.6-120
+;HK Kavel IV (Zuid);Vattenfall;;700;Approved;Netherlands;70;2023;SG 11.0-200 DD;11;125.8;Hollands Kust Zuid Beta;70;18604.03447;;rijkswaterstaat;90.196;FALSE;1;NL1;NL_D;4.145;52.331;NL1;1;Existing_Offshore_Fa;NL_D;V164/9500
+;HK Kavel III (Zuid);Vattenfall;;700;Approved;Netherlands;70;2023;SG 11.0-200 DD;11;125.8;Hollands Kust Zuid Beta;70;18625.92989;;rijkswaterstaat;53.803;FALSE;1;NL1;NL_D;4.015;52.228;NL1;1;Existing_Offshore_Fa;NL_D;V164/9500
+;HK Kavel II (Zuid);Vattenfall;;700;Approved;Netherlands;70;2023;SG 11.0-200 DD;11;125.8;Hollands Kust Zuid Alpha;70;23510.24223;;rijkswaterstaat;47.781;FALSE;1;NL1;NL_D;3.983;52.291;NL1;1;Existing_Offshore_Fa;NL_D;V164/9500
+;HK Kavel I (Zuid);Vattenfall;;700;Approved;Netherlands;70;2023;SG 11.0-200 DD;11;125.8;Hollands Kust Zuid Alpha;70;22358.89874;;rijkswaterstaat;67.276;FALSE;1;NL1;NL_D;4.041;52.373;NL1;1;Existing_Offshore_Fa;NL_D;V164/9500
+;Borssele Kavel I;Orsted;;376;Production;Netherlands;47;2020;SG 8.0-167;8;116;Borssele Alpha;47;27336.44703;;rijkswaterstaat;64.851;FALSE;1;NL1;NL_C;3.06;51.747;NL1;1;Existing_Offshore_Fa;NL_C;V164/8000
+;HK Kavel V (Noord);Crosswind;;759;Approved;Netherlands;69;2023;SG 11.0-200 DD;11;125.5;Hollands Kust Noord;69;18675.27755;;rijkswaterstaat;126.42;FALSE;1;NL2;NL_D;4.26;52.71;NL2;1;Existing_Offshore_Fa;NL_D;V164/9500
+;HK Kavel VI (West);Ecowende;;756;Planned;Netherlands;54;2026;;;;Hollands Kust West Alpha;54;51547.79345;;rijkswaterstaat;90.491;TRUE;1;NL2;NL_D;3.816;52.723;NL2;1;Existing_Offshore_Fa;NL_D;WindTurbine_Offshore_15000_IEA
+;HK Kavel VII (West);Oranje Wind Power II;;700;Planned;Netherlands;;2026;;;;Hollands Kust West Beta;;51467.16091;;rijkswaterstaat;97.436;TRUE;1;NL2;NL_D;3.709;52.638;NL2;1;Existing_Offshore_Fa;NL_D;WindTurbine_Offshore_15000_IEA
+;IJmuiden Ver Kavel V (Noord);;;1000;Planned;Netherlands;;2029;;;;;;49466.8982;;rijkswaterstaat;102.099;TRUE;1;NL1;NL_A;3.649;53.061;NL_A;0;New_Offshore_Farms;NL_A;WindTurbine_Offshore_15000_IEA
+;Nederwiek Kavel 1;;;2000;Reserved Area;Netherlands;;2030;;;;;;92597.17409;;rijkswaterstaat;273.629;TRUE;1;NL1;NL_B;3.178;53.1;NL_B;0;New_Offshore_Farms;NL_B;WindTurbine_Offshore_15000_IEA
+;IJmuiden Ver Kavel VI (Noord);;;1000;Planned;Netherlands;;2029;;;;;;49466.8982;;rijkswaterstaat;126.983;TRUE;1;NL1;NL_A;3.793;53.001;NL_A;0;New_Offshore_Farms;NL_A;WindTurbine_Offshore_15000_IEA
+21;South Pembrokeshire Demonstration Zone;;;180;Planned;United Kingdom;;2026;;;;;0;13086.86962;;EMODNET;90.416;FALSE;1;UK4;NoCluster;-5.125;51.472;UK4;1;Allocated_to_onshore;UK4;WindTurbine_Offshore_15000_IEA
+30;Vesterhav Syd;Vattenfall;;168;Approved;Denmark;;2023;SG 8.0-167;8;;;21;4096.542123;;EMODNET;46.582;FALSE;1;DK1;DK_B;7.981;56.063;DK1;1;Existing_Offshore_Fa;DK_B;V164/8000
+37;Vesterhav Nord;Vattenfall;;160;Approved;Denmark;;2023;SG 8.0-167;8;;;20;3994.347038;;EMODNET;58.395;FALSE;1;DK1;NoCluster;8.055;56.622;DK1;1;Allocated_to_onshore;DK1;V164/8000
+45;Thor;;;1000;Planned;Denmark;;2027;SG 14-236 DD;14;;;0;19876.53953;Tender;EMODNET;440.4;TRUE;1;DK1;DK_A;7.652;56.326;DK_A;0;New_Offshore_Farms;DK_A;WindTurbine_Offshore_15000_IEA
+46;Hesselk;;;1200;Planned;Denmark;;2029;;;;;0;19402.92127;Tender;EMODNET;246.805;FALSE;1;DK1;NoCluster;11.83;56.456;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+49;Samsa;;;23;Production;Denmark;;2003;BONUS 2.3 MW and SIEMENS SWT 2.3-93;2.3;;;10;3456.959776;;EMODNET;0.883;FALSE;1;DK1;NoCluster;10.585;55.723;DK1;1;Allocated_to_onshore;DK1;SWT-3.6-120
+50;Horns Rev I;;;160;Production;Denmark;;2002;V80-2.0 MW;2;;;80;13863.4889;;EMODNET;19.624;FALSE;1;DK1;DK_B;7.841;55.486;DK1;1;Existing_Offshore_Fa;DK_B;V80/2000
+51;Anholt;;;399.6;Production;Denmark;;2012;V80-2.0 MW;2;;;111;15488.51829;;EMODNET;90.475;FALSE;1;DK1;NoCluster;11.218;56.6;DK1;1;Allocated_to_onshore;DK1;V80/2000
+52;Middelgrunden;;;40;Production;Denmark;;2000;SWT-3.6-120;3.6;;;20;1137.778152;;EMODNET;1.113;FALSE;1;DK1;NoCluster;12.67;55.691;DK1;1;Allocated_to_onshore;DK1;SWT-3.6-120
+53;Frederikshavn Offshore;;;10.6;Production;Denmark;;2003;V90-3.0 MW Offshore;3;;;3;0;;EMODNET;0.242;FALSE;1;DK1;NoCluster;10.562;57.444;DK1;1;Allocated_to_onshore;DK1;V90/3000
+54;Nissum Bredning;;;28;Production;Denmark;;2018;SWT-7.0-154;7;;;4;552.0970642;;EMODNET;1.033;FALSE;1;DK1;NoCluster;8.246;56.671;DK1;1;Allocated_to_onshore;DK1;V164/8000
+55;Horns Rev II;;;209.3;Production;Denmark;;2009;SWT-7.0-154;7;;;91;28725.07362;;EMODNET;31.378;FALSE;1;DK1;DK_B;7.583;55.6;DK1;1;Existing_Offshore_Fa;DK_B;V164/8000
+56;Renland;;;17;Production;Denmark;;2003;SWT-2.3-93;2.3;;;8;89.43778977;;EMODNET;0.671;FALSE;1;DK1;NoCluster;8.221;56.662;DK1;1;Allocated_to_onshore;DK1;SWT-2.3-93
+57;Kriegers Flak;;;605;Production;Denmark;;2021;SG 8.0-167;8;;;72;13553.54873;;EMODNET;173.132;FALSE;1;DK1;NoCluster;12.932;55.026;DK1;1;Allocated_to_onshore;DK1;V164/8000
+58;Nysted;;;165.6;Production;Denmark;;2003;SWT-8.4-167;8.4;;;72;4268.795448;;EMODNET;23.045;FALSE;1;DK1;NoCluster;11.715;54.549;DK1;1;Allocated_to_onshore;DK1;V164/8000
+59;Sprogo;;;21;Production;Denmark;;2009;BONUS 2,3 MW;2.3;;;7;517.2080493;;EMODNET;0.88;FALSE;1;DK1;NoCluster;10.96;55.344;DK1;1;Allocated_to_onshore;DK1;SWT-3.6-120
+60;Tunm Knob;;;5;Production;Denmark;;1995;V90-3.0 MW Offshore;3;;;10;2887.190693;;EMODNET;0.32;FALSE;1;DK1;NoCluster;10.355;55.969;DK1;1;Allocated_to_onshore;DK1;V90/3000
+61;Avedore Holme;;;10.8;Production;Denmark;;2011;Vestas V39;0.5;;;3;0;;EMODNET;0.342;FALSE;1;DK1;NoCluster;12.461;55.602;DK1;1;Allocated_to_onshore;DK1;V90/3000
+62;Horns Rev III;;;407;Production;Denmark;;2019;SWT-3.6-120;3.6;;;49;22454.02963;;EMODNET;90.305;FALSE;1;DK1;DK_B;7.659;55.695;DK1;1;Existing_Offshore_Fa;DK_B;SWT-3.6-120
+63;Rodsand II;;;207;Production;Denmark;;2010;V164-8.0 MW;8;;;90;1583.234311;;EMODNET;31.725;FALSE;1;DK1;NoCluster;11.549;54.555;DK1;1;Allocated_to_onshore;DK1;V164/8000
+64;Nordre Flint;;;160;Applied;Denmark;;2025;SWT-2.3-93;2.3;;;0;2596.116178;;EMODNET;17.621;FALSE;1;DK1;NoCluster;12.862;55.656;DK1;1;Allocated_to_onshore;DK1;SWT-2.3-93
+65;Kadetbanke;;;500;Applied;Denmark;;2027;;;;;0;12052.1015;;EMODNET;71.608;FALSE;1;DK1;NoCluster;12.569;54.808;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+66;Frederikshavn Offshore Demo;;;72;Planned;Denmark;;2024;V236-15MW;15;256;;5;999.2954301;;EMODNET;5.733;FALSE;1;DK1;NoCluster;10.637;57.451;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+67;Aflandshage;HOFOR A/S;;286;Planned;Denmark;;2026;;;;;28;7991.035651;;EMODNET;43.315;FALSE;1;DK1;NoCluster;12.567;55.433;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+72;Lillebklt Syd;SÃ¸nderborg Forsyningsservice A/S;;160;Applied;Denmark;;2027;;;;;0;1627.686451;;EMODNET;54.199;FALSE;1;DK1;NoCluster;9.839;55.119;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+73;Omo Syd;;;320;Applied;Denmark;;2026;;;;;40;5719.421582;;EMODNET;24.54;FALSE;1;DK1;NoCluster;11.106;55.038;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+74;Paludan Flak;;;280;Applied;Denmark;;2026;;;;;0;2976.848635;;EMODNET;14.246;FALSE;1;DK1;NoCluster;10.605;55.717;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+75;Jammerland Bugt;European Energy A/S;;240;Applied;Denmark;;2027;;;;;34;6009.065621;;EMODNET;31.136;FALSE;1;DK1;NoCluster;10.967;55.571;DK1;1;Allocated_to_onshore;DK1;WindTurbine_Offshore_15000_IEA
+136;Northwind;;;216;Production;Belgium;;2014;V112-3.0 MW Offshore;3;;;72;33657.53494;;EMODNET;8.741;FALSE;1;BE1;BE_B;2.905;51.616;BE1;1;Existing_Offshore_Fa;BE_B;V112/3000 Offshore
+137;Belwind phase 1;;;165;Production;Belgium;;2010;V90-3.0 MW Offshore;3;;;55;40610.6845;;EMODNET;14.741;FALSE;1;BE1;BE_B;2.805;51.669;BE1;1;Existing_Offshore_Fa;BE_B;V90/3000
+138;Rentel;;;309;Production;Belgium;;2018;SWT-7.0-154;7;;;42;28354.72882;;EMODNET;23.264;FALSE;1;BE1;BE_B;2.945;51.591;BE1;1;Existing_Offshore_Fa;BE_B;V164/8000
+139;Norther;;;369.6;Production;Belgium;;2018;V164-8.0 MW;8;;;44;19797.75862;;EMODNET;38.445;FALSE;1;BE1;BE_B;3.013;51.527;BE1;1;Existing_Offshore_Fa;BE_B;V164/8000
+140;SeaStar;;;252;Production;Belgium;;2020;;;;;30;36085.9539;;EMODNET;18.426;FALSE;1;BE1;BE_B;2.862;51.634;BE1;1;Existing_Offshore_Fa;BE_B;WindTurbine_Offshore_15000_IEA
+141;Mermaid;;;235.2;Production;Belgium;;2020;;;;;28;48314.54938;;EMODNET;16.676;FALSE;1;BE1;BE_B;2.741;51.719;BE1;1;Existing_Offshore_Fa;BE_B;WindTurbine_Offshore_15000_IEA
+142;Northwester 2;;;218.5;Production;Belgium;;2020;V164-9.5 MW;9.5;;;23;44480.72733;;EMODNET;11.733;FALSE;1;BE1;BE_B;2.753;51.687;BE1;1;Existing_Offshore_Fa;BE_B;V164/9500
+147;Erebus;;;100;Approved;United Kingdom;;2026;;;;;0;30230.62346;;EMODNET;43.563;FALSE;1;UK4;NoCluster;-5.603;51.457;UK4;1;Allocated_to_onshore;UK4;WindTurbine_Offshore_15000_IEA
+191;Gode Wind 03;;;242;Approved;Germany;;2024;SG 11.0-200 DD;11;;NOR-3-3;23;32012.98531;;EMODNET;17.534;FALSE;1;DE2;DE_D;7.106;54.038;DE2;1;Existing_Offshore_Fa;DE_D;V164/9500
+192;Borkum Riffgrund 3;;;913;Approved;Germany;;2025;SG 11.0-200 DD;11;;NOR-1-1;83;53109.21308;;EMODNET;75.422;FALSE;1;DE2;DE_D;6.194;54.047;DE2;1;Existing_Offshore_Fa;DE_D;V164/9500
+193;Dan Tysk;;;288;Production;Germany;;2014;SWT-3.6-120;3.6;;NOR-5-1;79;66391.19027;;EMODNET;64.532;FALSE;1;DE1;DE_F;7.201;55.137;DE1;1;Existing_Offshore_Fa;DE_F;SWT-3.6-120
+194;Borkum Riffgrund 1;;;312;Production;Germany;;2015;SWT-4.0-120;4;;NOR-2-2;78;34866.1275;;EMODNET;35.661;FALSE;1;DE2;DE_D;6.554;53.967;DE2;1;Existing_Offshore_Fa;DE_D;SWT-3.6-120
+195;Nordergruende;;;110.7;Production;Germany;;2017;6.2M126;6.2;;NOR-0-2;18;8976.952486;;EMODNET;3.422;FALSE;1;DE2;NoCluster;8.169;53.835;DE2;1;Allocated_to_onshore;DE2;6M126
+196;Trianel Windpark Borkum Phase 1;;;200;Production;Germany;;2015;M5000-116;5;;NOR-2-2;40;45030.04344;;EMODNET;22.597;FALSE;1;DE2;DE_D;6.458;54.046;DE2;1;Existing_Offshore_Fa;DE_D;SWT-3.6-120
+197;Trianel Windpark Borkum Phase 2;;;203.2;Production;Germany;;2020;6.2M152;6.2;;NOR-2-2;32;46687.58006;;EMODNET;30.636;FALSE;1;DE2;DE_D;6.464;54.05;DE2;1;Existing_Offshore_Fa;DE_D;6.2M152
+198;Meerwind Sued/Ost;;;288;Production;Germany;;2015;SWT-3.6-120;3.6;;NOR-4-1;80;23090.0556;;EMODNET;39.782;FALSE;1;DE1;DE_E;7.704;54.392;DE1;1;Existing_Offshore_Fa;DE_E;SWT-3.6-120
+199;Alpha Ventus;;;60;Production;Germany;;2010;Areva Wind M5000-116 (6x) / REpower 5M (6x);5;95;NOR-2-1;1212;40516.41895;;EMODNET;3.994;FALSE;1;DE2;DE_D;6.607;54.011;DE2;1;Existing_Offshore_Fa;DE_D;SWT-3.6-120
+200;Amrumbank West;;;302.4;Production;Germany;;2015;SWT-3.6-120;3.6;;NOR-4-2;80;36102.7263;;EMODNET;30.175;FALSE;1;DE1;DE_E;7.706;54.523;DE1;1;Existing_Offshore_Fa;DE_E;SWT-3.6-120
+201;Nordsee Ost;;;295.2;Production;Germany;;2015;6.2M126;6.2;;NOR-4-1;48;28066.85694;;EMODNET;35.363;FALSE;1;DE1;DE_E;7.682;54.445;DE1;1;Existing_Offshore_Fa;DE_E;6M126
+202;Butendiek;;;288;Production;Germany;;2015;SWT-3.6-120;3.6;;NOR-5-1;80;32508.57761;;EMODNET;31.437;FALSE;1;DE1;DE_F;7.774;55.018;DE1;1;Existing_Offshore_Fa;DE_F;SWT-3.6-120
+203;Global Tech I;;;400;Production;Germany;;2015;M5000-116;5;;NOR-8-1;80;93778.15038;;EMODNET;39.915;FALSE;1;DE2;DE_C;6.365;54.509;DE2;1;Existing_Offshore_Fa;DE_C;SWT-3.6-120
+204;EnBW Hohe See;;;497;Production;Germany;;2019;SWT-7.0-154;7;;NOR-8-1;71;86883.521;;EMODNET;40.521;FALSE;1;DE2;DE_C;6.33;54.443;DE2;1;Existing_Offshore_Fa;DE_C;V164/8000
+205;Sandbank;;;288;Production;Germany;;2017;SWT-4.0-130;4;;NOR-5-1;72;83256.01321;;EMODNET;47.567;FALSE;1;DE1;DE_F;6.852;55.2;DE1;1;Existing_Offshore_Fa;DE_F;SWT-3.6-120
+206;Gode Wind 01;;;344.52;Production;Germany;;2016;SWT-6.0-154;6;;NOR-3-1;55;31682.6764;;EMODNET;40.148;FALSE;1;DE2;DE_D;6.985;54.016;DE2;1;Existing_Offshore_Fa;DE_D;SWT-3.6-120
+207;EnBW He Dreiht;;;960;Approved;Germany;;2025;V236-15.0 MW;15;;NOR-7-1;64;82993.64748;;EMODNET;62.603;FALSE;1;DE2;DE_C;6.186;54.365;DE2;1;Existing_Offshore_Fa;DE_C;WindTurbine_Offshore_15000_IEA
+208;Riffgat;;;113.4;Production;Germany;;2014;SWT-3.6-120;3.6;;NOR-0-1;30;14365.95122;;EMODNET;5.991;FALSE;1;DE2;NoCluster;6.475;53.692;DE2;1;Allocated_to_onshore;DE2;SWT-3.6-120
+209;Bard Offshore 1;;;400;Production;Germany;;2013;Bard 5.0;5;;NOR-6-1;80;89534.44651;;EMODNET;56.783;FALSE;1;DE2;DE_C;5.981;54.355;DE2;1;Existing_Offshore_Fa;DE_C;SWT-3.6-120
+210;Deutsche Bucht;;;252;Production;Germany;;2019;V164-8.0 MW;8;;NOR-6-2;31;89301.28377;;EMODNET;17.073;FALSE;1;DE2;DE_C;5.792;54.305;DE2;1;Existing_Offshore_Fa;DE_C;V164/8000
+211;Merkur Offshore (MEG Offshore I);;;396;Production;Germany;;2019;Haliade 150-6MW;6;;NOR-2-3;63;42610.10458;;EMODNET;39.193;FALSE;1;DE2;DE_D;6.554;54.043;DE2;1;Existing_Offshore_Fa;DE_D;SWT-3.6-120
+212;Nordsee One;;;332.1;Production;Germany;;2017;6.2M126;6.2;;NOR-3-1;54;32980.21384;;EMODNET;28.198;FALSE;1;DE2;DE_D;6.817;53.981;DE2;1;Existing_Offshore_Fa;DE_D;6M126
+213;Borkum Riffgrund 2;;;450;Production;Germany;;2018;V164-8.0 MW;8;;NOR-2-3;56;34553.63631;;EMODNET;35.763;FALSE;1;DE2;DE_D;6.487;53.952;DE2;1;Existing_Offshore_Fa;DE_D;V164/8000
+214;Kaskasi;;;342;Production;Germany;;2023;SG 8.0-167;8;;NOR-4-2;38;33489.05716;;EMODNET;17.394;FALSE;1;DE1;DE_E;7.695;54.489;DE1;1;Existing_Offshore_Fa;DE_E;V164/8000
+215;Gode Wind 02;;;263.1;Production;Germany;;2016;SWT-6.0-154;6;;NOR-3-1;42;37641.82025;;EMODNET;29.153;FALSE;1;DE2;DE_D;7.008;54.076;DE2;1;Existing_Offshore_Fa;DE_D;SWT-3.6-120
+216;Veja Mate;;;402;Production;Germany;;2017;SWT-6.0-154;6;;NOR-6-2;67;87648.00255;;EMODNET;50.65;FALSE;1;DE2;DE_C;5.873;54.318;DE2;1;Existing_Offshore_Fa;DE_C;SWT-3.6-120
+217;Albatros;;;112;Production;Germany;;2020;SWT-7.0-154;7;;NOR-6-2;16;97860.50637;;EMODNET;10.533;FALSE;1;DE2;DE_C;6.249;54.486;DE2;1;Existing_Offshore_Fa;DE_C;V164/8000
+227;C-Power (Zone A);;;141.15;Production;Belgium;;2013;6.2M126;6.2;;;24;24793.53692;;EMODNET;10.682;FALSE;1;BE1;BE_B;2.922;51.539;BE1;1;Existing_Offshore_Fa;BE_B;6M126
+228;C-Power (Zone B);;;184.5;Production;Belgium;;2013;6.2M126;6.2;;;30;25036.11712;;EMODNET;9.169;FALSE;1;BE1;BE_B;2.985;51.563;BE1;1;Existing_Offshore_Fa;BE_B;6M126
+229;Belwind phase 2 (Nobelwind) (Zone 2);;;165;Production;Belgium;;2017;V90-3.0 MW Offshore;3;;;50;39176.94958;;EMODNET;13.826;FALSE;1;BE1;BE_B;2.829;51.657;BE1;1;Existing_Offshore_Fa;BE_B;V90/3000
+230;Belwind phase 2 (Nobelwind) (Zone 1);;;165;Production;Belgium;;2017;V90-3.0 MW Offshore;3;;;50;42583.68075;;EMODNET;6.325;FALSE;1;BE1;BE_B;2.787;51.679;BE1;1;Existing_Offshore_Fa;BE_B;V90/3000
+245;Hornsea Project 1 (Heron East) Wind Farm;;;406;Production;United Kingdom;;2020;SWT-7.0-154;7;;;58;111374.2468;;EMODNET;130.653;FALSE;1;UK2;UK_F;2.109;53.878;UK2;1;Existing_Offshore_Fa;UK_F;V164/8000
+246;Hornsea Project 1 (Heron West) Wind Farm;;;406;Production;United Kingdom;;2020;SWT-7.0-154;7;;;58;102222.267;;EMODNET;118.55;FALSE;1;UK2;UK_F;1.73;53.893;UK2;1;Existing_Offshore_Fa;UK_F;V164/8000
+247;Hornsea Project 1 (Njord) Wind Farm;;;609;Production;United Kingdom;;2020;SWT-7.0-154;7;;;87;105672.6212;;EMODNET;158.367;FALSE;1;UK2;UK_F;1.911;53.88;UK2;1;Existing_Offshore_Fa;UK_F;V164/8000
+248;Norfolk Vanguard;;;2800;Approved;United Kingdom;;2029;SG 14-236 DD;14;;;225;47493.02202;;EMODNET;592.365;FALSE;1;UK1;UK_G;2.7;52.87;UK1;1;Existing_Offshore_Fa;UK_G;WindTurbine_Offshore_15000_IEA
+249;Norfolk Boreas;;;1400;Approved;United Kingdom;;2029;SG 14-236 DD;14;;;90;73178.95654;;EMODNET;725.371;FALSE;1;UK1;UK_G;2.942;53.039;UK1;1;Existing_Offshore_Fa;UK_G;WindTurbine_Offshore_15000_IEA
+263;Hywind Scotland Pilot Park;;;30;Production;United Kingdom;;2017;SWT-6.0-154;6;;;5;22488.98939;;EMODNET;15.403;FALSE;1;UK3;NoCluster;-1.36;57.484;UK3;1;Allocated_to_onshore;UK3;SWT-3.6-120
+299;Hornsea Project 2 (HOW02) Wind Farm;;;1386;Production;United Kingdom;;2022;SG 8.0-167;8;;;165;89487.56761;;EMODNET;461.89;FALSE;1;UK2;UK_F;1.688;53.94;UK2;1;Existing_Offshore_Fa;UK_F;V164/8000
+300;Robin Rigg East;;;84;Production;United Kingdom;;2010;V90-3.0 MW Offshore;3;;;30;8599.403372;;EMODNET;9.858;FALSE;1;UK2;NoCluster;-3.697;54.764;UK2;1;Allocated_to_onshore;UK2;V90/3000
+301;Robin Rigg West;;;90;Production;United Kingdom;;2010;V90-3.0 MW Offshore;3;;;30;8598.744072;;EMODNET;8.476;FALSE;1;UK2;NoCluster;-3.726;54.747;UK2;1;Allocated_to_onshore;UK2;V90/3000
+302;Inch Cape Offshore Wind Farm;;;1080;Approved;United Kingdom;;2026;V236-15.0 MW;15;;;110;15147.34923;;EMODNET;149.326;FALSE;1;UK3;UK_D;-2.195;56.495;UK3;1;New_Offshore_Farms;UK_D;WindTurbine_Offshore_15000_IEA
+307;Beatrice Offshore Wind Farm;;;588;Production;United Kingdom;;2019;SWT-7.0-154;7;;;84;13391.57938;;EMODNET;131.466;FALSE;1;UK3;UK_E;-2.885;58.254;UK3;1;New_Offshore_Farms;UK_E;V164/8000
+309;Aberdeen Offshore W/F;;;97;Production;United Kingdom;;2018;V164-8.0 MW;8;;;11;1340.288887;;EMODNET;20.014;FALSE;1;UK3;NoCluster;-1.997;57.226;UK3;1;Allocated_to_onshore;UK3;V164/8000
+311;Pentland Floating Offshore Wind Farm;;;100;Planned;United Kingdom;;2027;;;;;0;7664.58739;;EMODNET;10.007;FALSE;1;UK3;NoCluster;-3.871;58.656;UK3;1;Allocated_to_onshore;UK3;WindTurbine_Offshore_15000_IEA
+315;Kincardine;;;50;Production;United Kingdom;;2021;V164-9.5 MW;9.5;;;6;14143.52439;;EMODNET;25.379;FALSE;1;UK3;NoCluster;-1.853;57.007;UK3;1;Allocated_to_onshore;UK3;V164/9500
+317;Moray East;;;953;Production;United Kingdom;;2022;V164-9.5 MW;9.5;;;0;22264.18871;;EMODNET;293.07;FALSE;1;UK3;UK_E;-2.721;58.189;UK3;1;New_Offshore_Farms;UK_E;V164/9500
+319;Neart Na Gaoithe Offshore Wind;;;432;Approved;United Kingdom;;2024;SG 8.0-167;8;;;54;15363.83114;;EMODNET;102.609;FALSE;1;UK3;UK_D;-2.25;56.268;UK3;1;New_Offshore_Farms;UK_D;V164/8000
+323;Seagreen Phase 1 Windfarm;;;1140;Approved;United Kingdom;;2025;V164-10.0 MW;10;;;0;26763.01902;;EMODNET;331.804;FALSE;1;UK3;UK_D;-1.718;56.598;UK3;1;New_Offshore_Farms;UK_D;V164/9500
+324;Seagreen 1A Offshore Wind Farm;;;360;Approved;United Kingdom;;2026;;;;;0;32431.59226;;EMODNET;58.645;FALSE;1;UK3;UK_D;-1.87;56.558;UK3;1;New_Offshore_Farms;UK_D;WindTurbine_Offshore_15000_IEA
+341;Caledonia Offshore Wind Farm;;;2000;Planned;United Kingdom;;2030;;;;;0;23311.17488;;EMODNET;428.951;FALSE;1;UK3;UK_E;-2.487;58.197;UK_E;0;New_Offshore_Farms;UK_E;WindTurbine_Offshore_15000_IEA
+346;Moray West;;;882;Approved;United Kingdom;;2025;SG 14-222 DD;14;;;0;22186.64743;;EMODNET;225.187;FALSE;1;UK3;UK_E;-3.007;58.097;UK3;1;New_Offshore_Farms;UK_E;WindTurbine_Offshore_15000_IEA
+348;Walney 2;;;184;Production;United Kingdom;;2012;SWT-3.6-120;3.6;;;51;17774.48916;;EMODNET;45.87;FALSE;1;UK2;NoCluster;-3.604;54.081;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-120
+349;Walney 1;;;184;Production;United Kingdom;;2011;SWT-3.6-107;3.6;;;51;14160.94713;;EMODNET;27.153;FALSE;1;UK2;NoCluster;-3.513;54.04;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-107
+350;West of Duddon Sands;;;388.8;Production;United Kingdom;;2014;SWT-3.6-120;3.6;;;108;13988.57405;;EMODNET;66.876;FALSE;1;UK2;NoCluster;-3.464;53.984;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-120
+351;Barrow;;;90;Production;United Kingdom;;2006;V90-3.0 MW Offshore;3;;;30;7261.238716;;EMODNET;9.99;FALSE;1;UK2;NoCluster;-3.296;53.991;UK2;1;Allocated_to_onshore;UK2;V90/3000
+352;Ormonde;;;150;Production;United Kingdom;;2012;REpower 5M;5;;;30;9148.983197;;EMODNET;9.932;FALSE;1;UK2;NoCluster;-3.437;54.088;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-120
+353;Rhyl Flats;;;90;Production;United Kingdom;;2009;SWT-3.6-107;3.6;;;25;7767.8335;;EMODNET;9.737;FALSE;1;UK4;NoCluster;-3.647;53.379;UK4;1;Allocated_to_onshore;UK4;SWT-3.6-107
+354;Gwynt y Mor;;;576;Production;United Kingdom;;2015;SWT-3.6-107;3.6;;;160;12389.26977;;EMODNET;68.027;FALSE;1;UK4;NoCluster;-3.584;53.459;UK4;1;Allocated_to_onshore;UK4;SWT-3.6-107
+355;Burbo Bank Extension;;;256;Production;United Kingdom;;2017;V164-8.0 MW;8;;;32;6874.85929;;EMODNET;39.658;FALSE;1;UK4;NoCluster;-3.273;53.484;UK4;1;Allocated_to_onshore;UK4;V164/8000
+356;Burbo Bank;;;90;Production;United Kingdom;;2007;SWT-3.6-107;3.6;;;25;6074.823081;;EMODNET;9.947;FALSE;1;UK2;NoCluster;-3.187;53.489;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-107
+357;Gunfleet Sands I;;;107.8;Production;United Kingdom;;2010;SWT-3.6-107;3.6;;;30;6296.740808;;EMODNET;9.995;FALSE;1;UK1;NoCluster;1.22;51.732;UK1;1;Allocated_to_onshore;UK1;SWT-3.6-107
+358;Gunfleet Sands II;;;65;Production;United Kingdom;;2010;SWT-3.6-107;3.6;;;18;8298.475544;;EMODNET;5.818;FALSE;1;UK1;NoCluster;1.245;51.727;UK1;1;Allocated_to_onshore;UK1;SWT-3.6-107
+359;Gunfleet Sands Demo;;;12;Production;United Kingdom;;2013;SWT-6.0-120;6;;;2;8297.731671;;EMODNET;2.549;FALSE;1;UK1;NoCluster;1.192;51.704;UK1;1;Allocated_to_onshore;UK1;SWT-3.6-120
+360;Kentish Flats;;;90;Production;United Kingdom;;2005;V90-3.0 MW Offshore;3;;;30;8371.66997;;EMODNET;9.952;FALSE;1;UK1;NoCluster;1.094;51.46;UK1;1;Allocated_to_onshore;UK1;V90/3000
+361;Kentish Flats Extension;;;49.5;Production;United Kingdom;;2015;V112-3.3 MW Offshore;3.3;;;15;7542.703377;;EMODNET;8.283;FALSE;1;UK1;NoCluster;1.08;51.451;UK1;1;Allocated_to_onshore;UK1;V112/3300
+362;London Array;;;630;Production;United Kingdom;;2013;SWT-3.6-120;3.6;;;175;20451.27691;;EMODNET;122.478;FALSE;1;UK1;NoCluster;1.496;51.626;UK1;1;Allocated_to_onshore;UK1;SWT-3.6-120
+363;Thanet;;;300;Production;United Kingdom;;2010;V90-3.0 MW Offshore;3;;;100;10851.36499;;EMODNET;34.965;FALSE;1;UK1;NoCluster;1.634;51.43;UK1;1;Allocated_to_onshore;UK1;V90/3000
+364;Greater Gabbard;;;504;Production;United Kingdom;;2012;SWT-3.6-107;3.6;;;140;24843.21183;;EMODNET;146.242;FALSE;1;UK1;UK_H;1.936;51.884;UK1;1;Existing_Offshore_Fa;UK_H;SWT-3.6-107
+365;Scroby Sands;;;60;Production;United Kingdom;;2004;V80-2.0 MW;2;;;30;1857.623781;;EMODNET;8.906;FALSE;1;UK1;NoCluster;1.79;52.645;UK1;1;Allocated_to_onshore;UK1;V80/2000
+366;Sheringham Shoal;;;316.8;Production;United Kingdom;;2012;SWT-3.6-107;3.6;;;88;16753.78977;;EMODNET;34.985;FALSE;1;UK1;UK_B;1.147;53.136;UK1;1;New_Offshore_Farms;UK_B;SWT-3.6-107
+367;Lincs;;;270;Production;United Kingdom;;2013;SWT-3.6-120;3.6;;;75;6335.021118;;EMODNET;38.311;FALSE;1;UK2;NoCluster;0.492;53.191;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-120
+368;Dudgeon;;;402;Production;United Kingdom;;2017;SWT-6.0-154;6;;;67;32058.46828;;EMODNET;55.164;FALSE;1;UK1;UK_B;1.381;53.265;UK1;1;New_Offshore_Farms;UK_B;SWT-3.6-120
+369;Race Bank;;;573;Production;United Kingdom;;2018;SWT-6.0-154;6;;;46;26592.70638;;EMODNET;62.379;FALSE;1;UK2;UK_B;0.841;53.277;UK2;1;New_Offshore_Farms;UK_B;SWT-3.6-120
+370;Humber Gateway;;;219;Production;United Kingdom;;2015;V112-3.0 MW Offshore;3;;;73;8025.892311;;EMODNET;26.537;FALSE;1;UK2;NoCluster;0.293;53.644;UK2;1;Allocated_to_onshore;UK2;V112/3000 Offshore
+371;Westermost Rough;;;210;Production;United Kingdom;;2015;SWT-6.0-154;6;;;35;8021.924591;;EMODNET;34.925;FALSE;1;UK2;NoCluster;0.15;53.806;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-120
+372;Lynn;;;97.2;Production;United Kingdom;;2009;SWT-3.6-107;3.6;;;27;5305.396765;;EMODNET;7.883;FALSE;1;UK2;NoCluster;0.452;53.137;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-107
+373;Inner Dowsing;;;97;Production;United Kingdom;;2009;SWT-3.6-107;3.6;;;27;5056.702987;;EMODNET;8.807;FALSE;1;UK2;NoCluster;0.445;53.189;UK2;1;Allocated_to_onshore;UK2;SWT-3.6-107
+374;Teesside;;;62.1;Production;United Kingdom;;2013;SWT-2.3-93;2.3;;;27;979.6890302;;EMODNET;4.323;FALSE;1;UK2;NoCluster;-1.094;54.645;UK2;1;Allocated_to_onshore;UK2;SWT-2.3-93
+376;Galloper;;;353;Production;United Kingdom;;2018;SWT-6.0-154;6;;;56;28256.01724;;EMODNET;113.654;FALSE;1;UK1;UK_H;2.035;51.893;UK1;1;Existing_Offshore_Fa;UK_H;SWT-3.6-120
+378;Hornsea Project Three (HOW03);;;2850;Approved;United Kingdom;;2027;;;;;300;121136.5221;;EMODNET;696.766;FALSE;1;UK1;UK_F;2.537;53.873;UK1;1;Existing_Offshore_Fa;UK_F;WindTurbine_Offshore_15000_IEA
+379;East Anglia Two;;;940;Approved;United Kingdom;;2029;SG 14-222 DD;14;;;0;29719.37411;;EMODNET;255.222;FALSE;1;UK1;UK_H;2.201;52.154;UK1;1;Existing_Offshore_Fa;UK_H;WindTurbine_Offshore_15000_IEA
+380;East Anglia One North;;;600;Approved;United Kingdom;;2028;SG 14-222 DD;14;;;0;36100.72387;;EMODNET;208.088;FALSE;1;UK1;UK_H;2.431;52.381;UK1;1;Existing_Offshore_Fa;UK_H;WindTurbine_Offshore_15000_IEA
+381;East Anglia Three;;;1400;Approved;United Kingdom;;2026;SG 14-236 DD;14;;;95;67758.58886;;EMODNET;305.886;FALSE;1;UK1;UK_G;2.856;52.665;UK1;1;Existing_Offshore_Fa;UK_G;WindTurbine_Offshore_15000_IEA
+382;Rampion;;;400.2;Production;United Kingdom;;2018;V112-3.45 MW Offshore;3.45;;;116;13311.17331;;EMODNET;77.857;FALSE;1;UK4;NoCluster;-0.276;50.669;UK4;1;Allocated_to_onshore;UK4;V112/3450
+383;Walney Extension 3;;;330;Production;United Kingdom;;2018;SWT-7.0-154;7;;;40;26722.35186;;EMODNET;49.186;FALSE;1;UK2;NoCluster;-3.839;54.122;UK2;1;Allocated_to_onshore;UK2;V164/8000
+384;Walney Extension 4;;;329;Production;United Kingdom;;2018;SWT-7.0-154;7;;;47;19810.47205;;EMODNET;100.181;FALSE;1;UK2;NoCluster;-3.688;54.071;UK2;1;Allocated_to_onshore;UK2;V164/8000
+385;Blyth Demonstration Phases 2&3;;;58.4;Approved;United Kingdom;;2026;;;;;10;5415.667203;;EMODNET;15.166;FALSE;1;UK2;NoCluster;-1.353;55.185;UK2;1;Allocated_to_onshore;UK2;WindTurbine_Offshore_15000_IEA
+386;Dogger Bank C;;;1200;Approved;United Kingdom;;2026;Haliade-X 14 MW;14;;;100;195786.1194;;EMODNET;560.168;FALSE;1;UK2;UK_C;2.823;55.04;UK2;1;New_Offshore_Farms;UK_C;WindTurbine_Offshore_15000_IEA
+387;Sofia;;;1400;Approved;United Kingdom;;2026;SG 14-222 DD;14;;;100;164933.3442;;EMODNET;593.768;FALSE;1;UK2;UK_C;2.229;54.99;UK2;1;New_Offshore_Farms;UK_C;WindTurbine_Offshore_15000_IEA
+388;Dogger Bank A;;;1200;Approved;United Kingdom;;2023;Haliade-X 13 MW;13;;;100;130997.9011;;EMODNET;515.288;FALSE;1;UK2;UK_C;1.909;54.77;UK2;1;New_Offshore_Farms;UK_C;WindTurbine_Offshore_15000_IEA
+389;Dogger Bank B;;;1200;Approved;United Kingdom;;2025;Haliade-X 13 MW;13;;;100;130974.643;;EMODNET;599.511;FALSE;1;UK2;UK_C;1.68;54.978;UK2;1;New_Offshore_Farms;UK_C;WindTurbine_Offshore_15000_IEA
+393;East Anglia One;;;714;Production;United Kingdom;;2020;SWT-7.0-154;7;;;102;50593.60322;;EMODNET;150.132;FALSE;1;UK1;UK_H;2.504;52.237;UK1;1;Existing_Offshore_Fa;UK_H;V164/8000
+394;Triton Knoll;;;857;Production;United Kingdom;;2022;V164-9.5 MW;9.5;;;30;32338.25709;;EMODNET;149.476;FALSE;1;UK2;UK_B;0.839;53.478;UK2;1;New_Offshore_Farms;UK_B;V164/9500
+395;Blyth Demo Phase 1;;;41.5;Production;United Kingdom;;2017;V164-8.0 MW;8;;;5;5280.018891;;EMODNET;3.637;FALSE;1;UK2;NoCluster;-1.401;55.131;UK2;1;Allocated_to_onshore;UK2;V164/8000
+398;North Hoyle;;;60;Production;United Kingdom;;2003;V80-2.0 MW;2;;;30;7241.337323;;EMODNET;9.643;FALSE;1;UK4;NoCluster;-3.448;53.417;UK4;1;Allocated_to_onshore;UK4;V80/2000
+402;Five Estuaries;;;353;Planned;United Kingdom;;2030;;;;;0;37460.63128;;EMODNET;148.684;TRUE;1;UK1;UK_H;2.162;51.902;UK1;1;Existing_Offshore_Fa;UK_H;WindTurbine_Offshore_15000_IEA
+405;Rampion 2 (Rampion Extension);;;1200;Planned;United Kingdom;;2029;;;;;0;13295.65265;;EMODNET;149.366;FALSE;1;UK4;NoCluster;-0.508;50.633;UK4;1;Allocated_to_onshore;UK4;WindTurbine_Offshore_15000_IEA
+407;R4 Project 1 (Dogger Bank South West);;;1500;Planned;United Kingdom;;2030;;;;;0;99535.12028;;EMODNET;495.261;TRUE;1;UK2;UK_C;1.479;54.625;UK_C;0;New_Offshore_Farms;UK_C;WindTurbine_Offshore_15000_IEA
+408;R4 Project 2 (Dogger Bank South East);;;1500;Planned;United Kingdom;;2030;;;;;0;122243.6059;;EMODNET;493.88;TRUE;1;UK2;UK_C;1.904;54.501;UK_C;0;New_Offshore_Farms;UK_C;WindTurbine_Offshore_15000_IEA
+409;R4 Project 3 (Outer Dowsing);;;1500;Planned;United Kingdom;;2030;;;;;0;53289.45358;;EMODNET;499.857;TRUE;1;UK2;UK_B;1.285;53.568;UK_B;0;New_Offshore_Farms;UK_B;WindTurbine_Offshore_15000_IEA
+410;R4 Project 4 (Mona);;;1500;Planned;United Kingdom;;2030;;;;;0;28332.5384;;EMODNET;497.813;FALSE;1;UK4;NoCluster;-3.923;53.721;UK4;1;Allocated_to_onshore;UK4;WindTurbine_Offshore_15000_IEA
+411;R4 Project 5 (Morecambe);;;573;Planned;United Kingdom;;2030;;;;;0;28661.29921;;EMODNET;125.744;FALSE;1;UK2;NoCluster;-3.607;53.8;UK2;1;Allocated_to_onshore;UK2;WindTurbine_Offshore_15000_IEA
+412;R4 Project 6 (Morgan);;;1500;Planned;United Kingdom;;2030;;;;;0;22273.88331;;EMODNET;322.47;FALSE;1;UK2;NoCluster;-3.994;53.996;UK2;1;Allocated_to_onshore;UK2;WindTurbine_Offshore_15000_IEA
+;Princess Elisabeth Kavel 1;;;700;Planned;Belgium;;2028;;;;;;;;Economie.fgov;45.977;TRUE;1;BE1;BE_A;2.557;51.621;BE_A;0;New_Offshore_Farms;BE_A;WindTurbine_Offshore_15000_IEA
+;Princess Elisabeth Kavel 2;;;1400;Planned;Belgium;;2030;;;;;;;;Economie.fgov;91.277;TRUE;1;BE1;BE_A;2.459;51.447;BE_A;0;New_Offshore_Farms;BE_A;WindTurbine_Offshore_15000_IEA
+;Princess Elisabeth Kavel 3;;;1400;Planned;Belgium;;2030;;;;;;;;Economie.fgov;106.772;TRUE;1;BE1;BE_A;2.402;51.483;BE_A;0;New_Offshore_Farms;BE_A;WindTurbine_Offshore_15000_IEA
+;Gennaker;;;927;Approved;Germany;;2027;SG 8.0-167;8;;OST-6-1;;;;NEP;45.749;FALSE;1;DE4;NoCluster;12.61;54.617;DE4;1;Allocated_to_onshore;DE4;V164/8000
+;EnBW  Windpark Baltic 2;;;288;Production;Germany;;2015;SWT-3.6-120;3.6;;OST-3-2;;;;;30.204;FALSE;1;DE4;NoCluster;13.162;54.983;DE4;1;Allocated_to_onshore;DE4;SWT-3.6-120
+;Arkona-Becken Suedost;;;385;Production;Germany;60;2018;SWT-6.0-154;6;;OST-1-2;;;;NEP;37.247;FALSE;1;DE4;NoCluster;14.121;54.783;DE4;1;Allocated_to_onshore;DE4;SWT-3.6-120
+;EnBW Windpark Baltic 1;;;48.3;Production;Germany;;2011;SWT-2.3-93;2.3;;OST-3-1;;;;NEP;6.409;FALSE;1;DE4;NoCluster;12.65;54.609;DE4;1;Allocated_to_onshore;DE4;SWT-2.3-93
+;Wikinger;;;350;Production;Germany;;2018;AD 5-135;5;;OST-1-1;;;;NEP;32.246;FALSE;1;DE4;NoCluster;14.068;54.836;DE4;1;Allocated_to_onshore;DE4;WindTurbine_Offshore_9500
+;ARCADIS Ost 1;;;257;UnderConstruction;Germany;;2023;V174-9.5 MW;9.5;;OST-2-1;;;;NEP;24.687;FALSE;1;DE4;NoCluster;13.644;54.824;DE4;1;Allocated_to_onshore;DE4;V164/9500
+;Baltic Eagle;;;476.25;UnderConstruction;Germany;;2024;V174-9.5 MW;9.5;;OST-2-2;;;;;42.963;FALSE;1;DE4;NoCluster;13.86;54.828;DE4;1;Allocated_to_onshore;DE4;V164/9500
+314;Berwick Bank;;;4100;Planned;United Kingdom;;2030;;;;;0;43344.99268;;EMODNET;1441.291;TRUE;1;UK3;UK_D;-1.647;56.321;UK_D;0;New_Offshore_Farms;UK_D;WindTurbine_Offshore_15000_IEA
