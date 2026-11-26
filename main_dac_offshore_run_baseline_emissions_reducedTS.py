@@ -21,7 +21,11 @@ TSA_SETTINGS = {
     "extreme_period_method": "append",
     "weighting": "grouped",
 }
-TSA_TAG = "HMed"  # added to the run id, so that runs with other settings are not overwritten
+
+
+def td_tag(n_days, method, extreme_periods):
+    # added to the run id and the baseline emissions file, e.g. M1_Extreme_20
+    return f"M{method}" + ("_Extreme" if extreme_periods else "") + f"_{n_days}"
 
 
 def apply_typical_days(config, n_days, method, full_res_technologies=None, extreme_periods=False):
@@ -55,10 +59,10 @@ def main(task_id, run_on, n_days, method, extreme_periods):
     # Baseline emissions
     scenario, cy = TASKS[task_id]
     # separate run id and emissions file, so that full-resolution results are not overwritten
-    td_tag = f"TD{n_days}_M{method}" + ("_E" if extreme_periods else "") + f"_{TSA_TAG}"
-    m_api = ModelApi(test=TEST, run_id=f"{RUN_ID}_{td_tag}", climate_year=cy, scenario=scenario)
+    tag = td_tag(n_days, method, extreme_periods)
+    m_api = ModelApi(test=TEST, run_id=f"{RUN_ID}_{tag}", climate_year=cy, scenario=scenario)
     m_api.baseline_emissions_path = m_api.baseline_emissions_path.with_name(
-        f"{m_api.baseline_emissions_path.stem}_{td_tag}.json"
+        f"{m_api.baseline_emissions_path.stem}_{tag}.json"
     )
     build_model_reduced_ts(m_api, n_days, method, TECHNOLOGIES_WITH_FULL_RES, extreme_periods)
     m_api.define_save_paths(SAVE_PATHS[run_on])

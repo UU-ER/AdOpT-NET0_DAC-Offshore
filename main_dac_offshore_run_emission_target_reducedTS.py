@@ -32,9 +32,9 @@ from main_dac_offshore_run_baseline_emissions_reducedTS import (
     EXTREME_PERIODS,
     TD_METHOD,
     TECHNOLOGIES_WITH_FULL_RES,
-    TSA_TAG,
     TYPICAL_DAYS,
     build_model_reduced_ts,
+    td_tag,
 )
 
 log = logging.getLogger(__name__)
@@ -153,11 +153,11 @@ def main(task_id, run_on, n_days, method, extreme_periods, baseline_results):
     # Emission reduction
     neg_target_Mt, scenario, cy = TASKS[task_id]
     # same run id and baseline emissions file as the baseline with typical days
-    td_tag = f"TD{n_days}_M{method}" + ("_E" if extreme_periods else "") + f"_{TSA_TAG}"
-    run_id = f"{RUN_ID}_{td_tag}"
+    tag = td_tag(n_days, method, extreme_periods)
+    run_id = f"{RUN_ID}_{tag}"
     m_api = ModelApi(test=TEST, run_id=run_id, climate_year=cy, scenario=scenario)
     m_api.baseline_emissions_path = m_api.baseline_emissions_path.with_name(
-        f"{m_api.baseline_emissions_path.stem}_{td_tag}.json"
+        f"{m_api.baseline_emissions_path.stem}_{tag}.json"
     )
     if not m_api.baseline_emissions_path.exists():
         raise FileNotFoundError(f"{m_api.baseline_emissions_path} not found, run "
